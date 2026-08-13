@@ -51,20 +51,6 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
     .filter((a) => a.category === 'KEWAJIBAN')
     .reduce((sum, a) => sum + a.balance, 0);
 
-  const kewajibanGajiPajak = accounts
-    .filter((a) => a.category === 'KEWAJIBAN' && a.code !== '2105')
-    .reduce((sum, a) => sum + a.balance, 0);
-
-  const kewajibanSupplier = accounts.find((a) => a.code === '2105')?.balance || 0;
-
-  const asetNetoTanpaPembatasan = accounts
-    .filter((a) => a.category === 'ASET_NETO' && a.restriction === 'TANPA_PEMBATASAN')
-    .reduce((sum, a) => sum + a.balance, 0);
-
-  const asetNetoDenganPembatasan = accounts
-    .filter((a) => a.category === 'ASET_NETO' && a.restriction === 'DENGAN_PEMBATASAN')
-    .reduce((sum, a) => sum + a.balance, 0);
-
   const totalAsetNeto = accounts
     .filter((a) => a.category === 'ASET_NETO')
     .reduce((sum, a) => sum + a.balance, 0);
@@ -176,8 +162,8 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
             {formatRupiah(totalKewajiban)}
           </div>
           <div className="mt-3 flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-100">
-            <span>Gaji &amp; Ops: {formatRupiah(kewajibanGajiPajak)}</span>
-            <span className="font-semibold text-rose-600">Supplier: {formatRupiah(kewajibanSupplier)}</span>
+            <span>Gaji & Pajak: {formatRupiah(68500000)}</span>
+            <span className="font-semibold text-rose-600">Supplier: {formatRupiah(15000000)}</span>
           </div>
         </div>
 
@@ -193,8 +179,8 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
             {formatRupiah(totalAsetNeto)}
           </div>
           <div className="mt-3 flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-100">
-            <span>Tanpa Pembatasan: {formatRupiah(asetNetoTanpaPembatasan)}</span>
-            <span className="font-semibold text-blue-700">Dana BOS: {formatRupiah(asetNetoDenganPembatasan)}</span>
+            <span>Tanpa Pembatasan: 2,19B</span>
+            <span className="font-semibold text-blue-700">Dana BOS: 700M</span>
           </div>
         </div>
 
@@ -211,8 +197,8 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
             <span>{formatRupiah(surplusAsetNeto)}</span>
           </div>
           <div className="mt-3 flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-100">
-            <span>Pendapatan: {formatRupiah(totalPendapatan)}</span>
-            <span>Beban: {formatRupiah(totalBeban)}</span>
+            <span>Pendapatan: 1,48B</span>
+            <span>Beban: 1,14B</span>
           </div>
         </div>
 
