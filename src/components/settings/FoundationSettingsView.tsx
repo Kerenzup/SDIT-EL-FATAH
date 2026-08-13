@@ -29,6 +29,7 @@ import {
 } from 'lucide-react';
 import { MediaUploader } from '../common/MediaUploader';
 import { safeSetLocalStorage } from '../../utils/safeStorage';
+import { generateSharedUrl } from '../../utils/shareUrl';
 
 interface FoundationSettingsViewProps {
   profile: FoundationProfile;
@@ -58,7 +59,7 @@ export const FoundationSettingsView: React.FC<FoundationSettingsViewProps> = ({
     'System: Identitas Yayasan versi 1.0 telah disetujui Pengurus Utama.',
   ]);
 
-  const sharedAppUrl = 'https://ais-pre-ynz4in4zs55g3zuhzgo3by-524317516269.asia-southeast1.run.app';
+  const sharedAppUrl = generateSharedUrl(formData);
 
   useEffect(() => {
     setFormData(profile);
@@ -258,16 +259,19 @@ export const FoundationSettingsView: React.FC<FoundationSettingsViewProps> = ({
               <button
                 type="button"
                 onClick={() => {
-                  if (onRestoreMasterData) {
+                  const confirmReset = window.confirm(
+                    'Apakah Anda yakin ingin memulihkan seluruh data ke Master Data Produksi Selesai (Yayasan Pendidikan Daarul Habibah)? Seluruh data akan dikembalikan ke posisi lengkap.'
+                  );
+                  if (confirmReset && onRestoreMasterData) {
                     onRestoreMasterData();
-                    triggerToast('Seluruh Data Berhasil Disinkronkan ke Master Data Produksi Selesai!');
+                    triggerToast('Seluruh Data Berhasil Dipulihkan Ke Posisi Master Data Produksi Selesai!');
                   }
                 }}
                 className="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-bold rounded-xl shadow transition flex items-center justify-center gap-1.5 cursor-pointer text-center"
                 title="Muat Ulang Seluruh Data Master Produksi LENGKAP"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
-                <span>Reset Master Data</span>
+                <span>Memulihkan Data Master</span>
               </button>
 
               <button
@@ -378,7 +382,7 @@ export const FoundationSettingsView: React.FC<FoundationSettingsViewProps> = ({
                     value={formData.name}
                     onChange={(e) => handleChange('name', e.target.value)}
                     className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-900 focus:outline-none focus:border-emerald-500 focus:bg-white transition"
-                    placeholder="Contoh: Yayasan Pendidikan Widya Nusantara"
+                    placeholder="Contoh: Yayasan Pendidikan Daarul Habibah"
                     required
                   />
                 </div>

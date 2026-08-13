@@ -9,7 +9,7 @@ export const INITIAL_ORG_STRUCTURE: OrgStructureMember[] = [
     category: 'YAYASAN',
     nipOrNipy: 'NIPY. 20100101',
     phone: '0812-1111-2222',
-    email: 'syukri@widyanusantara.or.id',
+    email: 'syukri@daarulhabibah.or.id',
     photoUrl: LOCAL_IMAGES.pembina,
     order: 1,
   },
@@ -20,7 +20,7 @@ export const INITIAL_ORG_STRUCTURE: OrgStructureMember[] = [
     category: 'YAYASAN',
     nipOrNipy: 'NIPY. 20120502',
     phone: '0812-2222-3333',
-    email: 'ahmad.dahlan@widyanusantara.or.id',
+    email: 'ahmad.dahlan@daarulhabibah.or.id',
     photoUrl: LOCAL_IMAGES.ketua,
     order: 2,
   },
@@ -31,7 +31,7 @@ export const INITIAL_ORG_STRUCTURE: OrgStructureMember[] = [
     category: 'YAYASAN',
     nipOrNipy: 'NIPY. 20150303',
     phone: '0812-5555-6666',
-    email: 'ahmad.subagja@widyanusantara.or.id',
+    email: 'ahmad.subagja@daarulhabibah.or.id',
     photoUrl: LOCAL_IMAGES.sekretaris,
     order: 3,
   },
@@ -42,7 +42,7 @@ export const INITIAL_ORG_STRUCTURE: OrgStructureMember[] = [
     category: 'YAYASAN',
     nipOrNipy: 'NIPY. 20180209',
     phone: '0812-3333-4444',
-    email: 'nurul.aini@widyanusantara.or.id',
+    email: 'nurul.aini@daarulhabibah.or.id',
     photoUrl: LOCAL_IMAGES.bendahara,
     order: 4,
   },
@@ -53,7 +53,7 @@ export const INITIAL_ORG_STRUCTURE: OrgStructureMember[] = [
     category: 'SEKOLAH',
     nipOrNipy: 'NIPY. 1985031201',
     phone: '0813-7777-8888',
-    email: 'bambang.widjaja@widyanusantara.sch.id',
+    email: 'bambang.widjaja@daarulhabibah.sch.id',
     photoUrl: LOCAL_IMAGES.kepalaSekolah,
     order: 5,
   },
@@ -64,18 +64,18 @@ export const INITIAL_ORG_STRUCTURE: OrgStructureMember[] = [
     category: 'SEKOLAH',
     nipOrNipy: 'NIPY. 1990041502',
     phone: '0813-9999-0000',
-    email: 'fatimah.zahra@widyanusantara.sch.id',
+    email: 'fatimah.zahra@daarulhabibah.sch.id',
     photoUrl: LOCAL_IMAGES.guruWanita,
     order: 6,
   },
 ];
 
 export const INITIAL_FOUNDATION_PROFILE: FoundationProfile = {
-  name: 'Yayasan Pendidikan Widya Nusantara',
+  name: 'Yayasan Pendidikan Daarul Habibah',
   address: 'Jl. Pendidikan No. 45, Kebayoran Baru, Jakarta Selatan 12150',
   phone: '021-7890123 / 0812-3344-5566',
-  email: 'info@widyanusantara.or.id',
-  website: 'www.widyanusantara.or.id',
+  email: 'info@daarulhabibah.or.id',
+  website: 'www.daarulhabibah.or.id',
   legalNumber: 'AHU-0012894.AH.01.04 TAHUN 2018',
   pembinaName: 'Drs. H. M. Syukri, M.M',
   pembinaTitle: 'Pembina Yayasan',
@@ -98,7 +98,7 @@ export const INITIAL_FOUNDATION_PROFILE: FoundationProfile = {
   headmasterNip: 'NIPY. 1985031201',
   headmasterPhotoUrl: LOCAL_IMAGES.kepalaSekolah,
   buildingPhotoUrl: LOCAL_IMAGES.building,
-  welcomeMessage: "Assalamu'alaikum Warahmatullahi Wabarakatuh. Selamat datang di portal resmi Yayasan Pendidikan Widya Nusantara. Kami bertekad mewujudkan ekosistem pendidikan Islam berakreditasi unggul yang mengintegrasikan penguatan karakter tauhid, keunggulan sains & teknologi, serta akuntabilitas keuangan ISAK 35. Semoga portal ini memberikan kemudahan informasi bagi seluruh wali murid dan masyarakat.",
+  welcomeMessage: "Assalamu'alaikum Warahmatullahi Wabarakatuh. Selamat datang di portal resmi Yayasan Pendidikan Daarul Habibah. Kami bertekad mewujudkan ekosistem pendidikan Islam berakreditasi unggul yang mengintegrasikan penguatan karakter tauhid, keunggulan sains & teknologi, serta akuntabilitas keuangan ISAK 35. Semoga portal ini memberikan kemudahan informasi bagi seluruh wali murid dan masyarakat.",
   leaderSpeechTitle: 'Pidato Amanat Pimpinan: Arah Kebijakan Pendidikan, Transformasi Digital & Pembentukan Karakter Rabbani',
   leaderSpeechContent: `Bismillahirahmanirrahim. Assalamu'alaikum Warahmatullahi Wabarakatuh.
 
@@ -106,7 +106,7 @@ Puji dan syukur senantiasa kita panjatkan ke hadirat Allah SWT atas limpahan rah
 
 Hadirin, para orang tua murid, para pendidik, dan seluruh insan pendidikan yang kami hormati.
 
-Lembaga pendidikan bukan sekadar tempat mentransfer ilmu pengetahuan, melainkan kawah candradimuka dalam membentuk watak, adab, dan integritas kepemimpinan masa depan. Di tengah pesatnya perkembangan arus digitalisasi dan kecerdasan buatan (AI), Yayasan Pendidikan Widya Nusantara berdiri kokoh memadukan kurikulum nasional yang adaptif dengan pondasi tauhid yang tangguh.
+Lembaga pendidikan bukan sekadar tempat mentransfer ilmu pengetahuan, melainkan kawah candradimuka dalam membentuk watak, adab, dan integritas kepemimpinan masa depan. Di tengah pesatnya perkembangan arus digitalisasi dan kecerdasan buatan (AI), Yayasan Pendidikan Daarul Habibah berdiri kokoh memadukan kurikulum nasional yang adaptif dengan pondasi tauhid yang tangguh.
 
 Dalam mewujudkan visi strategis ini, yayasan menerapkan 4 Pilar Keunggulan Utama:
 1. Penguatan Aqidah dan Akhlakul Karimah: Menjadikan Al-Qur'an dan Sunnah sebagai kompas moral peserta didik melalui program Tahfidz, Pembiasaan Salat Dhuha, dan Budaya 5S.
@@ -117,9 +117,9 @@ Dalam mewujudkan visi strategis ini, yayasan menerapkan 4 Pilar Keunggulan Utama
 Kami mengajak seluruh bapak/ibu orang tua murid dan pemangku kepentingan untuk terus bergandengan tangan, mendukung putra-putri kita agar tumbuh menjadi pribadi yang berilmu, berakhlak mulia, dan siap memimpin peradaban.
 
 Wassalamu'alaikum Warahmatullahi Wabarakatuh.`,
-  aboutTitle: 'Profil & Sejarah Yayasan Pendidikan Widya Nusantara',
+  aboutTitle: 'Profil & Sejarah Yayasan Pendidikan Daarul Habibah',
   aboutSubtitle: 'Menciptakan Generasi Rabbani Berprestasi, Berkarakter & Menguasai Teknologi',
-  aboutHistory: 'Yayasan Pendidikan Widya Nusantara didirikan untuk memberikan pendidikan berkualitas tinggi berbasis nilai-nilai keislaman dan kebudayaan nasional. Sekolah mengelola Rombongan Belajar (Rombel) dari Kelas 1 hingga Kelas 6 dengan ruang kelas modern ber-AC, perpustakaan digital, serta laboratorium sains & komputer.',
+  aboutHistory: 'Yayasan Pendidikan Daarul Habibah didirikan untuk memberikan pendidikan berkualitas tinggi berbasis nilai-nilai keislaman dan kebudayaan nasional. Sekolah mengelola Rombongan Belajar (Rombel) dari Kelas 1 hingga Kelas 6 dengan ruang kelas modern ber-AC, perpustakaan digital, serta laboratorium sains & komputer.',
   aboutDescription: 'Menyelenggarakan pendidikan formal dari jenjang Sekolah Dasar hingga menengah, dilengkapi akreditasi unggul, fasilitas olahraga, serta tata kelola keuangan ISAK 35 terpercaya.',
   orgStructure: INITIAL_ORG_STRUCTURE,
 };
@@ -143,7 +143,7 @@ export const INITIAL_ACCOUNTS: Account[] = [
   // Kewajiban
   { code: '2101', name: 'Hutang Gaji Guru', category: 'KEWAJIBAN', subCategory: 'Kewajiban Jangka Pendek', balance: 19545000 },
   { code: '2102', name: 'Hutang Gaji Kepala Sekolah', category: 'KEWAJIBAN', subCategory: 'Kewajiban Jangka Pendek', balance: 9300000 },
-  { code: '2103', name: 'Hutang Pajak PPh Pasal 21', category: 'KEWAJIBAN', subCategory: 'Kewajiban Jangka Pendek', balance: 1270000 },
+  { code: '2103', name: 'Hutang Pajak PPh Pasal 21', category: 'KEWAJIBAN', subCategory: 'Kewajiban Jangka Pendek', balance: 0 },
   { code: '2104', name: 'Hutang BPJS Ketenagakerjaan', category: 'KEWAJIBAN', subCategory: 'Kewajiban Jangka Pendek', balance: 585000 },
   { code: '2105', name: 'Hutang Supplier ATK & Buku', category: 'KEWAJIBAN', subCategory: 'Kewajiban Jangka Pendek', balance: 15000000 },
 
@@ -186,28 +186,40 @@ export const INITIAL_ACCOUNTS: Account[] = [
 ];
 
 export const INITIAL_STUDENTS: Student[] = [
-  { id: 'std-1', nis: '20240101', nisn: '0012345601', name: 'Ahmad Rizky Pratama', birthPlace: 'Jakarta', birthDate: '2014-05-12', parentName: 'Bpk. Hendra Pratama', address: 'Jl. Nusantara No. 12, Jakarta', contactPhone: '081234567890', sppAmount: 450000, sppStatus: 'LUNAS', achievements: 'Juara 1 Lomba Sains Kebangsaan 2025', gradeClass: 'Kelas 6', gender: 'L' },
-  { id: 'std-2', nis: '20240102', nisn: '0012345602', name: 'Siti Nurhaliza', birthPlace: 'Bandung', birthDate: '2015-08-20', parentName: 'Ibu Rahmawati', address: 'Jl. Mawar Indah No. 5, Jakarta', contactPhone: '081298765432', sppAmount: 450000, sppStatus: 'LUNAS', achievements: 'Juara 2 Tahfidz Quran Juz 30', gradeClass: 'Kelas 5', gender: 'P' },
-  { id: 'std-3', nis: '20240103', nisn: '0012345603', name: 'Budi Santoso', birthPlace: 'Surabaya', birthDate: '2016-02-14', parentName: 'Bpk. Agus Santoso', address: 'Jl. Melati No. 8, Jakarta', contactPhone: '081311223344', sppAmount: 450000, sppStatus: 'TUNGGAKAN', achievements: 'Finalis Catur Pelajar DKI', gradeClass: 'Kelas 4', gender: 'L' },
-  { id: 'std-4', nis: '20240104', nisn: '0012345604', name: 'Dewi Lestari', birthPlace: 'Semarang', birthDate: '2017-11-05', parentName: 'Bpk. Joko Lestari', address: 'Jl. Anggrek No. 15, Jakarta', contactPhone: '085677889900', sppAmount: 450000, sppStatus: 'LUNAS', achievements: 'Juara 1 Lomba Puitisasi Al-Quran', gradeClass: 'Kelas 3', gender: 'P' },
-  { id: 'std-5', nis: '20240105', nisn: '0012345605', name: 'Muhammad Farhan', birthPlace: 'Bogor', birthDate: '2018-03-30', parentName: 'Ibu Fatimah', address: 'Jl. Dahlia No. 3, Jakarta', contactPhone: '081766554433', sppAmount: 450000, sppStatus: 'MENUNGGU', achievements: 'Juara 3 Mewarnai Kaligrafi', gradeClass: 'Kelas 2', gender: 'L' },
-  { id: 'std-6', nis: '20240106', nisn: '0012345606', name: 'Anisa Rahmawati', birthPlace: 'Tangerang', birthDate: '2019-07-18', parentName: 'Bpk. Rudi Rahmawan', address: 'Jl. Kenanga No. 20, Jakarta', contactPhone: '081900112233', sppAmount: 450000, sppStatus: 'LUNAS', achievements: 'Siswa Teladan Rombel Kelas 1', gradeClass: 'Kelas 1', gender: 'P' },
+  { id: 'std-1', nis: '2026101', nisn: '0012345601', name: 'Ahmad Rizky Pratama', gradeClass: 'Kelas 6', sppAmount: 250000, sppStatus: 'LUNAS', contactPhone: '081234567801', parentName: 'Rahmat Hidayat', gender: 'L', address: 'Jl. Ahmad Yani No. 12, Serang', birthPlace: 'Serang', birthDate: '2014-03-15', virtualAccount: '880202026101' },
+  { id: 'std-2', nis: '2026102', nisn: '0012345602', name: 'Siti Nurhaliza', gradeClass: 'Kelas 6', sppAmount: 250000, sppStatus: 'LUNAS', contactPhone: '081234567802', parentName: 'Hasan Basri', gender: 'P', address: 'Jl. Sudirman No. 45, Serang', birthPlace: 'Serang', birthDate: '2014-06-20', virtualAccount: '880202026102' },
+  { id: 'std-3', nis: '2026103', nisn: '0012345603', name: 'Muhammad Al-Fatih', gradeClass: 'Kelas 5', sppAmount: 250000, sppStatus: 'LUNAS', contactPhone: '081234567803', parentName: 'Abdullah', gender: 'L', address: 'Jl. Veteran No. 8, Serang', birthPlace: 'Serang', birthDate: '2015-01-10', virtualAccount: '880202026103' },
+  { id: 'std-4', nis: '2026104', nisn: '0012345604', name: 'Aisyah Humaira', gradeClass: 'Kelas 5', sppAmount: 250000, sppStatus: 'MENUNGGU', contactPhone: '081234567804', parentName: 'Umar Khalid', gender: 'P', address: 'Jl. Mawar No. 3, Serang', birthPlace: 'Serang', birthDate: '2015-04-25', virtualAccount: '880202026104' },
+  { id: 'std-5', nis: '2026105', nisn: '0012345605', name: 'Bilal Ramadan', gradeClass: 'Kelas 4', sppAmount: 250000, sppStatus: 'LUNAS', contactPhone: '081234567805', parentName: 'Zubair', gender: 'L', address: 'Jl. Melati No. 19, Serang', birthPlace: 'Serang', birthDate: '2016-08-17', virtualAccount: '880202026105' },
+  { id: 'std-6', nis: '2026106', nisn: '0012345606', name: 'Khadijah Az-Zahra', gradeClass: 'Kelas 4', sppAmount: 250000, sppStatus: 'LUNAS', contactPhone: '081234567806', parentName: 'Ali bin Abi', gender: 'P', address: 'Jl. Anggrek No. 2, Serang', birthPlace: 'Serang', birthDate: '2016-11-05', virtualAccount: '880202026106' },
+  { id: 'std-7', nis: '2026107', nisn: '0012345607', name: 'Fatimah Zahra', gradeClass: 'Kelas 3', sppAmount: 250000, sppStatus: 'MENUNGGU', contactPhone: '081234567807', parentName: 'Usman', gender: 'P', address: 'Jl. Dahlia No. 14, Serang', birthPlace: 'Serang', birthDate: '2017-02-14', virtualAccount: '880202026107' },
+  { id: 'std-8', nis: '2026108', nisn: '0012345608', name: 'Zaid bin Haritsah', gradeClass: 'Kelas 3', sppAmount: 250000, sppStatus: 'LUNAS', contactPhone: '081234567808', parentName: 'Haritsah', gender: 'L', address: 'Jl. Kenanga No. 27, Serang', birthPlace: 'Serang', birthDate: '2017-07-09', virtualAccount: '880202026108' },
+  { id: 'std-9', nis: '2026109', nisn: '0012345609', name: 'Maryam Qonita', gradeClass: 'Kelas 2', sppAmount: 250000, sppStatus: 'LUNAS', contactPhone: '081234567809', parentName: 'Imran', gender: 'P', address: 'Jl. Kamboja No. 11, Serang', birthPlace: 'Serang', birthDate: '2018-05-01', virtualAccount: '880202026109' },
+  { id: 'std-10', nis: '2026110', nisn: '0012345610', name: 'Yusuf Habibi', gradeClass: 'Kelas 2', sppAmount: 250000, sppStatus: 'TUNGGAKAN', contactPhone: '081234567810', parentName: 'Ya\'qub', gender: 'L', address: 'Jl. Flamboyan No. 33, Serang', birthPlace: 'Serang', birthDate: '2018-09-12', virtualAccount: '880202026110' },
+  { id: 'std-11', nis: '2026111', nisn: '0012345611', name: 'Ibrahim Al-Khalil', gradeClass: 'Kelas 1', sppAmount: 250000, sppStatus: 'LUNAS', contactPhone: '081234567811', parentName: 'Azar', gender: 'L', address: 'Jl. Teratai No. 5, Serang', birthPlace: 'Serang', birthDate: '2019-01-20', virtualAccount: '880202026111' },
+  { id: 'std-12', nis: '2026112', nisn: '0012345612', name: 'Anisa Rahmawati', gradeClass: 'Kelas 1', sppAmount: 250000, sppStatus: 'LUNAS', contactPhone: '081234567812', parentName: 'Bambang', gender: 'P', address: 'Jl. Cempaka No. 88, Serang', birthPlace: 'Serang', birthDate: '2019-04-18', virtualAccount: '880202026112' },
+  { id: 'std-13', nis: '2026113', nisn: '0012345613', name: 'Naufal Farisi', gradeClass: 'Kelas 6', sppAmount: 250000, sppStatus: 'LUNAS', contactPhone: '081234567813', parentName: 'Salman', gender: 'L', address: 'Jl. Siliwangi No. 100, Serang', birthPlace: 'Serang', birthDate: '2014-08-30', virtualAccount: '880202026113' },
+  { id: 'std-14', nis: '2026114', nisn: '0012345614', name: 'Syifa Fauziah', gradeClass: 'Kelas 5', sppAmount: 250000, sppStatus: 'LUNAS', contactPhone: '081234567814', parentName: 'Achmad', gender: 'P', address: 'Jl. Diponegoro No. 15, Serang', birthPlace: 'Serang', birthDate: '2015-10-14', virtualAccount: '880202026114' },
+  { id: 'std-15', nis: '2026115', nisn: '0012345615', name: 'Tariq bin Ziyad', gradeClass: 'Kelas 4', sppAmount: 250000, sppStatus: 'LUNAS', contactPhone: '081234567815', parentName: 'Ziyad', gender: 'L', address: 'Jl. Gajah Mada No. 22, Serang', birthPlace: 'Serang', birthDate: '2016-03-08', virtualAccount: '880202026115' },
+  { id: 'std-16', nis: '2026116', nisn: '0012345616', name: 'Zahra Amalia', gradeClass: 'Kelas 3', sppAmount: 250000, sppStatus: 'LUNAS', contactPhone: '081234567816', parentName: 'Supriyadi', gender: 'P', address: 'Jl. Hayam Wuruk No. 7, Serang', birthPlace: 'Serang', birthDate: '2017-06-22', virtualAccount: '880202026116' },
+  { id: 'std-17', nis: '2026117', nisn: '0012345617', name: 'Hamzah Asadullah', gradeClass: 'Kelas 2', sppAmount: 250000, sppStatus: 'LUNAS', contactPhone: '081234567817', parentName: 'Abdul Muttalib', gender: 'L', address: 'Jl. Raden Fatah No. 3, Serang', birthPlace: 'Serang', birthDate: '2018-12-01', virtualAccount: '880202026117' },
+  { id: 'std-18', nis: '2026118', nisn: '0012345618', name: 'Ruqayyah Jamilah', gradeClass: 'Kelas 1', sppAmount: 250000, sppStatus: 'LUNAS', contactPhone: '081234567818', parentName: 'Masykur', gender: 'P', address: 'Jl. Sunan Kalijaga No. 16, Serang', birthPlace: 'Serang', birthDate: '2019-07-11', virtualAccount: '880202026118' },
 ];
 
 export const INITIAL_TEACHERS: Teacher[] = [
-  { id: 'tch-1', nip: '1985031201', nipy: 'NIPY. 1985031201', niy: 'NIY. 20100101', name: 'Masykur Rohana, S.Sos', address: 'Serang, Banten', phone: '081288990011', role: 'Kepala Sekolah', assignedRombel: 'Kepala Sekolah', subjectTaught: 'Kepemimpinan & Kepengawasan Sekolah', baseSalary: 8000000, allowance: 2000000, committeeHonor: 500000, pph21: 500000, bpjs: 200000, netSalary: 9800000, notes: 'Kepala Sekolah SDIT EL-FATAH' },
-  { id: 'tch-2', nip: '1990041502', nipy: 'NIPY. 1990041502', niy: 'NIY. 20120202', name: 'Iis Rohmayanti, S.Pd', address: 'Serang, Banten', phone: '081399990000', role: 'Wakasek Kurikulum & Wali Kelas 4', assignedRombel: 'Kelas 4', subjectTaught: 'Kurikulum & Wali Kelas 4', baseSalary: 4800000, allowance: 1000000, committeeHonor: 350000, pph21: 200000, bpjs: 100000, netSalary: 5850000, notes: 'Wakil Kepala Sekolah Bidang Kurikulum' },
-  { id: 'tch-3', nip: '1992082003', nipy: 'NIPY. 1992082003', niy: 'NIY. 20150303', name: 'Mega Andini Putri, S.Pd', address: 'Serang, Banten', phone: '081412345678', role: 'Kesiswaan & Wali Kelas 6', assignedRombel: 'Kelas 6', subjectTaught: 'Kesiswaan & Wali Kelas 6', baseSalary: 4500000, allowance: 900000, committeeHonor: 300000, pph21: 180000, bpjs: 95000, netSalary: 5425000, notes: 'Koordinator Bidang Kesiswaan' },
-  { id: 'tch-4', nip: '1988110504', nipy: 'NIPY. 1988110504', niy: 'NIY. 20160404', name: 'Ojah Nasiah Ulfah, S.Ag', address: 'Serang, Banten', phone: '081577889900', role: 'Koor. Qur\'an & Wali Kelas 3', assignedRombel: 'Kelas 3', subjectTaught: 'Al-Qur\'an & Wali Kelas 3', baseSalary: 4400000, allowance: 900000, committeeHonor: 300000, pph21: 170000, bpjs: 95000, netSalary: 5335000, notes: 'Koordinator Program Al-Qur\'an' },
-  { id: 'tch-5', nip: '1991051005', nipy: 'NIPY. 1991051005', niy: 'NIY. 20170505', name: 'Uyat Sukriyati, S.Pd', address: 'Serang, Banten', phone: '081233445566', role: 'Wali Kelas 1', assignedRombel: 'Kelas 1', subjectTaught: 'Tematik & Wali Kelas 1', baseSalary: 4200000, allowance: 800000, committeeHonor: 250000, pph21: 150000, bpjs: 90000, netSalary: 5010000, notes: 'Wali Kelas 1' },
-  { id: 'tch-6', nip: '1993071206', nipy: 'NIPY. 1993071206', niy: 'NIY. 20180606', name: 'Setia Widi Mawaddah, S.Pd', address: 'Serang, Banten', phone: '081277889900', role: 'Wali Kelas 2', assignedRombel: 'Kelas 2', subjectTaught: 'Tematik & Wali Kelas 2', baseSalary: 4200000, allowance: 800000, committeeHonor: 250000, pph21: 150000, bpjs: 90000, netSalary: 5010000, notes: 'Wali Kelas 2' },
-  { id: 'tch-7', nip: '1994011507', nipy: 'NIPY. 1994011507', niy: 'NIY. 20190707', name: 'Nurbibiyatillah', address: 'Serang, Banten', phone: '081311223344', role: 'Wali Kelas 5', assignedRombel: 'Kelas 5', subjectTaught: 'Tematik & Wali Kelas 5', baseSalary: 4200000, allowance: 800000, committeeHonor: 250000, pph21: 150000, bpjs: 90000, netSalary: 5010000, notes: 'Wali Kelas 5' },
-  { id: 'tch-8', nip: '1989022008', nipy: 'NIPY. 1989022008', niy: 'NIY. 20150808', name: 'Alvi Maulidi, S.Pd', address: 'Serang, Banten', phone: '081299887766', role: 'Tenaga Administrasi', assignedRombel: 'Tata Usaha', subjectTaught: 'Administrasi Sekolah', baseSalary: 4000000, allowance: 750000, committeeHonor: 200000, pph21: 120000, bpjs: 80000, netSalary: 4750000, notes: 'Tenaga Administrasi Sekolah' },
-  { id: 'tch-9', nip: '1990033009', nipy: 'NIPY. 1990033009', niy: 'NIY. 20160909', name: 'Velayati Zuraida, S.Pd', address: 'Serang, Banten', phone: '081344556677', role: 'Bendahara Sekolah', assignedRombel: 'Keuangan Sekolah', subjectTaught: 'Keuangan & SPP', baseSalary: 4200000, allowance: 850000, committeeHonor: 250000, pph21: 140000, bpjs: 85000, netSalary: 5075000, notes: 'Bendahara Operasional Sekolah' },
-  { id: 'tch-10', nip: '1987041210', nipy: 'NIPY. 1987041210', niy: 'NIY. 20141010', name: 'Mas\'ah', address: 'Serang, Banten', phone: '081566778899', role: 'Humas', assignedRombel: 'Humas & Publikasi', subjectTaught: 'Hubungan Masyarakat', baseSalary: 4000000, allowance: 700000, committeeHonor: 200000, pph21: 120000, bpjs: 80000, netSalary: 4700000, notes: 'Bidang Hubungan Masyarakat' },
-  { id: 'tch-11', nip: '1986080811', nipy: 'NIPY. 1986080811', niy: 'NIY. 20131111', name: 'Muhi, S.Pd', address: 'Serang, Banten', phone: '081788990011', role: 'Sarpras', assignedRombel: 'Sarana Prasarana', subjectTaught: 'Sarana & Prasarana', baseSalary: 4100000, allowance: 750000, committeeHonor: 200000, pph21: 130000, bpjs: 80000, netSalary: 4840000, notes: 'Bidang Sarana & Prasarana' },
-  { id: 'tch-12', nip: '1992090912', nipy: 'NIPY. 1992090912', niy: 'NIY. 20171212', name: 'Subihat, S.Pd', address: 'Serang, Banten', phone: '081900112233', role: 'Koor. BPI', assignedRombel: 'Bina Pribadi Islam', subjectTaught: 'Bina Pribadi Islam (BPI)', baseSalary: 4100000, allowance: 750000, committeeHonor: 200000, pph21: 130000, bpjs: 80000, netSalary: 4840000, notes: 'Koordinator Bina Pribadi Islam' },
-  { id: 'tch-13', nip: '1980010113', nipy: 'NIPY. 1980010113', niy: 'NIY. 20101313', name: 'Siti Nur\'aeni', address: 'Serang, Banten', phone: '081233221100', role: 'Ketua Komite Sekolah', assignedRombel: 'Komite Sekolah', subjectTaught: 'Komite Sekolah', baseSalary: 3500000, allowance: 500000, committeeHonor: 500000, pph21: 100000, bpjs: 50000, netSalary: 4350000, notes: 'Ketua Komite SDIT EL-FATAH' },
+  { id: 'tch-1', nip: '1985031201', nipy: 'NIPY. 1985031201', niy: 'NIY. 20100101', name: 'Masykur Rohana, S.Sos', address: 'Serang, Banten', phone: '081288990011', role: 'Kepala Sekolah', assignedRombel: 'Kepala Sekolah', subjectTaught: 'Kepemimpinan & Kepengawasan Sekolah', baseSalary: 8000000, allowance: 2000000, committeeHonor: 500000, pph21: 0, bpjs: 200000, netSalary: 10300000, notes: 'Kepala Sekolah SDIT EL-FATAH' },
+  { id: 'tch-2', nip: '1990041502', nipy: 'NIPY. 1990041502', niy: 'NIY. 20120202', name: 'Iis Rohmayanti, S.Pd', address: 'Serang, Banten', phone: '081399990000', role: 'Wakasek Kurikulum & Wali Kelas 4', assignedRombel: 'Kelas 4', subjectTaught: 'Kurikulum & Wali Kelas 4', baseSalary: 4800000, allowance: 1000000, committeeHonor: 350000, pph21: 0, bpjs: 100000, netSalary: 6050000, notes: 'Wakil Kepala Sekolah Bidang Kurikulum' },
+  { id: 'tch-3', nip: '1992082003', nipy: 'NIPY. 1992082003', niy: 'NIY. 20150303', name: 'Mega Andini Putri, S.Pd', address: 'Serang, Banten', phone: '081412345678', role: 'Kesiswaan & Wali Kelas 6', assignedRombel: 'Kelas 6', subjectTaught: 'Kesiswaan & Wali Kelas 6', baseSalary: 4500000, allowance: 900000, committeeHonor: 300000, pph21: 0, bpjs: 95000, netSalary: 5605000, notes: 'Koordinator Bidang Kesiswaan' },
+  { id: 'tch-4', nip: '1988110504', nipy: 'NIPY. 1988110504', niy: 'NIY. 20160404', name: 'Ojah Nasiah Ulfah, S.Ag', address: 'Serang, Banten', phone: '081577889900', role: 'Koor. Qur\'an & Wali Kelas 3', assignedRombel: 'Kelas 3', subjectTaught: 'Al-Qur\'an & Wali Kelas 3', baseSalary: 4400000, allowance: 900000, committeeHonor: 300000, pph21: 0, bpjs: 95000, netSalary: 5505000, notes: 'Koordinator Program Al-Qur\'an' },
+  { id: 'tch-5', nip: '1991051005', nipy: 'NIPY. 1991051005', niy: 'NIY. 20170505', name: 'Uyat Sukriyati, S.Pd', address: 'Serang, Banten', phone: '081233445566', role: 'Wali Kelas 1', assignedRombel: 'Kelas 1', subjectTaught: 'Tematik & Wali Kelas 1', baseSalary: 4200000, allowance: 800000, committeeHonor: 250000, pph21: 0, bpjs: 90000, netSalary: 5160000, notes: 'Wali Kelas 1' },
+  { id: 'tch-6', nip: '1993071206', nipy: 'NIPY. 1993071206', niy: 'NIY. 20180606', name: 'Setia Widi Mawaddah, S.Pd', address: 'Serang, Banten', phone: '081277889900', role: 'Wali Kelas 2', assignedRombel: 'Kelas 2', subjectTaught: 'Tematik & Wali Kelas 2', baseSalary: 4200000, allowance: 800000, committeeHonor: 250000, pph21: 0, bpjs: 90000, netSalary: 5160000, notes: 'Wali Kelas 2' },
+  { id: 'tch-7', nip: '1994011507', nipy: 'NIPY. 1994011507', niy: 'NIY. 20190707', name: 'Nurbibiyatillah', address: 'Serang, Banten', phone: '081311223344', role: 'Wali Kelas 5', assignedRombel: 'Kelas 5', subjectTaught: 'Tematik & Wali Kelas 5', baseSalary: 4200000, allowance: 800000, committeeHonor: 250000, pph21: 0, bpjs: 90000, netSalary: 5160000, notes: 'Wali Kelas 5' },
+  { id: 'tch-8', nip: '1989022008', nipy: 'NIPY. 1989022008', niy: 'NIY. 20150808', name: 'Alvi Maulidi, S.Pd', address: 'Serang, Banten', phone: '081299887766', role: 'Tenaga Administrasi', assignedRombel: 'Tata Usaha', subjectTaught: 'Administrasi Sekolah', baseSalary: 4000000, allowance: 750000, committeeHonor: 200000, pph21: 0, bpjs: 80000, netSalary: 4870000, notes: 'Tenaga Administrasi Sekolah' },
+  { id: 'tch-9', nip: '1990033009', nipy: 'NIPY. 1990033009', niy: 'NIY. 20160909', name: 'Velayati Zuraida, S.Pd', address: 'Serang, Banten', phone: '081344556677', role: 'Bendahara Sekolah', assignedRombel: 'Keuangan Sekolah', subjectTaught: 'Keuangan & SPP', baseSalary: 4200000, allowance: 850000, committeeHonor: 250000, pph21: 0, bpjs: 85000, netSalary: 5215000, notes: 'Bendahara Operasional Sekolah' },
+  { id: 'tch-10', nip: '1987041210', nipy: 'NIPY. 1987041210', niy: 'NIY. 20141010', name: 'Mas\'ah', address: 'Serang, Banten', phone: '081566778899', role: 'Humas', assignedRombel: 'Humas & Publikasi', subjectTaught: 'Hubungan Masyarakat', baseSalary: 4000000, allowance: 700000, committeeHonor: 200000, pph21: 0, bpjs: 80000, netSalary: 4820000, notes: 'Bidang Hubungan Masyarakat' },
+  { id: 'tch-11', nip: '1986080811', nipy: 'NIPY. 1986080811', niy: 'NIY. 20131111', name: 'Muhi, S.Pd', address: 'Serang, Banten', phone: '081788990011', role: 'Sarpras', assignedRombel: 'Sarana Prasarana', subjectTaught: 'Sarana & Prasarana', baseSalary: 4100000, allowance: 750000, committeeHonor: 200000, pph21: 0, bpjs: 80000, netSalary: 4970000, notes: 'Bidang Sarana & Prasarana' },
+  { id: 'tch-12', nip: '1992090912', nipy: 'NIPY. 1992090912', niy: 'NIY. 20171212', name: 'Subihat, S.Pd', address: 'Serang, Banten', phone: '081900112233', role: 'Koor. BPI', assignedRombel: 'Bina Pribadi Islam', subjectTaught: 'Bina Pribadi Islam (BPI)', baseSalary: 4100000, allowance: 750000, committeeHonor: 200000, pph21: 0, bpjs: 80000, netSalary: 4970000, notes: 'Koordinator Bina Pribadi Islam' },
+  { id: 'tch-13', nip: '1980010113', nipy: 'NIPY. 1980010113', niy: 'NIY. 20101313', name: 'Siti Nur\'aeni', address: 'Serang, Banten', phone: '081233221100', role: 'Ketua Komite Sekolah', assignedRombel: 'Komite Sekolah', subjectTaught: 'Komite Sekolah', baseSalary: 3500000, allowance: 500000, committeeHonor: 500000, pph21: 0, bpjs: 50000, netSalary: 4450000, notes: 'Ketua Komite SDIT EL-FATAH' },
 ];
 
 export const INITIAL_FIXED_ASSETS: FixedAsset[] = [
@@ -219,11 +231,11 @@ export const INITIAL_FIXED_ASSETS: FixedAsset[] = [
 ];
 
 export const INITIAL_BOARD_MEMBERS: FoundationBoard[] = [
-  { id: 'brd-1', niy: 'NIY. 20100101', nipy: 'NIPY. 20100101', name: 'Drs. H. M. Syukri, M.M', address: 'Jl. Fatmawati No. 100, Jakarta', phone: '081122334455', assignedRombel: 'Pengurus Yayasan', position: 'Ketua Pembina Yayasan', subjectTaught: 'Manajemen Strategis Yayasan', baseSalary: 6000000, allowance: 2000000, committeeHonor: 750000, notes: 'Penandatangan Laporan Keuangan ISAK 35', email: 'syukri@widyanusantara.sch.id', honorarium: 6000000 },
-  { id: 'brd-2', niy: 'NIY. 20120302', nipy: 'NIPY. 20120302', name: 'Prof. Dr. Ir. Herman Susanto', address: 'Jl. Kemang Raya No. 45, Jakarta', phone: '081344556677', assignedRombel: 'Pengurus Yayasan', position: 'Pembina Yayasan', subjectTaught: 'Pengembangan Mutu Akademik', baseSalary: 4500000, allowance: 1500000, committeeHonor: 500000, notes: 'Dewan Pakar Kurikulum', email: 'herman@widyanusantara.sch.id', honorarium: 4500000 },
-  { id: 'brd-3', niy: 'NIY. 20150503', nipy: 'NIPY. 20150503', name: 'H. Ahmad Dahlan, M.Ag', address: 'Jl. Gandaria No. 12, Jakarta', phone: '081566778899', assignedRombel: 'Pengurus Yayasan', position: 'Ketua Yayasan', subjectTaught: 'Pendidikan Karakter & Keislaman', baseSalary: 5000000, allowance: 1500000, committeeHonor: 600000, notes: 'Penanggung Jawab Operasional Sekolah', email: 'dahlan@widyanusantara.sch.id', honorarium: 5000000 },
-  { id: 'brd-4', niy: 'NIY. 20160704', nipy: 'NIPY. 20160704', name: 'Drs. Budi Setiawan, M.Pd', address: 'Jl. Tebet Raya No. 33, Jakarta', phone: '081788990011', assignedRombel: 'Pengurus Yayasan', position: 'Sekretaris Yayasan', subjectTaught: 'Tata Kelola Administrasi', baseSalary: 4000000, allowance: 1000000, committeeHonor: 400000, notes: 'Sekretaris Eksekutif Yayasan', email: 'budi@widyanusantara.sch.id', honorarium: 4000000 },
-  { id: 'brd-5', niy: 'NIY. 20180209', nipy: 'NIPY. 20180209', name: 'Hj. Nurul Aini, S.E., M.Ak', address: 'Jl. Kebayoran Baru No. 22, Jakarta', phone: '081233445566', assignedRombel: 'Pengurus Yayasan', position: 'Bendahara Umum Yayasan', subjectTaught: 'Manajemen Keuangan & Akuntansi ISAK 35', baseSalary: 4500000, allowance: 1200000, committeeHonor: 500000, notes: 'Bendahara Umum & Keuangan', email: 'nurul.aini@widyanusantara.sch.id', honorarium: 4500000 },
+  { id: 'brd-1', niy: 'NIY. 20100101', nipy: 'NIPY. 20100101', name: 'Drs. H. M. Syukri, M.M', address: 'Jl. Fatmawati No. 100, Jakarta', phone: '081122334455', assignedRombel: 'Pengurus Yayasan', position: 'Ketua Pembina Yayasan', subjectTaught: 'Manajemen Strategis Yayasan', baseSalary: 6000000, allowance: 0, committeeHonor: 750000, notes: 'Penandatangan Laporan Keuangan ISAK 35', email: 'syukri@daarulhabibah.sch.id', honorarium: 6000000 },
+  { id: 'brd-2', niy: 'NIY. 20120302', nipy: 'NIPY. 20120302', name: 'Prof. Dr. Ir. Herman Susanto', address: 'Jl. Kemang Raya No. 45, Jakarta', phone: '081344556677', assignedRombel: 'Pengurus Yayasan', position: 'Pembina Yayasan', subjectTaught: 'Pengembangan Mutu Akademik', baseSalary: 4500000, allowance: 0, committeeHonor: 500000, notes: 'Dewan Pakar Kurikulum', email: 'herman@daarulhabibah.sch.id', honorarium: 4500000 },
+  { id: 'brd-3', niy: 'NIY. 20150503', nipy: 'NIPY. 20150503', name: 'H. Ahmad Dahlan, M.Ag', address: 'Jl. Gandaria No. 12, Jakarta', phone: '081566778899', assignedRombel: 'Pengurus Yayasan', position: 'Ketua Yayasan', subjectTaught: 'Pendidikan Karakter & Keislaman', baseSalary: 5000000, allowance: 0, committeeHonor: 600000, notes: 'Penanggung Jawab Operasional Sekolah', email: 'dahlan@daarulhabibah.sch.id', honorarium: 5000000 },
+  { id: 'brd-4', niy: 'NIY. 20160704', nipy: 'NIPY. 20160704', name: 'Drs. Budi Setiawan, M.Pd', address: 'Jl. Tebet Raya No. 33, Jakarta', phone: '081788990011', assignedRombel: 'Pengurus Yayasan', position: 'Sekretaris Yayasan', subjectTaught: 'Tata Kelola Administrasi', baseSalary: 4000000, allowance: 0, committeeHonor: 400000, notes: 'Sekretaris Eksekutif Yayasan', email: 'budi@daarulhabibah.sch.id', honorarium: 4000000 },
+  { id: 'brd-5', niy: 'NIY. 20180209', nipy: 'NIPY. 20180209', name: 'Hj. Nurul Aini, S.E., M.Ak', address: 'Jl. Kebayoran Baru No. 22, Jakarta', phone: '081233445566', assignedRombel: 'Pengurus Yayasan', position: 'Bendahara Umum Yayasan', subjectTaught: 'Manajemen Keuangan & Akuntansi ISAK 35', baseSalary: 4500000, allowance: 0, committeeHonor: 500000, notes: 'Bendahara Umum & Keuangan', email: 'nurul.aini@daarulhabibah.sch.id', honorarium: 4500000 },
 ];
 
 export const INITIAL_SUPPLIERS: Supplier[] = [
@@ -384,10 +396,10 @@ export const INITIAL_HERO_BANNERS = [
 
 export const INITIAL_SPEECHES = {
   chairmanName: 'Drs. H. M. Syukri, M.M',
-  chairmanTitle: 'Ketua Pembina Yayasan Widya Nusantara',
+  chairmanTitle: 'Ketua Pembina Yayasan Daarul Habibah',
   chairmanPhotoUrl: LOCAL_IMAGES.pembina,
   chairmanSpeech:
-    'Assalamu’alaikum Warahmatullahi Wabarakatuh. Selamat datang di portal resmi Yayasan Pendidikan Widya Nusantara. Kami bertekad mewujudkan pengelolaan pendidikan yang transparan, akuntabel, dan berorientasi pada pencapaian akhlak mulia serta prestasi akademis siswa dari Kelas 1 hingga Kelas 6. Seluruh pembiayaan dan penggunaan dana diawasi dan diselaraskan secara ketat sesuai standar ISAK 35 dan ARKAS.',
+    'Assalamu’alaikum Warahmatullahi Wabarakatuh. Selamat datang di portal resmi Yayasan Pendidikan Daarul Habibah. Kami bertekad mewujudkan pengelolaan pendidikan yang transparan, akuntabel, dan berorientasi pada pencapaian akhlak mulia serta prestasi akademis siswa dari Kelas 1 hingga Kelas 6. Seluruh pembiayaan dan penggunaan dana diawasi dan diselaraskan secara ketat sesuai standar ISAK 35 dan ARKAS.',
   secretaryName: 'H. Ahmad Subagja, S.H',
   secretaryTitle: 'Sekretaris Yayasan',
   secretaryPhotoUrl: LOCAL_IMAGES.sekretaris,
@@ -399,7 +411,7 @@ export const INITIAL_SPEECHES = {
   treasurerSpeech:
     'Mengelola akuntabilitas keuangan berbasis ISAK 35, transparansi dana BOS, sistem kuitansi digital SPP, dan efisiensi anggaran sekolah.',
   headmasterName: 'Dr. H. Bambang Widjaja, M.Pd',
-  headmasterTitle: 'Kepala Sekolah SD Widya Nusantara',
+  headmasterTitle: 'Kepala Sekolah SD Daarul Habibah',
   headmasterPhotoUrl: LOCAL_IMAGES.kepalaSekolah,
   headmasterSpeech:
     'Assalamu’alaikum Wr. Wb. Sebagai pimpinan sekolah, fokus utama kami adalah mutu pembelajaran di setiap Rombongan Belajar (Rombel Kelas 1 - Kelas 6). Melalui sistem e-Raport digital dan modul pengadaan belanja barang SiPLah yang disetujui Pengurus Yayasan, kami memastikan setiap rupiah berdampak langsung pada kualitas belajar anak-anak didik kita.',
@@ -418,13 +430,13 @@ export const INITIAL_VISION_MISSION = {
 export const INITIAL_NEWS_ARTICLES = [
   {
     id: 'news-1',
-    title: 'Siswa SD Widya Nusantara Sabet Medali Emas OSN Matematika Tingkat Provinsi',
+    title: 'Siswa SD Daarul Habibah Sabet Medali Emas OSN Matematika Tingkat Provinsi',
     category: 'PRESTASI' as const,
     date: '2026-08-01',
     author: 'Tim Humas Yayasan',
     excerpt: 'Ananda Ahmad Rizky Pratama siswa Kelas 6 berhasil mengharumkan nama sekolah di ajang OSN 2026.',
     content:
-      'Prestasi membanggakan kembali diukir oleh siswa-siswi SD Widya Nusantara. Ahmad Rizky Pratama dari Rombel Kelas 6 berhasil meraih Medali Emas dalam Olimpiade Sains Nasional (OSN) Matematika tingkat Provinsi. Kepala Sekolah menyampaikan apresiasi mendalam dan bonus beasiswa dari Yayasan.',
+      'Prestasi membanggakan kembali diukir oleh siswa-siswi SD Daarul Habibah. Ahmad Rizky Pratama dari Rombel Kelas 6 berhasil meraih Medali Emas dalam Olimpiade Sains Nasional (OSN) Matematika tingkat Provinsi. Kepala Sekolah menyampaikan apresiasi mendalam dan bonus beasiswa dari Yayasan.',
     imageUrl: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=800&q=80',
     isFeatured: true,
   },

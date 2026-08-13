@@ -229,7 +229,7 @@ export const LOCAL_IMAGES = {
     </g>
     <!-- Entrance Gate -->
     <path d="M 360 420 L 360 300 Q 400 270 440 300 L 440 420 Z" fill="%230f172a" stroke="url(%23goldAcc)" stroke-width="4"/>
-    <text x="400" y="220" font-family="sans-serif" font-size="16" font-weight="900" fill="%23ffffff" text-anchor="middle">YAYASAN PENDIDIKAN WIDYA NUSANTARA</text>
+    <text x="400" y="220" font-family="sans-serif" font-size="16" font-weight="900" fill="%23ffffff" text-anchor="middle">YAYASAN PENDIDIKAN DAARUL HABIBAH</text>
     <text x="400" y="240" font-family="sans-serif" font-size="12" font-weight="bold" fill="%23fbbf24" text-anchor="middle">GEDUNG KAMPUS TERPADU & ROMBEL 1-6</text>
   </svg>`,
 };

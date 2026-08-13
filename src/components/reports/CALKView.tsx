@@ -31,7 +31,7 @@ export const CALKView: React.FC<CALKViewProps> = ({ accounts, fixedAssets, year,
           <span>CATATAN ATAS LAPORAN KEUANGAN (CALK) YAYASAN PENDIDIKAN</span>
         </h4>
         <p className="text-slate-600">
-          Catatan Atas Laporan Keuangan merupakan bagian tak terpisahkan dari Laporan Keuangan {foundationProfile?.name || 'Yayasan Pendidikan Widya Nusantara'} untuk tahun buku yang berakhir pada 31 Desember {year}. Penyajian disesuaikan dengan <strong>ISAK 35 (Penyajian Laporan Keuangan Entitas Berorientasi Nonlaba)</strong>.
+          Catatan Atas Laporan Keuangan merupakan bagian tak terpisahkan dari Laporan Keuangan {foundationProfile?.name || 'Yayasan Pendidikan Daarul Habibah'} untuk tahun buku yang berakhir pada 31 Desember {year}. Penyajian disesuaikan dengan <strong>ISAK 35 (Penyajian Laporan Keuangan Entitas Berorientasi Nonlaba)</strong>.
         </p>
       </div>
 

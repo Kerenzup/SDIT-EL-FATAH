@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { safeGetLocalStorage, safeSetLocalStorage } from './utils/safeStorage';
+import { getIDBItem } from './utils/indexedDBStorage';
 import {
   Account,
   FixedAsset,
@@ -56,6 +57,7 @@ import { TransactionManagerView } from './components/transactions/TransactionMan
 import { CoaAndLedgerView } from './components/coa/CoaAndLedgerView';
 import { FixedAssetView } from './components/assets/FixedAssetView';
 import { MasterDataView } from './components/master/MasterDataView';
+import { PayrollSdmView } from './components/payroll/PayrollSdmView';
 import { FoundationSettingsView } from './components/settings/FoundationSettingsView';
 import { AiFinancialAdvisor } from './components/ai/AiFinancialAdvisor';
 import { AddTransactionModal } from './components/common/AddTransactionModal';
@@ -67,6 +69,7 @@ import { ArkasBudgetView } from './components/arkas/ArkasBudgetView';
 import { RoleLoginModal } from './components/auth/RoleLoginModal';
 import { RoleAccessManagementView } from './components/settings/RoleAccessManagementView';
 import { getRoleAuthConfigs, RoleAuthConfig, isTabAllowed } from './utils/roleAuth';
+import { parseProfileFromUrl } from './utils/shareUrl';
 
 export default function App() {
   // Public vs Internal view toggle
@@ -80,7 +83,26 @@ export default function App() {
 
   // LocalStorage state initialization
   const [foundationProfile, setFoundationProfile] = useState<FoundationProfile>(() => {
-    const saved = safeGetLocalStorage<FoundationProfile>('yayasan_profile', INITIAL_FOUNDATION_PROFILE);
+    const fromUrl = parseProfileFromUrl(INITIAL_FOUNDATION_PROFILE);
+    if (fromUrl) {
+      safeSetLocalStorage('yayasan_profile', fromUrl);
+      return fromUrl;
+    }
+    let saved = safeGetLocalStorage<FoundationProfile>('yayasan_profile', INITIAL_FOUNDATION_PROFILE);
+    if (!saved || !saved.name || saved.name.includes('Widya') || saved.email?.includes('widyanusantara')) {
+      saved = {
+        ...INITIAL_FOUNDATION_PROFILE,
+        ...saved,
+        name: INITIAL_FOUNDATION_PROFILE.name,
+        email: INITIAL_FOUNDATION_PROFILE.email,
+        website: INITIAL_FOUNDATION_PROFILE.website,
+        welcomeMessage: INITIAL_FOUNDATION_PROFILE.welcomeMessage,
+        leaderSpeechContent: INITIAL_FOUNDATION_PROFILE.leaderSpeechContent,
+        aboutTitle: INITIAL_FOUNDATION_PROFILE.aboutTitle,
+        aboutHistory: INITIAL_FOUNDATION_PROFILE.aboutHistory,
+      };
+      safeSetLocalStorage('yayasan_profile', saved);
+    }
     return { ...INITIAL_FOUNDATION_PROFILE, ...saved };
   });
 
@@ -92,9 +114,10 @@ export default function App() {
     safeGetLocalStorage('yayasan_journals', INITIAL_JOURNAL_ENTRIES)
   );
 
-  const [students, setStudents] = useState<Student[]>(() =>
-    safeGetLocalStorage('yayasan_students', INITIAL_STUDENTS)
-  );
+  const [students, setStudents] = useState<Student[]>(() => {
+    const saved = safeGetLocalStorage<Student[]>('yayasan_students', INITIAL_STUDENTS);
+    return Array.isArray(saved) && saved.length > 0 ? saved : INITIAL_STUDENTS;
+  });
 
   const [teachers, setTeachers] = useState<Teacher[]>(() =>
     safeGetLocalStorage('yayasan_teachers', INITIAL_TEACHERS)
@@ -104,9 +127,14 @@ export default function App() {
     safeGetLocalStorage('yayasan_assets', INITIAL_FIXED_ASSETS)
   );
 
-  const [boardMembers, setBoardMembers] = useState<FoundationBoard[]>(() =>
-    safeGetLocalStorage('yayasan_board_members', INITIAL_BOARD_MEMBERS)
-  );
+  const [boardMembers, setBoardMembers] = useState<FoundationBoard[]>(() => {
+    const saved = safeGetLocalStorage<FoundationBoard[]>('yayasan_board_members', INITIAL_BOARD_MEMBERS);
+    if (!Array.isArray(saved) || saved.some(b => b.email?.includes('widyanusantara') || b.position?.includes('Widya'))) {
+      safeSetLocalStorage('yayasan_board_members', INITIAL_BOARD_MEMBERS);
+      return INITIAL_BOARD_MEMBERS;
+    }
+    return saved;
+  });
 
   const [suppliers, setSuppliers] = useState<Supplier[]>(() =>
     safeGetLocalStorage('yayasan_suppliers', INITIAL_SUPPLIERS)
@@ -121,17 +149,27 @@ export default function App() {
     safeGetLocalStorage('yayasan_hero_banners', INITIAL_HERO_BANNERS)
   );
 
-  const [speeches, setSpeeches] = useState<SpeechesCMS>(() =>
-    safeGetLocalStorage('yayasan_speeches', INITIAL_SPEECHES)
-  );
+  const [speeches, setSpeeches] = useState<SpeechesCMS>(() => {
+    const saved = safeGetLocalStorage<SpeechesCMS>('yayasan_speeches', INITIAL_SPEECHES);
+    if (!saved || saved.chairmanTitle?.includes('Widya') || saved.headmasterTitle?.includes('Widya') || saved.chairmanSpeech?.includes('Widya')) {
+      safeSetLocalStorage('yayasan_speeches', INITIAL_SPEECHES);
+      return INITIAL_SPEECHES;
+    }
+    return saved;
+  });
 
   const [visionMission, setVisionMission] = useState<VisionMissionCMS>(() =>
     safeGetLocalStorage('yayasan_vision_mission', INITIAL_VISION_MISSION)
   );
 
-  const [newsArticles, setNewsArticles] = useState<NewsArticle[]>(() =>
-    safeGetLocalStorage('yayasan_news_articles', INITIAL_NEWS_ARTICLES)
-  );
+  const [newsArticles, setNewsArticles] = useState<NewsArticle[]>(() => {
+    const saved = safeGetLocalStorage<NewsArticle[]>('yayasan_news_articles', INITIAL_NEWS_ARTICLES);
+    if (!Array.isArray(saved) || saved.some(n => n.title?.includes('Widya') || n.content?.includes('Widya'))) {
+      safeSetLocalStorage('yayasan_news_articles', INITIAL_NEWS_ARTICLES);
+      return INITIAL_NEWS_ARTICLES;
+    }
+    return saved;
+  });
 
   const [galleryItems, setGalleryItems] = useState<GalleryItem[]>(() =>
     safeGetLocalStorage('yayasan_gallery_items', INITIAL_GALLERY_ITEMS)
@@ -179,6 +217,52 @@ export default function App() {
     safeSetLocalStorage('yayasan_website_layout_config', layoutConfig);
   }, [layoutConfig]);
 
+  // Active runtime migration to purge any residual 'Widya' reference from browser storage
+  useEffect(() => {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        Object.keys(localStorage).forEach((key) => {
+          if (key.startsWith('yayasan_')) {
+            const val = localStorage.getItem(key);
+            if (val && (val.includes('Widya') || val.includes('widyanusantara'))) {
+              const cleaned = val
+                .replace(/Yayasan Pendidikan Widya Nusantara/g, 'Yayasan Pendidikan Daarul Habibah')
+                .replace(/Widya Nusantara/g, 'Daarul Habibah')
+                .replace(/widyanusantara/g, 'daarulhabibah');
+              localStorage.setItem(key, cleaned);
+            }
+          }
+        });
+      }
+    } catch (e) {
+      console.warn('LocalStorage migration error:', e);
+    }
+  }, []);
+
+  // Hydrate heavy media & gallery assets from permanent IndexedDB database on mount
+  useEffect(() => {
+    getIDBItem<GalleryItem[]>('yayasan_gallery_items', []).then((items) => {
+      if (items && Array.isArray(items) && items.length > 0) {
+        setGalleryItems(items);
+      }
+    });
+    getIDBItem<FoundationProfile>('yayasan_profile', foundationProfile).then((prof) => {
+      if (prof && prof.name) {
+        setFoundationProfile(prof);
+      }
+    });
+    getIDBItem<WebsiteLayoutConfig>('yayasan_website_layout_config', layoutConfig).then((cfg) => {
+      if (cfg && cfg.sections) {
+        setLayoutConfig(cfg);
+      }
+    });
+    getIDBItem<NewsArticle[]>('yayasan_news_articles', []).then((news) => {
+      if (news && Array.isArray(news) && news.length > 0) {
+        setNewsArticles(news);
+      }
+    });
+  }, []);
+
   // Active view states
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
   const [activeReportSubTab, setActiveReportSubTab] = useState<string>('neraca');
@@ -194,6 +278,9 @@ export default function App() {
   // Save to LocalStorage
   useEffect(() => {
     safeSetLocalStorage('yayasan_profile', foundationProfile);
+    if (foundationProfile && foundationProfile.name) {
+      document.title = `${foundationProfile.name} - Portal Resmi & ERP Keuangan ISAK 35`;
+    }
   }, [foundationProfile]);
 
   useEffect(() => {
@@ -592,14 +679,14 @@ export default function App() {
   const handleImportStudents = (newStudents: Student[]) => {
     setStudents((prev) => {
       const map = new Map<string, Student>();
-      // Preserve existing students
+      // Preserve existing students by unique key
       prev.forEach((s) => {
-        const key = (s.nis || s.nisn || s.name).trim().toLowerCase();
+        const key = s.id || (s.nis ? `nis-${s.nis.trim().toLowerCase()}` : `std-${s.name.trim().toLowerCase()}`);
         map.set(key, s);
       });
-      // Replace/add imported students
+      // Replace/add imported students ensuring no valid imported student is dropped
       newStudents.forEach((s) => {
-        const key = (s.nis || s.nisn || s.name).trim().toLowerCase();
+        const key = s.id || (s.nis ? `nis-${s.nis.trim().toLowerCase()}` : `std-imp-${Math.random()}`);
         map.set(key, s);
       });
       return Array.from(map.values());
@@ -607,6 +694,14 @@ export default function App() {
   };
   const handleUpdateStudent = (std: Student) => setStudents((prev) => prev.map((s) => (s.id === std.id ? std : s)));
   const handleDeleteStudent = (id: string) => setStudents((prev) => prev.filter((s) => s.id !== id));
+  const handleDeleteAllStudents = () => {
+    setStudents([]);
+    safeSetLocalStorage('yayasan_students', []);
+  };
+  const handleRestoreDefaultStudents = () => {
+    setStudents(INITIAL_STUDENTS);
+    safeSetLocalStorage('yayasan_students', INITIAL_STUDENTS);
+  };
   const handleUpdateStudentSpp = (studentId: string, status: 'LUNAS' | 'MENUNGGU' | 'TUNGGAKAN') => {
     setStudents((prev) => prev.map((s) => (s.id === studentId ? { ...s, sppStatus: status } : s)));
   };
@@ -765,7 +860,7 @@ export default function App() {
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(fullBackup, null, 2));
     const downloadAnchor = document.createElement('a');
     downloadAnchor.setAttribute("href", dataStr);
-    downloadAnchor.setAttribute("download", `backup_yayasan_widya_nusantara_${new Date().toISOString().slice(0,10)}.json`);
+    downloadAnchor.setAttribute("download", `backup_yayasan_daarul_habibah_${new Date().toISOString().slice(0,10)}.json`);
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();
@@ -889,6 +984,58 @@ export default function App() {
         {/* Content View */}
         <main className="flex-1 p-3 sm:p-5 lg:p-6 overflow-y-auto min-w-0">
           
+          {activeTab === 'siswa' && (
+            <MasterDataView
+              initialTab="siswa"
+              students={students}
+              teachers={teachers}
+              boardMembers={boardMembers}
+              suppliers={suppliers}
+              foundationProfile={foundationProfile}
+              onNavigatePayroll={() => setActiveTab('payroll')}
+              onSyncPayrollLiabilities={handleSyncPayrollToLiabilities}
+              onAddStudent={handleAddStudent}
+              onImportStudents={handleImportStudents}
+              onUpdateStudent={handleUpdateStudent}
+              onDeleteStudent={handleDeleteStudent}
+              onDeleteAllStudents={handleDeleteAllStudents}
+              onRestoreDefaultStudents={handleRestoreDefaultStudents}
+              onAddTeacher={handleAddTeacher}
+              onImportTeachers={handleImportTeachers}
+              onUpdateTeacher={handleUpdateTeacher}
+              onDeleteTeacher={handleDeleteTeacher}
+              onAddBoardMember={handleAddBoardMember}
+              onUpdateBoardMember={handleUpdateBoardMember}
+              onDeleteBoardMember={handleDeleteBoardMember}
+              onAddSupplier={handleAddSupplier}
+              onUpdateSupplier={handleUpdateSupplier}
+              onDeleteSupplier={handleDeleteSupplier}
+              onUpdateFoundationProfile={setFoundationProfile}
+            />
+          )}
+
+          {activeTab === 'payroll' && (
+            <PayrollSdmView
+              teachers={teachers}
+              boardMembers={boardMembers}
+              suppliers={suppliers}
+              accounts={accounts}
+              foundationProfile={foundationProfile}
+              onAddTeacher={handleAddTeacher}
+              onUpdateTeacher={handleUpdateTeacher}
+              onDeleteTeacher={handleDeleteTeacher}
+              onImportTeachers={handleImportTeachers}
+              onAddBoardMember={handleAddBoardMember}
+              onUpdateBoardMember={handleUpdateBoardMember}
+              onDeleteBoardMember={handleDeleteBoardMember}
+              onAddSupplier={handleAddSupplier}
+              onUpdateSupplier={handleUpdateSupplier}
+              onDeleteSupplier={handleDeleteSupplier}
+              onAddJournalEntry={handleAddJournalEntry}
+              onSyncPayrollLiabilities={handleSyncPayrollToLiabilities}
+            />
+          )}
+
           {activeTab === 'dashboard' && (
             <OverviewDashboard
               accounts={accounts}
@@ -954,6 +1101,7 @@ export default function App() {
 
           {activeTab === 'cms' && (
             <CmsAdminView
+              userRole={currentRole}
               heroBanners={heroBanners}
               speeches={speeches}
               visionMission={visionMission}
@@ -1045,6 +1193,8 @@ export default function App() {
               onImportStudents={handleImportStudents}
               onUpdateStudent={handleUpdateStudent}
               onDeleteStudent={handleDeleteStudent}
+              onDeleteAllStudents={handleDeleteAllStudents}
+              onRestoreDefaultStudents={handleRestoreDefaultStudents}
               onAddTeacher={handleAddTeacher}
               onImportTeachers={handleImportTeachers}
               onUpdateTeacher={handleUpdateTeacher}
@@ -1111,7 +1261,7 @@ export default function App() {
       {/* Footer */}
       <footer className="bg-slate-900 text-slate-400 py-4 px-6 border-t border-slate-800 text-center text-xs print:hidden">
         <p>
-          &copy; {new Date().getFullYear()} Yayasan Pendidikan Widya Nusantara &bull; Sistem Informasi Keuangan & ERP Non-Laba sesuai Standar <strong>ISAK 35 (IAI)</strong>
+          &copy; {new Date().getFullYear()} Yayasan Pendidikan Daarul Habibah &bull; Sistem Informasi Keuangan & ERP Non-Laba sesuai Standar <strong>ISAK 35 (IAI)</strong>
         </p>
       </footer>
 

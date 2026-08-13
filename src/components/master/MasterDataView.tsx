@@ -22,19 +22,24 @@ import {
   FileSpreadsheet,
   Image,
   Sparkles,
+  DollarSign,
 } from 'lucide-react';
 
 interface MasterDataViewProps {
+  initialTab?: 'siswa' | 'guru' | 'pengurus' | 'supplier';
   students: Student[];
   teachers: Teacher[];
   boardMembers: FoundationBoard[];
   suppliers: Supplier[];
   foundationProfile?: FoundationProfile;
+  onNavigatePayroll?: () => void;
   onSyncPayrollLiabilities?: () => void;
   onAddStudent: (student: Student) => void;
   onImportStudents?: (students: Student[]) => void;
   onUpdateStudent: (student: Student) => void;
   onDeleteStudent: (id: string) => void;
+  onDeleteAllStudents?: () => void;
+  onRestoreDefaultStudents?: () => void;
 
   onAddTeacher: (teacher: Teacher) => void;
   onImportTeachers?: (teachers: Teacher[]) => void;
@@ -114,16 +119,20 @@ const getRowVal = (row: Record<string, any>, possibleKeys: string[]): any => {
 };
 
 export const MasterDataView: React.FC<MasterDataViewProps> = ({
+  initialTab,
   students,
   teachers,
   boardMembers,
   suppliers,
   foundationProfile,
+  onNavigatePayroll,
   onSyncPayrollLiabilities,
   onAddStudent,
   onImportStudents,
   onUpdateStudent,
   onDeleteStudent,
+  onDeleteAllStudents,
+  onRestoreDefaultStudents,
   onAddTeacher,
   onImportTeachers,
   onUpdateTeacher,
@@ -136,7 +145,7 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
   onDeleteSupplier,
   onUpdateFoundationProfile,
 }) => {
-  const [activeTab, setActiveTab] = useState<'siswa' | 'guru' | 'pengurus' | 'supplier'>('siswa');
+  const [activeTab, setActiveTab] = useState<'siswa' | 'guru' | 'pengurus' | 'supplier'>(initialTab || 'siswa');
   const [syncToast, setSyncToast] = useState(false);
   const [importSuccessMsg, setImportSuccessMsg] = useState<string>('');
   const [showLogoModal, setShowLogoModal] = useState<boolean>(false);
@@ -165,7 +174,10 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
       'No. HP / Kontak': s.contactPhone || '',
       'Nama Orang Tua': s.parentName || '',
       'Jenis Kelamin': s.gender || 'L',
+      'Tempat Lahir': s.birthPlace || '',
+      'Tanggal Lahir': s.birthDate || '',
       'Alamat': s.address || '',
+      'Virtual Account': s.virtualAccount || `88020${s.nis}`,
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(exportData);
@@ -186,7 +198,10 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
         'No. HP / Kontak': '081234567890',
         'Nama Orang Tua': 'Budi Santoso',
         'Jenis Kelamin': 'L',
-        'Alamat': 'Jl. Pendidikan No. 12',
+        'Tempat Lahir': 'Serang',
+        'Tanggal Lahir': '2019-05-12',
+        'Alamat': 'Jl. Pendidikan No. 12, Serang',
+        'Virtual Account': '880202026101',
       },
       {
         'NIS': '2026102',
@@ -198,7 +213,10 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
         'No. HP / Kontak': '081987654321',
         'Nama Orang Tua': 'Hasan Basri',
         'Jenis Kelamin': 'P',
-        'Alamat': 'Jl. Merdeka No. 45',
+        'Tempat Lahir': 'Serang',
+        'Tanggal Lahir': '2018-08-20',
+        'Alamat': 'Jl. Merdeka No. 45, Serang',
+        'Virtual Account': '880202026102',
       },
     ];
 
@@ -226,11 +244,19 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
           return;
         }
 
-        const importedStudents: Student[] = json.map((row, idx) => {
-          const nis = String(getRowVal(row, ['NIS', 'nis', 'Nis', 'Nomor Induk Siswa']) || `2026${Math.floor(100 + Math.random() * 900)}`);
-          const nisn = String(getRowVal(row, ['NISN', 'nisn', 'Nisn', 'Nomor Induk Siswa Nasional']) || '');
-          const name = String(getRowVal(row, ['Nama Lengkap Siswa', 'Nama Siswa', 'Nama Lengkap', 'Nama', 'name', 'Siswa']) || `Siswa Impor ${idx + 1}`);
-          const gradeClass = String(getRowVal(row, ['Kelas / Rombel', 'Kelas', 'Rombel', 'gradeClass', 'Rombel Belajar']) || 'Kelas 1');
+        const validRows = json.filter((row) => {
+          const name = getRowVal(row, ['Nama Lengkap Siswa', 'Nama Siswa', 'Nama Lengkap', 'Nama', 'name', 'Siswa', 'NAMA']);
+          const nis = getRowVal(row, ['NIS', 'nis', 'Nis', 'Nomor Induk Siswa', 'NO', 'No']);
+          return Boolean((name && String(name).trim() !== '') || (nis && String(nis).trim() !== ''));
+        });
+
+        const rowsToProcess = validRows.length > 0 ? validRows : json;
+
+        const importedStudents: Student[] = rowsToProcess.map((row, idx) => {
+          const nis = String(getRowVal(row, ['NIS', 'nis', 'Nis', 'Nomor Induk Siswa', 'NO. INDUK']) || `2026${100 + idx}`).trim();
+          const nisn = String(getRowVal(row, ['NISN', 'nisn', 'Nisn', 'Nomor Induk Siswa Nasional']) || '').trim();
+          const name = String(getRowVal(row, ['Nama Lengkap Siswa', 'Nama Siswa', 'Nama Lengkap', 'Nama', 'name', 'Siswa', 'NAMA']) || `Siswa Impor ${idx + 1}`).trim();
+          const gradeClass = String(getRowVal(row, ['Kelas / Rombel', 'Kelas', 'Rombel', 'gradeClass', 'Rombel Belajar', 'KELAS']) || 'Kelas 1').trim();
 
           const sppRaw = getRowVal(row, ['Tarif SPP (Rp)', 'Tarif SPP', 'SPP', 'Nominal SPP', 'sppAmount']);
           const sppAmount = parseExcelNumber(sppRaw, 250000);
@@ -239,14 +265,30 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
           const sppStatus: 'LUNAS' | 'MENUNGGU' | 'TUNGGAKAN' =
             rawStatus.includes('LUNAS') ? 'LUNAS' : rawStatus.includes('TUNGGAK') ? 'TUNGGAKAN' : 'MENUNGGU';
 
-          const contactPhone = String(getRowVal(row, ['No. HP / Kontak', 'No HP', 'No. HP', 'No Telepon', 'Kontak', 'contactPhone', 'HP', 'WhatsApp']) || '081234567890');
-          const parentName = String(getRowVal(row, ['Nama Orang Tua', 'Orang Tua', 'Wali', 'Nama Wali', 'parentName']) || '');
-          const genderRaw = String(getRowVal(row, ['Jenis Kelamin', 'JK', 'Gender', 'gender'])).toUpperCase();
+          const contactPhone = String(getRowVal(row, ['No. HP / Kontak', 'No HP', 'No. HP', 'No Telepon', 'Kontak', 'contactPhone', 'HP', 'WhatsApp', 'NO HP']) || '081234567890').trim();
+          const parentName = String(getRowVal(row, ['Nama Orang Tua', 'Orang Tua', 'Wali', 'Nama Wali', 'parentName', 'ORANG TUA']) || '').trim();
+          const genderRaw = String(getRowVal(row, ['Jenis Kelamin', 'JK', 'Gender', 'gender', 'JNS KELAMIN'])).toUpperCase();
           const gender = genderRaw === 'P' || genderRaw.includes('PEREMPUAN') || genderRaw.includes('FEMALE') ? 'P' : 'L';
-          const address = String(getRowVal(row, ['Alamat', 'address', 'Alamat Rumah']) || '');
+          const address = String(getRowVal(row, ['Alamat', 'Alamat Lengkap', 'Alamat Siswa', 'Alamat Rumah', 'address', 'ALAMAT', 'ALAMAT LENGKAP', 'Tempat Tinggal']) || '').trim();
+          let birthPlace = String(getRowVal(row, ['Tempat Lahir', 'Tempat', 'birthPlace', 'TEMPAT LAHIR', 'Kota Lahir', 'TEMPAT', 'Kota']) || '').trim();
+          let birthDate = String(getRowVal(row, ['Tanggal Lahir', 'Tgl Lahir', 'birthDate', 'TGL LAHIR', 'TANGGAL LAHIR', 'Tanggal', 'Tgl', 'Birth Date', 'TGL']) || '').trim();
+
+          const ttlCombined = String(getRowVal(row, ['TTL', 'Tempat, Tanggal Lahir', 'Tempat Tanggal Lahir', 'Tempat/Tgl Lahir', 'Tempat & Tgl Lahir', 'TEMPAT TANGGAL LAHIR', 'TEMPAT, TANGGAL LAHIR']) || '').trim();
+          if (ttlCombined && (!birthPlace || !birthDate)) {
+            const parts = ttlCombined.split(/[,/|]/);
+            if (parts.length >= 2) {
+              if (!birthPlace) birthPlace = parts[0].trim();
+              if (!birthDate) birthDate = parts.slice(1).join(',').trim();
+            } else if (!birthPlace) {
+              birthPlace = ttlCombined;
+            }
+          }
+
+          const vaInput = String(getRowVal(row, ['Virtual Account', 'VA', 'No VA', 'Nomor Virtual Account', 'virtualAccount', 'VA SPP', 'NO VA']) || '').trim();
+          const virtualAccount = vaInput || `88020${nis.replace(/\D/g, '') || Math.floor(100000 + Math.random() * 900000)}`;
 
           return {
-            id: `std-imp-${Date.now()}-${idx}-${Math.random().toString(36).substr(2, 4)}`,
+            id: `std-imp-${Date.now()}-${idx}-${Math.random().toString(36).substr(2, 6)}`,
             nis,
             nisn,
             name,
@@ -257,6 +299,9 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
             parentName,
             gender,
             address,
+            birthPlace,
+            birthDate,
+            virtualAccount,
           };
         });
 
@@ -493,6 +538,7 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
   const [stdSppStatus, setStdSppStatus] = useState<'LUNAS' | 'MENUNGGU' | 'TUNGGAKAN'>('MENUNGGU');
   const [stdAchievements, setStdAchievements] = useState<string>('');
   const [stdGrade, setStdGrade] = useState<string>('Kelas 1');
+  const [stdVa, setStdVa] = useState<string>('');
 
   // Open modal for adding/editing student
   const openStudentModal = (student?: Student) => {
@@ -511,9 +557,11 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
       setStdSppStatus(student.sppStatus || 'MENUNGGU');
       setStdAchievements(student.achievements || '');
       setStdGrade(student.gradeClass || 'Kelas 1');
+      setStdVa(student.virtualAccount || `88020${student.nis || '2026101'}`);
     } else {
+      const autoNis = `2026${Math.floor(100 + Math.random() * 900)}`;
       setEditingStudent(null);
-      setStdNis(`2026${Math.floor(100 + Math.random() * 900)}`);
+      setStdNis(autoNis);
       setStdNisn(`001${Math.floor(1000000 + Math.random() * 9000000)}`);
       setStdName('');
       setStdBirthPlace('');
@@ -526,12 +574,14 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
       setStdSppStatus('MENUNGGU');
       setStdAchievements('');
       setStdGrade('Kelas 1');
+      setStdVa(`88020${autoNis}`);
     }
     setShowStdModal(true);
   };
 
   const handleStdSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const finalVa = stdVa || `88020${stdNis}`;
     if (editingStudent) {
       onUpdateStudent({
         ...editingStudent,
@@ -548,6 +598,7 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
         sppStatus: stdSppStatus,
         achievements: stdAchievements,
         gradeClass: stdGrade,
+        virtualAccount: finalVa,
       });
     } else {
       onAddStudent({
@@ -565,6 +616,7 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
         sppStatus: stdSppStatus,
         achievements: stdAchievements,
         gradeClass: stdGrade,
+        virtualAccount: finalVa,
       });
     }
     setShowStdModal(false);
@@ -839,7 +891,7 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
               </span>
             </div>
             <h2 className="text-base font-extrabold text-white mt-1">
-              {foundationProfile?.name || 'Yayasan Pendidikan Widya Nusantara'}
+              {foundationProfile?.name || 'Yayasan Pendidikan Daarul Habibah'}
             </h2>
             <p className="text-xs text-slate-300">{foundationProfile?.address || 'Master Data Terintegrasi Database Sekolah'}</p>
           </div>
@@ -902,7 +954,7 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
         </div>
 
         <button
-          onClick={() => printDocument('printable-report', 'Master Data Yayasan Widya Nusantara')}
+          onClick={() => printDocument('printable-report', 'Master Data Yayasan Daarul Habibah')}
           className="flex items-center gap-1.5 px-3.5 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold shadow hover:bg-slate-800 transition"
         >
           <Printer className="w-4 h-4 text-emerald-400" />
@@ -932,6 +984,31 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
         {/* 1. SISWA TAB */}
         {activeTab === 'siswa' && (
           <div className="space-y-4">
+            {/* Info Banner Redirect to Payroll */}
+            <div className="p-4 bg-indigo-50 border border-indigo-200 rounded-2xl flex flex-wrap items-center justify-between gap-3 text-xs print:hidden">
+              <div className="flex items-center gap-3">
+                <Coins className="w-5 h-5 text-indigo-600 shrink-0" />
+                <div>
+                  <p className="font-extrabold text-indigo-950">
+                    Data Guru, Pengurus Yayasan & Supplier dialihkan ke Halaman Payroll & SDM
+                  </p>
+                  <p className="text-indigo-800 text-[11px]">
+                    Pengelolaan struktur gaji guru, pengurus, vendor supplier, serta posting jurnal & cetak slip gaji terpusat di menu Payroll.
+                  </p>
+                </div>
+              </div>
+              {onNavigatePayroll && (
+                <button
+                  type="button"
+                  onClick={onNavigatePayroll}
+                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs rounded-xl shadow transition flex items-center gap-1.5 cursor-pointer"
+                >
+                  <DollarSign className="w-4 h-4" />
+                  <span>Buka Payroll & SDM Yayasan</span>
+                </button>
+              )}
+            </div>
+
             <div className="space-y-3 border-b border-slate-100 pb-4">
               <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
                 <div>
@@ -959,7 +1036,7 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
                   <button
                     type="button"
                     onClick={() => studentFileInputRef.current?.click()}
-                    className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold shadow transition flex items-center gap-1.5 cursor-pointer"
+                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-black shadow-md transition flex items-center gap-2 cursor-pointer"
                     title="Unggah File Excel/CSV Data Siswa dari Komputer"
                   >
                     <Upload className="w-4 h-4" />
@@ -994,6 +1071,35 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
                     <PlusCircle className="w-4 h-4" />
                     <span>+ Tambah Siswa</span>
                   </button>
+
+                  {onRestoreDefaultStudents && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (window.confirm('Apakah Anda ingin memulihkan 18 data siswa sampel default? Data siswa yang ada akan direfresh ke data standar.')) {
+                          onRestoreDefaultStudents();
+                          setImportSuccessMsg('18 Data siswa sampel default berhasil dipulihkan!');
+                        }
+                      }}
+                      className="px-3 py-2 bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 rounded-xl text-xs font-bold shadow-sm transition flex items-center gap-1.5 cursor-pointer"
+                      title="Pulihkan 18 Data Siswa Sampel Default"
+                    >
+                      <RefreshCw className="w-4 h-4 text-amber-700" />
+                      <span>Pulihkan Data Default</span>
+                    </button>
+                  )}
+
+                  {onDeleteAllStudents && students.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setDeleteConfirm({ type: 'semua_siswa', id: 'ALL', name: `SELURUH DATA SISWA (${students.length} Siswa)` })}
+                      className="px-3 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-bold shadow transition flex items-center gap-1.5 cursor-pointer"
+                      title="Hapus Seluruh Data Siswa untuk Upload Ulang"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      <span>Hapus Semua Siswa</span>
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -1007,6 +1113,42 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
                   <button onClick={() => setImportSuccessMsg('')} className="text-emerald-700 hover:text-emerald-900">
                     <X className="w-4 h-4" />
                   </button>
+                </div>
+              )}
+
+              {/* Banner Kosong jika Data Siswa Kosong */}
+              {students.length === 0 && (
+                <div className="p-8 bg-amber-50 border-2 border-dashed border-amber-300 rounded-2xl text-center space-y-4 my-4 print:hidden">
+                  <GraduationCap className="w-12 h-12 text-amber-600 mx-auto" />
+                  <div>
+                    <h4 className="font-extrabold text-amber-950 text-base">Data Siswa Saat Ini Kosong</h4>
+                    <p className="text-xs text-amber-800 max-w-md mx-auto mt-1">
+                      Data siswa belum tersedia di browser Anda. Klik tombol di bawah untuk memulihkan 18 data siswa sampel default atau unggah file Excel baru.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+                    {onRestoreDefaultStudents && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onRestoreDefaultStudents();
+                          setImportSuccessMsg('18 Data siswa sampel berhasil dipulihkan!');
+                        }}
+                        className="px-4 py-2.5 bg-amber-600 hover:bg-amber-500 text-white font-extrabold rounded-xl text-xs shadow transition flex items-center gap-2 cursor-pointer"
+                      >
+                        <RefreshCw className="w-4 h-4" />
+                        <span>Pulihkan Data Siswa Sampel (18 Siswa)</span>
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => studentFileInputRef.current?.click()}
+                      className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold rounded-xl text-xs shadow transition flex items-center gap-2 cursor-pointer"
+                    >
+                      <Upload className="w-4 h-4" />
+                      <span>Upload File Excel Siswa (.xlsx)</span>
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
@@ -1023,6 +1165,7 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
                     <th className="p-3 border-b border-slate-200">Nama Orang Tua</th>
                     <th className="p-3 border-b border-slate-200">Alamat</th>
                     <th className="p-3 border-b border-slate-200">NO. Telpon</th>
+                    <th className="p-3 border-b border-slate-200">Virtual Account (VA)</th>
                     <th className="p-3 border-b border-slate-200 text-right">Tarif SPP</th>
                     <th className="p-3 border-b border-slate-200 text-center">Status</th>
                     <th className="p-3 border-b border-slate-200">Prestasi</th>
@@ -1060,6 +1203,11 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
                         {s.address || '-'}
                       </td>
                       <td className="p-3 font-mono text-slate-700">{s.contactPhone || '-'}</td>
+                      <td className="p-3 font-mono font-bold text-indigo-700">
+                        <span className="bg-indigo-50 px-2 py-1 rounded border border-indigo-100">
+                          {s.virtualAccount || `88020${s.nis}`}
+                        </span>
+                      </td>
                       <td className="p-3 text-right font-mono font-bold text-slate-900">{formatRupiah(s.sppAmount)}</td>
                       <td className="p-3 text-center">
                         <span
@@ -1259,7 +1407,6 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
                     <th className="p-3 border-b border-slate-200">Jabatan</th>
                     <th className="p-3 border-b border-slate-200">Mata Pelajaran</th>
                     <th className="p-3 border-b border-slate-200 text-right">Gaji Pokok</th>
-                    <th className="p-3 border-b border-slate-200 text-right">Tunjangan Jabatan</th>
                     <th className="p-3 border-b border-slate-200 text-right">Honor Kepanitiaan</th>
                     <th className="p-3 border-b border-slate-200">Keterangan</th>
                     <th className="p-3 border-b border-slate-200 text-center print:hidden">Aksi Edit</th>
@@ -1343,7 +1490,6 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
                     <th className="p-3 border-b border-slate-200">Jabatan</th>
                     <th className="p-3 border-b border-slate-200">Mata Pelajaran</th>
                     <th className="p-3 border-b border-slate-200 text-right">Gaji Pokok</th>
-                    <th className="p-3 border-b border-slate-200 text-right">Tunjangan Jabatan</th>
                     <th className="p-3 border-b border-slate-200 text-right">Honor Kepanitiaan</th>
                     <th className="p-3 border-b border-slate-200">Keterangan</th>
                     <th className="p-3 border-b border-slate-200 text-center print:hidden">Aksi Edit</th>
@@ -1366,7 +1512,6 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
                       <td className="p-3 text-right font-mono font-bold text-slate-900">
                         {formatRupiah(b.baseSalary || b.honorarium || 0)}
                       </td>
-                      <td className="p-3 text-right font-mono text-emerald-700">+{formatRupiah(b.allowance || 0)}</td>
                       <td className="p-3 text-right font-mono text-sky-700">+{formatRupiah(b.committeeHonor || 0)}</td>
                       <td className="p-3 text-slate-600 max-w-xs truncate" title={b.notes}>
                         {b.notes || '-'}
@@ -2174,7 +2319,10 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
               <button
                 type="button"
                 onClick={() => {
-                  if (deleteConfirm.type === 'siswa') onDeleteStudent(deleteConfirm.id);
+                  if (deleteConfirm.type === 'semua_siswa') {
+                    if (onDeleteAllStudents) onDeleteAllStudents();
+                    setImportSuccessMsg('Seluruh data siswa berhasil dihapus. Anda dapat mengunggah file Excel siswa yang baru sekarang.');
+                  } else if (deleteConfirm.type === 'siswa') onDeleteStudent(deleteConfirm.id);
                   else if (deleteConfirm.type === 'guru') onDeleteTeacher(deleteConfirm.id);
                   else if (deleteConfirm.type === 'pengurus') onDeleteBoardMember(deleteConfirm.id);
                   else if (deleteConfirm.type === 'supplier') onDeleteSupplier(deleteConfirm.id);

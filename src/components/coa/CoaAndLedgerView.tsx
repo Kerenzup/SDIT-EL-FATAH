@@ -99,6 +99,26 @@ export const CoaAndLedgerView: React.FC<CoaAndLedgerViewProps> = ({
     (e) => e.debitAccountCode === selectedAccountCode || e.creditAccountCode === selectedAccountCode
   );
 
+  // General Ledger Calculations (Saldo Awal, Mutasi Debet, Mutasi Kredit, Running Balance)
+  const isDebitNormal = selectedAccount
+    ? selectedAccount.category === 'ASET_LANCAR' ||
+      selectedAccount.category === 'ASET_TETAP' ||
+      selectedAccount.category === 'BEBAN'
+    : true;
+
+  const totalLedgerDebit = ledgerTransactions
+    .filter((e) => e.debitAccountCode === selectedAccountCode)
+    .reduce((sum, e) => sum + e.amount, 0);
+
+  const totalLedgerCredit = ledgerTransactions
+    .filter((e) => e.creditAccountCode === selectedAccountCode)
+    .reduce((sum, e) => sum + e.amount, 0);
+
+  const currentAccountBalance = selectedAccount?.balance || 0;
+  const initialOpeningBalance = isDebitNormal
+    ? currentAccountBalance - totalLedgerDebit + totalLedgerCredit
+    : currentAccountBalance - totalLedgerCredit + totalLedgerDebit;
+
   // Handler Submit Add Account
   const handleAddAccountSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -479,6 +499,22 @@ export const CoaAndLedgerView: React.FC<CoaAndLedgerViewProps> = ({
             </div>
           </div>
 
+          {/* Formula & Explanation Banner */}
+          <div className="bg-emerald-50/80 border border-emerald-200 p-4 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-slate-800 text-xs">
+            <div className="space-y-1">
+              <p className="font-extrabold text-emerald-900 flex items-center gap-1.5 text-sm">
+                <Sparkles className="w-4 h-4 text-emerald-600" />
+                <span>Formula Rekonsiliasi Saldo Buku Besar ({selectedAccount?.code} - {selectedAccount?.name})</span>
+              </p>
+              <p className="text-slate-600 leading-relaxed">
+                <strong>Saldo Akhir Saat Ini ({formatRupiah(currentAccountBalance)})</strong> = Saldo Awal ({formatRupiah(initialOpeningBalance)}) + Total Debet ({formatRupiah(totalLedgerDebit)}) - Total Kredit ({formatRupiah(totalLedgerCredit)}).
+              </p>
+              <p className="text-[11px] text-slate-500 italic">
+                *Rincian Kredit/Debet di bawah adalah daftar mutasi transaksi. Kredit menunjukkan pengeluaran kas yang memotong saldo awal, bukan sisa akhir kas tersisa.
+              </p>
+            </div>
+          </div>
+
           {/* Ledger Table */}
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border border-slate-200 rounded-xl overflow-hidden">
@@ -489,71 +525,119 @@ export const CoaAndLedgerView: React.FC<CoaAndLedgerViewProps> = ({
                   <th className="p-3 border-b border-slate-200">Deskripsi Transaksi</th>
                   <th className="p-3 border-b border-slate-200 text-right">Debet (Rp)</th>
                   <th className="p-3 border-b border-slate-200 text-right">Kredit (Rp)</th>
+                  <th className="p-3 border-b border-slate-200 text-right bg-slate-200/60 font-black">Saldo Running (Rp)</th>
                   <th className="p-3 border-b border-slate-200 text-center">Aksi / Edit</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 font-medium">
+                {/* Row 0: Saldo Awal */}
+                <tr className="bg-emerald-50/40 font-bold border-b border-emerald-100">
+                  <td className="p-3 text-slate-500 font-mono">-</td>
+                  <td className="p-3 font-mono text-emerald-800">BAL-OPENING</td>
+                  <td className="p-3 text-slate-900">
+                    <span className="font-black text-emerald-900">SALDO AWAL BUKU BESAR</span>
+                    <span className="text-[10px] text-slate-500 block font-normal">Saldo pembukuan awal sebelum akumulasi mutasi transaksi</span>
+                  </td>
+                  <td className="p-3 text-right font-mono text-slate-400">-</td>
+                  <td className="p-3 text-right font-mono text-slate-400">-</td>
+                  <td className="p-3 text-right font-mono text-emerald-800 font-black bg-emerald-100/30">
+                    {formatRupiah(initialOpeningBalance)}
+                  </td>
+                  <td className="p-3 text-center text-slate-400 text-[10px] italic">Master COA</td>
+                </tr>
+
                 {ledgerTransactions.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="p-8 text-center text-slate-400 italic font-medium">
+                    <td colSpan={7} className="p-8 text-center text-slate-400 italic font-medium">
                       Belum ada transaksi jurnal terposting pada akun {selectedAccount?.name} ({selectedAccountCode}).
                       <br />
-                      Klik tombol <strong>+ Tambah Transaksi / Penyesuaian</strong> untuk memasukkan transaksi atau saldo awal secara langsung.
+                      Klik tombol <strong>+ Tambah Transaksi / Penyesuaian</strong> untuk memasukkan transaksi atau penyesuaian secara langsung.
                     </td>
                   </tr>
                 ) : (
-                  ledgerTransactions.map((entry) => {
-                    const isDebit = entry.debitAccountCode === selectedAccountCode;
-                    return (
-                      <tr key={entry.id} className="hover:bg-slate-50 transition">
-                        <td className="p-3 text-slate-600 font-mono font-semibold">{formatDateIndonesian(entry.date)}</td>
-                        <td className="p-3 font-mono font-bold text-slate-900">{entry.voucherNo}</td>
-                        <td className="p-3 font-semibold text-slate-900">
-                          <div>
-                            <p>{entry.description}</p>
-                            <p className="text-[10px] text-slate-400">
-                              Lawan Akun: {isDebit ? `${entry.creditAccountCode} - ${entry.creditAccountName}` : `${entry.debitAccountCode} - ${entry.debitAccountName}`}
-                            </p>
-                          </div>
-                        </td>
-                        <td className="p-3 text-right font-mono text-emerald-700 font-extrabold">
-                          {isDebit ? formatRupiah(entry.amount) : '-'}
-                        </td>
-                        <td className="p-3 text-right font-mono text-slate-700 font-bold">
-                          {!isDebit ? formatRupiah(entry.amount) : '-'}
-                        </td>
-                        <td className="p-3 text-center">
-                          <div className="flex items-center justify-center gap-1">
-                            <button
-                              onClick={() => handleOpenEditJournal(entry)}
-                              className="p-1.5 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-lg transition cursor-pointer"
-                              title="Edit Transaksi Jurnal"
-                            >
-                              <Edit3 className="w-3.5 h-3.5" />
-                            </button>
-                            {onDeleteJournalEntry && (
+                  (() => {
+                    let running = initialOpeningBalance;
+                    return ledgerTransactions.map((entry) => {
+                      const isDebit = entry.debitAccountCode === selectedAccountCode;
+                      const amount = entry.amount;
+
+                      if (isDebit) {
+                        running += isDebitNormal ? amount : -amount;
+                      } else {
+                        running += isDebitNormal ? -amount : amount;
+                      }
+
+                      return (
+                        <tr key={entry.id} className="hover:bg-slate-50 transition">
+                          <td className="p-3 text-slate-600 font-mono font-semibold">{formatDateIndonesian(entry.date)}</td>
+                          <td className="p-3 font-mono font-bold text-slate-900">{entry.voucherNo}</td>
+                          <td className="p-3 font-semibold text-slate-900">
+                            <div>
+                              <p>{entry.description}</p>
+                              <p className="text-[10px] text-slate-400">
+                                Lawan Akun: {isDebit ? `${entry.creditAccountCode} - ${entry.creditAccountName}` : `${entry.debitAccountCode} - ${entry.debitAccountName}`}
+                              </p>
+                            </div>
+                          </td>
+                          <td className="p-3 text-right font-mono text-emerald-700 font-extrabold">
+                            {isDebit ? formatRupiah(entry.amount) : '-'}
+                          </td>
+                          <td className="p-3 text-right font-mono text-rose-700 font-bold">
+                            {!isDebit ? formatRupiah(entry.amount) : '-'}
+                          </td>
+                          <td className="p-3 text-right font-mono font-black text-slate-900 bg-slate-50">
+                            {formatRupiah(running)}
+                          </td>
+                          <td className="p-3 text-center">
+                            <div className="flex items-center justify-center gap-1">
                               <button
-                                onClick={() =>
-                                  setDeleteConfirmation({
-                                    type: 'JOURNAL',
-                                    idOrCode: entry.id,
-                                    title: `Hapus Transaksi Jurnal ${entry.voucherNo}`,
-                                    subtitle: `${entry.description} (${formatRupiah(entry.amount)}). Menghapus transaksi ini akan mengembalikan saldo akun terkait.`,
-                                  })
-                                }
-                                className="p-1.5 bg-rose-100 hover:bg-rose-200 text-rose-700 rounded-lg transition cursor-pointer"
-                                title="Hapus Transaksi Jurnal"
+                                onClick={() => handleOpenEditJournal(entry)}
+                                className="p-1.5 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-lg transition cursor-pointer"
+                                title="Edit Transaksi Jurnal"
                               >
-                                <Trash2 className="w-3.5 h-3.5" />
+                                <Edit3 className="w-3.5 h-3.5" />
                               </button>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })
+                              {onDeleteJournalEntry && (
+                                <button
+                                  onClick={() =>
+                                    setDeleteConfirmation({
+                                      type: 'JOURNAL',
+                                      idOrCode: entry.id,
+                                      title: `Hapus Transaksi Jurnal ${entry.voucherNo}`,
+                                      subtitle: `${entry.description} (${formatRupiah(entry.amount)}). Menghapus transaksi ini akan mengembalikan saldo akun terkait.`,
+                                    })
+                                  }
+                                  className="p-1.5 bg-rose-100 hover:bg-rose-200 text-rose-700 rounded-lg transition cursor-pointer"
+                                  title="Hapus Transaksi Jurnal"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    });
+                  })()
                 )}
               </tbody>
+              <tfoot className="bg-slate-900 text-white font-black text-xs border-t-2 border-slate-700">
+                <tr>
+                  <td colSpan={3} className="p-3.5 text-right uppercase tracking-wider">
+                    TOTAL MUTASI &amp; SALDO AKHIR
+                  </td>
+                  <td className="p-3.5 text-right font-mono text-emerald-400 font-black">
+                    {formatRupiah(totalLedgerDebit)}
+                  </td>
+                  <td className="p-3.5 text-right font-mono text-rose-300 font-black">
+                    {formatRupiah(totalLedgerCredit)}
+                  </td>
+                  <td className="p-3.5 text-right font-mono text-amber-300 font-black text-sm bg-slate-950">
+                    {formatRupiah(currentAccountBalance)}
+                  </td>
+                  <td className="p-3.5 text-center text-[10px] text-slate-400">Match COA</td>
+                </tr>
+              </tfoot>
             </table>
           </div>
 

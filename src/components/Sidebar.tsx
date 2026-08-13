@@ -33,10 +33,11 @@ import { RoleAuthConfig, isTabAllowed } from '../utils/roleAuth';
 export type TabType =
   | 'website'
   | 'dashboard'
-  | 'siplah'
+  | 'siswa'
   | 'e_raport'
   | 'jurnal'
-  | 'siswa'
+  | 'payroll'
+  | 'siplah'
   | 'academic'
   | 'arkas'
   | 'reports'
@@ -105,10 +106,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
       badge: 'Utama',
     },
     {
-      id: 'siplah' as TabType,
-      label: 'Belanja Barang SiPLah',
-      icon: ShoppingBag,
-      badge: 'SiPLah',
+      id: 'siswa' as TabType,
+      label: 'Data Siswa',
+      icon: Users,
+      badge: 'Siswa',
     },
     {
       id: 'e_raport' as TabType,
@@ -123,6 +124,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
       badge: 'Jurnal',
     },
     {
+      id: 'payroll' as TabType,
+      label: 'Payroll & SDM Yayasan',
+      icon: DollarSign,
+      badge: 'Gaji/SDM',
+    },
+    {
+      id: 'siplah' as TabType,
+      label: 'Belanja Barang SiPLah',
+      icon: ShoppingBag,
+      badge: 'SiPLah',
+    },
+    {
       id: 'arkas' as TabType,
       label: 'Anggaran 1 Tahun ARKAS',
       icon: ArkasIcon,
@@ -135,11 +148,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
       badge: '5 Laporan',
     },
     {
-      id: 'calk' as TabType,
-      label: 'Catatan Atas Laporan (CALK)',
-      icon: FileText,
-    },
-    {
       id: 'transactions' as TabType,
       label: 'Transaksi & POS SPP/BOS',
       icon: Receipt,
@@ -147,18 +155,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
     },
     {
       id: 'coa' as TabType,
-      label: 'Buku Besar & COA',
+      label: 'Buku Besar, COA & Aset',
       icon: BookOpenCheck,
-    },
-    {
-      id: 'assets' as TabType,
-      label: 'Aset Tetap & Depresiasi',
-      icon: Building,
-    },
-    {
-      id: 'master' as TabType,
-      label: 'Master Data Siswa & Guru',
-      icon: Users,
+      badge: 'Buku Besar',
     },
     {
       id: 'hak_akses' as TabType,

@@ -57,6 +57,8 @@ export const TransactionManagerView: React.FC<TransactionManagerViewProps> = ({
   const [selectedStudentId, setSelectedStudentId] = useState<string>(students[0]?.id || '');
   const [sppMonth, setSppMonth] = useState<string>('Juli 2026');
   const [sppAmountInput, setSppAmountInput] = useState<number>(450000);
+  const [sppClassFilter, setSppClassFilter] = useState<string>('SEMUA');
+  const [sppSearchQuery, setSppSearchQuery] = useState<string>('');
 
   // Form State BOS
   const [bosType, setBosType] = useState<'penerimaan' | 'pengeluaran'>('penerimaan');
@@ -428,10 +430,44 @@ export const TransactionManagerView: React.FC<TransactionManagerViewProps> = ({
               </div>
             </div>
 
+            <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200/80 space-y-2.5">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="text-xs font-black text-slate-700">Filter Per Kelas:</span>
+                <div className="flex flex-wrap gap-1.5">
+                  {['SEMUA', 'Kelas 1', 'Kelas 2', 'Kelas 3', 'Kelas 4', 'Kelas 5', 'Kelas 6'].map((cls) => (
+                    <button
+                      type="button"
+                      key={cls}
+                      onClick={() => setSppClassFilter(cls)}
+                      className={`px-2.5 py-1 rounded-xl text-[11px] font-extrabold transition cursor-pointer ${
+                        sppClassFilter === cls
+                          ? 'bg-emerald-600 text-white shadow-xs'
+                          : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
+                      }`}
+                    >
+                      {cls}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Cari berdasarkan nama siswa, NIS, atau NISN..."
+                  value={sppSearchQuery}
+                  onChange={(e) => setSppSearchQuery(e.target.value)}
+                  className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none focus:border-emerald-500 shadow-2xs"
+                />
+              </div>
+            </div>
+
             <form onSubmit={handlePaySpp} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Pilih Siswa</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Pilih Siswa ({sppClassFilter === 'SEMUA' ? 'Semua Kelas' : sppClassFilter})
+                  </label>
                   <select
                     value={selectedStudentId}
                     onChange={(e) => {
@@ -439,13 +475,20 @@ export const TransactionManagerView: React.FC<TransactionManagerViewProps> = ({
                       const std = students.find((s) => s.id === e.target.value);
                       if (std) setSppAmountInput(std.sppAmount);
                     }}
-                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium focus:outline-none focus:border-emerald-500"
+                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold focus:outline-none focus:border-emerald-500"
                   >
-                    {students.map((s) => (
-                      <option key={s.id} value={s.id}>
-                        {s.name} ({s.gradeClass}) - NIS: {s.nis} [{s.sppStatus}]
-                      </option>
-                    ))}
+                    {students
+                      .filter((s) => {
+                        const matchesClass = sppClassFilter === 'SEMUA' || s.gradeClass.toLowerCase().includes(sppClassFilter.toLowerCase());
+                        const q = sppSearchQuery.toLowerCase().trim();
+                        const matchesSearch = !q || s.name.toLowerCase().includes(q) || s.nis.includes(q) || (s.nisn && s.nisn.includes(q));
+                        return matchesClass && matchesSearch;
+                      })
+                      .map((s) => (
+                        <option key={s.id} value={s.id}>
+                          {s.name} ({s.gradeClass}) - NIS: {s.nis} [{s.sppStatus}]
+                        </option>
+                      ))}
                   </select>
                 </div>
 

@@ -61,10 +61,10 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
           {/* Header Kop Kuitansi */}
           <div className="border-b-2 border-slate-900 pb-4 text-center">
             <h2 className="text-lg font-black text-slate-900 uppercase tracking-wide">
-              {foundationProfile?.name?.toUpperCase() || 'YAYASAN PENDIDIKAN WIDYA NUSANTARA'}
+              {foundationProfile?.name?.toUpperCase() || 'YAYASAN PENDIDIKAN DAARUL HABIBAH'}
             </h2>
             <p className="text-[11px] text-slate-600 font-medium">
-              {foundationProfile?.address || 'Jl. Pendidikan No. 45, Kompleks Sekolah Widya Nusantara'} &bull; Telp: {foundationProfile?.phone || '(021) 7890123'}
+              {foundationProfile?.address || 'Jl. Pendidikan No. 45, Kebayoran Baru, Jakarta Selatan'} &bull; Telp: {foundationProfile?.phone || '(021) 7890123'}
             </p>
             <div className="mt-2 inline-block px-3 py-1 bg-emerald-100 text-emerald-900 font-black text-xs rounded-full uppercase tracking-wider">
               {isPayroll ? 'SLIP GAJI & KUITANSI PAYROLL' : `KUITANSI ${category}`}

@@ -7,6 +7,7 @@ export type UserRole =
   | 'KEPALA_SEKOLAH'
   | 'BENDAHARA_SEKOLAH'
   | 'GURU'
+  | 'ADMIN_CMS'
   | 'PUBLIC_GUEST';
 
 export interface Account {
@@ -50,6 +51,7 @@ export interface Student {
   achievements?: string;
   gradeClass: string;
   gender?: 'L' | 'P';
+  virtualAccount?: string;
 }
 
 export interface Teacher {

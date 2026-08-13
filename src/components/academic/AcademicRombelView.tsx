@@ -614,12 +614,32 @@ export const AcademicRombelView: React.FC<AcademicRombelViewProps> = ({
                 Menampilkan <strong className="text-slate-900">{filteredRaports.length}</strong> E-Raport
               </span>
 
+              {(currentRole === 'SUPERADMIN' || currentRole === 'KEPALA_SEKOLAH') && (
+                <button
+                  onClick={() => {
+                    const pendingRaports = filteredRaports.filter((r) => r.status === 'DIUSULKAN_GURU');
+                    if (pendingRaports.length === 0) {
+                      alert('Seluruh E-Raport pada rombel ini telah disetujui / diterbitkan.');
+                      return;
+                    }
+                    if (confirm(`Setujui dan terbitkan ${pendingRaports.length} E-Raport yang diusulkan guru?`)) {
+                      pendingRaports.forEach((r) => onApproveRaport(r.id));
+                    }
+                  }}
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs rounded-xl shadow flex items-center gap-1.5 cursor-pointer transition hover:scale-102"
+                  title="Persetujuan Kepala Sekolah untuk menerbitkan E-Raport Rombel"
+                >
+                  <CheckCircle2 className="w-4 h-4 text-emerald-200" />
+                  <span>Approve E-Raport (Kepsek)</span>
+                </button>
+              )}
+
               {currentRole !== 'ORANG_TUA' && (
                 <button
                   onClick={openNewRaportModal}
-                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs rounded-xl shadow flex items-center gap-1.5 cursor-pointer"
+                  className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs rounded-xl shadow flex items-center gap-1.5 cursor-pointer"
                 >
-                  <Plus className="w-4 h-4" />
+                  <Plus className="w-4 h-4 text-emerald-400" />
                   <span>Input Data E-Raport</span>
                 </button>
               )}
@@ -1103,24 +1123,63 @@ export const AcademicRombelView: React.FC<AcademicRombelViewProps> = ({
             </div>
 
             <form onSubmit={handleSaveRaport} className="space-y-6">
-              {/* Preset Student Selector */}
+              {/* TOP SECTION: KELAS FILTER & STUDENT SELECTION */}
               {!editingRaportId && (
-                <div className="bg-emerald-50 p-4 rounded-2xl border border-emerald-200 space-y-2">
-                  <label className="block text-xs font-black text-emerald-950">
-                    Pilih Siswa dari Master Data (Opsional Auto-Fill):
-                  </label>
-                  <select
-                    value={selectedStudentPreset}
-                    onChange={(e) => handleSelectStudentPreset(e.target.value)}
-                    className="w-full bg-white border border-emerald-300 rounded-xl px-3 py-2 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  >
-                    <option value="">-- Manual Entry / Pilih Siswa --</option>
-                    {students.map((s) => (
-                      <option key={s.id} value={s.id}>
-                        {s.name} (NIS: {s.nis}) &bull; {s.gradeClass} &bull; Wali: {s.parentName || 'Bpk/Ibu'}
-                      </option>
-                    ))}
-                  </select>
+                <div className="bg-blue-50/80 p-4.5 rounded-2xl border border-blue-200 space-y-4 shadow-xs">
+                  <div className="flex items-center gap-2 text-blue-900 border-b border-blue-200 pb-2">
+                    <Filter className="w-4 h-4 text-blue-600" />
+                    <h4 className="text-xs font-black uppercase tracking-wide">
+                      1. Pilih Kelas & Filter Data Siswa (Di Tempatkan Di Bagian Atas)
+                    </h4>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Kelas / Rombel Selector at the top */}
+                    <div>
+                      <label className="block text-xs font-black text-slate-800 mb-1">
+                        A. Pilih Kelas / Rombel <span className="text-rose-500">*</span>
+                      </label>
+                      <select
+                        value={formGradeClass}
+                        onChange={(e) => handleGradeClassChange(e.target.value)}
+                        className="w-full bg-white border border-blue-300 rounded-xl px-3 py-2 text-xs font-black text-blue-950 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-xs"
+                      >
+                        <option value="Kelas 1">Kelas 1</option>
+                        <option value="Kelas 2">Kelas 2</option>
+                        <option value="Kelas 3">Kelas 3</option>
+                        <option value="Kelas 4">Kelas 4</option>
+                        <option value="Kelas 5">Kelas 5</option>
+                        <option value="Kelas 6">Kelas 6</option>
+                      </select>
+                      <p className="text-[10px] text-blue-700 font-medium mt-1">
+                        Memfilter daftar siswa di bawah berdasarkan kelas yang dipilih.
+                      </p>
+                    </div>
+
+                    {/* Student Selector placed after Class Selector */}
+                    <div>
+                      <label className="block text-xs font-black text-emerald-950 mb-1">
+                        B. Pilih Siswa (Hasil Filter {formGradeClass}) <span className="text-rose-500">*</span>
+                      </label>
+                      <select
+                        value={selectedStudentPreset}
+                        onChange={(e) => handleSelectStudentPreset(e.target.value)}
+                        className="w-full bg-white border border-emerald-300 rounded-xl px-3 py-2 text-xs font-extrabold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-xs"
+                      >
+                        <option value="">-- Pilih Siswa di {formGradeClass} --</option>
+                        {students
+                          .filter((s) => !formGradeClass || s.gradeClass === formGradeClass)
+                          .map((s) => (
+                            <option key={s.id} value={s.id}>
+                              {s.name} (NIS: {s.nis}) &bull; Wali: {s.parentName || 'Bpk/Ibu'}
+                            </option>
+                          ))}
+                      </select>
+                      <p className="text-[10px] text-emerald-700 font-medium mt-1">
+                        Memilih siswa akan mengisi otomatis Nama, NIS, dan data Wali.
+                      </p>
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -1170,23 +1229,25 @@ export const AcademicRombelView: React.FC<AcademicRombelViewProps> = ({
                   />
                 </div>
 
-                <div>
-                  <label className="block text-xs font-extrabold text-slate-800 mb-1">
-                    4. Kelas / Rombel <span className="text-rose-500">*</span>
-                  </label>
-                  <select
-                    value={formGradeClass}
-                    onChange={(e) => handleGradeClassChange(e.target.value)}
-                    className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-extrabold text-slate-900"
-                  >
-                    <option value="Kelas 1">Kelas 1</option>
-                    <option value="Kelas 2">Kelas 2</option>
-                    <option value="Kelas 3">Kelas 3</option>
-                    <option value="Kelas 4">Kelas 4</option>
-                    <option value="Kelas 5">Kelas 5</option>
-                    <option value="Kelas 6">Kelas 6</option>
-                  </select>
-                </div>
+                {editingRaportId && (
+                  <div>
+                    <label className="block text-xs font-extrabold text-slate-800 mb-1">
+                      4. Kelas / Rombel <span className="text-rose-500">*</span>
+                    </label>
+                    <select
+                      value={formGradeClass}
+                      onChange={(e) => handleGradeClassChange(e.target.value)}
+                      className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-extrabold text-slate-900"
+                    >
+                      <option value="Kelas 1">Kelas 1</option>
+                      <option value="Kelas 2">Kelas 2</option>
+                      <option value="Kelas 3">Kelas 3</option>
+                      <option value="Kelas 4">Kelas 4</option>
+                      <option value="Kelas 5">Kelas 5</option>
+                      <option value="Kelas 6">Kelas 6</option>
+                    </select>
+                  </div>
+                )}
 
                 <div>
                   <label className="block text-xs font-extrabold text-slate-800 mb-1">

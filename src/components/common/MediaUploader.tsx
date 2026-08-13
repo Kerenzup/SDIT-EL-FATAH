@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { Upload, Image as ImageIcon, Video, X, Link, Check, Eye, Grid, Loader2 } from 'lucide-react';
 import { compressImageFile } from '../../utils/imageCompressor';
+import { isYouTubeUrl, getYoutubeEmbedUrl, isMediaVideo } from '../../utils/formatters';
 
 export const PRESET_PHOTOS = [
   {
@@ -70,19 +71,11 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isVideo = (url: string) => {
-    if (!url) return false;
-    return (
-      url.startsWith('data:video/') ||
-      url.endsWith('.mp4') ||
-      url.endsWith('.webm') ||
-      url.endsWith('.mov') ||
-      url.includes('youtube.com') ||
-      url.includes('youtu.be')
-    );
+    return isMediaVideo(url);
   };
 
   const isYouTube = (url: string) => {
-    return url.includes('youtube.com/embed') || url.includes('youtu.be');
+    return isYouTubeUrl(url);
   };
 
   const formatBytes = (bytes: number): string => {
@@ -156,11 +149,12 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
   };
 
   const handleUrlSubmit = () => {
-    if (urlInput) {
-      const isVid = isVideo(urlInput);
-      onChange(urlInput, isVid ? 'video' : 'photo');
-      setFileName(null);
-    }
+    if (!urlInput || !urlInput.trim()) return;
+    const cleanUrl = urlInput.trim();
+    const isVid = isMediaVideo(cleanUrl);
+    const formatted = isYouTubeUrl(cleanUrl) ? getYoutubeEmbedUrl(cleanUrl) : cleanUrl;
+    onChange(formatted, isVid ? 'video' : 'photo');
+    setFileName(null);
   };
 
   const handleClear = () => {
@@ -262,8 +256,8 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
                 <p className="text-[11px] text-slate-500">
                   atau seret & drop file foto/video ke sini
                 </p>
-                <span className="text-[10px] text-emerald-700 font-bold bg-emerald-100/70 px-2.5 py-0.5 rounded-full mt-1 border border-emerald-200">
-                  Kompresi Otomatis HD • Bebas Blank
+                <span className="text-[10px] text-emerald-800 font-extrabold bg-emerald-100/90 px-2.5 py-0.5 rounded-full mt-1 border border-emerald-300">
+                  Penyimpanan Permanen (IndexedDB Database) • Bebas Hilang &amp; Bebas Limit
                 </span>
               </>
             )}
@@ -354,9 +348,9 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
           </div>
 
           <div className="overflow-hidden rounded-xl bg-black/40 flex items-center justify-center min-h-[120px] max-h-[260px]">
-            {isYouTube(value) ? (
+            {isYouTubeUrl(value) ? (
               <iframe
-                src={value}
+                src={getYoutubeEmbedUrl(value)}
                 className="w-full h-48 rounded-xl border-0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
@@ -365,6 +359,7 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
               <video
                 src={value}
                 controls
+                playsInline
                 className="max-h-60 w-full object-contain rounded-xl"
               />
             ) : (

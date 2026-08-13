@@ -51,6 +51,20 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
     .filter((a) => a.category === 'KEWAJIBAN')
     .reduce((sum, a) => sum + a.balance, 0);
 
+  const kewajibanGajiPajak = accounts
+    .filter((a) => a.category === 'KEWAJIBAN' && a.code !== '2105')
+    .reduce((sum, a) => sum + a.balance, 0);
+
+  const kewajibanSupplier = accounts.find((a) => a.code === '2105')?.balance || 0;
+
+  const asetNetoTanpaPembatasan = accounts
+    .filter((a) => a.category === 'ASET_NETO' && a.restriction === 'TANPA_PEMBATASAN')
+    .reduce((sum, a) => sum + a.balance, 0);
+
+  const asetNetoDenganPembatasan = accounts
+    .filter((a) => a.category === 'ASET_NETO' && a.restriction === 'DENGAN_PEMBATASAN')
+    .reduce((sum, a) => sum + a.balance, 0);
+
   const totalAsetNeto = accounts
     .filter((a) => a.category === 'ASET_NETO')
     .reduce((sum, a) => sum + a.balance, 0);
@@ -71,9 +85,12 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
   const pangkalIncome = accounts.find((a) => a.code === '4103')?.balance || 0;
   const donationIncome = accounts.find((a) => a.code === '4105')?.balance || 0;
 
+  const calcIncPct = (val: number) => (totalPendapatan > 0 ? ((val / totalPendapatan) * 100).toFixed(1) : '0.0');
+
   // Breakdown Beban
-  const bebanSdm = accounts
-    .filter((a) => a.category === 'BEBAN' && a.subCategory === 'Beban SDM')
+  const bebanHonorYayasan = accounts.find((a) => a.code === '5103')?.balance || 0;
+  const bebanGajiGuru = accounts
+    .filter((a) => a.category === 'BEBAN' && a.subCategory === 'Beban SDM' && a.code !== '5103')
     .reduce((sum, a) => sum + a.balance, 0);
 
   const bebanPendidikan = accounts
@@ -87,6 +104,8 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
   const bebanAdmin = accounts
     .filter((a) => a.category === 'BEBAN' && a.subCategory === 'Beban Administrasi')
     .reduce((sum, a) => sum + a.balance, 0);
+
+  const calcExpPct = (val: number) => (totalBeban > 0 ? ((val / totalBeban) * 100).toFixed(1) : '0.0');
 
   return (
     <div className="space-y-6">
@@ -157,8 +176,8 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
             {formatRupiah(totalKewajiban)}
           </div>
           <div className="mt-3 flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-100">
-            <span>Gaji & Pajak: {formatRupiah(68500000)}</span>
-            <span className="font-semibold text-rose-600">Supplier: {formatRupiah(15000000)}</span>
+            <span>Gaji &amp; Ops: {formatRupiah(kewajibanGajiPajak)}</span>
+            <span className="font-semibold text-rose-600">Supplier: {formatRupiah(kewajibanSupplier)}</span>
           </div>
         </div>
 
@@ -174,8 +193,8 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
             {formatRupiah(totalAsetNeto)}
           </div>
           <div className="mt-3 flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-100">
-            <span>Tanpa Pembatasan: 2,19B</span>
-            <span className="font-semibold text-blue-700">Dana BOS: 700M</span>
+            <span>Tanpa Pembatasan: {formatRupiah(asetNetoTanpaPembatasan)}</span>
+            <span className="font-semibold text-blue-700">Dana BOS: {formatRupiah(asetNetoDenganPembatasan)}</span>
           </div>
         </div>
 
@@ -192,8 +211,8 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
             <span>{formatRupiah(surplusAsetNeto)}</span>
           </div>
           <div className="mt-3 flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-100">
-            <span>Pendapatan: 1,48B</span>
-            <span>Beban: 1,14B</span>
+            <span>Pendapatan: {formatRupiah(totalPendapatan)}</span>
+            <span>Beban: {formatRupiah(totalBeban)}</span>
           </div>
         </div>
 
@@ -221,40 +240,40 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
             <div>
               <div className="flex justify-between text-xs font-semibold mb-1">
                 <span className="text-slate-700">Dana BOS (Pemerintah)</span>
-                <span className="text-emerald-700 font-bold">{formatRupiah(bosIncome)} (47.1%)</span>
+                <span className="text-emerald-700 font-bold">{formatRupiah(bosIncome)} ({calcIncPct(bosIncome)}%)</span>
               </div>
               <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
-                <div className="bg-emerald-500 h-full rounded-full" style={{ width: '47.1%' }}></div>
+                <div className="bg-emerald-500 h-full rounded-full" style={{ width: `${calcIncPct(bosIncome)}%` }}></div>
               </div>
             </div>
 
             <div>
               <div className="flex justify-between text-xs font-semibold mb-1">
                 <span className="text-slate-700">Pendapatan SPP Siswa</span>
-                <span className="text-blue-700 font-bold">{formatRupiah(sppIncome)} (36.3%)</span>
+                <span className="text-blue-700 font-bold">{formatRupiah(sppIncome)} ({calcIncPct(sppIncome)}%)</span>
               </div>
               <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
-                <div className="bg-blue-500 h-full rounded-full" style={{ width: '36.3%' }}></div>
+                <div className="bg-blue-500 h-full rounded-full" style={{ width: `${calcIncPct(sppIncome)}%` }}></div>
               </div>
             </div>
 
             <div>
               <div className="flex justify-between text-xs font-semibold mb-1">
                 <span className="text-slate-700">Uang Pangkal Siswa Baru</span>
-                <span className="text-purple-700 font-bold">{formatRupiah(pangkalIncome)} (8.1%)</span>
+                <span className="text-purple-700 font-bold">{formatRupiah(pangkalIncome)} ({calcIncPct(pangkalIncome)}%)</span>
               </div>
               <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
-                <div className="bg-purple-500 h-full rounded-full" style={{ width: '8.1%' }}></div>
+                <div className="bg-purple-500 h-full rounded-full" style={{ width: `${calcIncPct(pangkalIncome)}%` }}></div>
               </div>
             </div>
 
             <div>
               <div className="flex justify-between text-xs font-semibold mb-1">
                 <span className="text-slate-700">Donasi & Hibah Yayasan</span>
-                <span className="text-amber-700 font-bold">{formatRupiah(donationIncome)} (5.4%)</span>
+                <span className="text-amber-700 font-bold">{formatRupiah(donationIncome)} ({calcIncPct(donationIncome)}%)</span>
               </div>
               <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
-                <div className="bg-amber-500 h-full rounded-full" style={{ width: '5.4%' }}></div>
+                <div className="bg-amber-500 h-full rounded-full" style={{ width: `${calcIncPct(donationIncome)}%` }}></div>
               </div>
             </div>
           </div>
@@ -279,40 +298,53 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
             <div>
               <div className="flex justify-between text-xs font-semibold mb-1">
                 <span className="text-slate-700">Beban SDM (Gaji Guru & Staf)</span>
-                <span className="text-slate-900 font-bold">{formatRupiah(bebanSdm)} (59.2%)</span>
+                <span className="text-slate-900 font-bold">{formatRupiah(bebanGajiGuru)} ({calcExpPct(bebanGajiGuru)}%)</span>
               </div>
               <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
-                <div className="bg-rose-500 h-full rounded-full" style={{ width: '59.2%' }}></div>
+                <div className="bg-rose-500 h-full rounded-full" style={{ width: `${calcExpPct(bebanGajiGuru)}%` }}></div>
+              </div>
+            </div>
+
+            <div>
+              <div className="flex justify-between text-xs font-semibold mb-1">
+                <span className="text-slate-700 font-bold text-purple-900 flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-purple-600 inline-block"></span>
+                  Honorarium Pengurus Yayasan
+                </span>
+                <span className="text-purple-900 font-bold">{formatRupiah(bebanHonorYayasan)} ({calcExpPct(bebanHonorYayasan)}%)</span>
+              </div>
+              <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                <div className="bg-purple-600 h-full rounded-full" style={{ width: `${calcExpPct(bebanHonorYayasan)}%` }}></div>
               </div>
             </div>
 
             <div>
               <div className="flex justify-between text-xs font-semibold mb-1">
                 <span className="text-slate-700">Beban Administrasi & Penyusutan</span>
-                <span className="text-slate-900 font-bold">{formatRupiah(bebanAdmin)} (17.9%)</span>
+                <span className="text-slate-900 font-bold">{formatRupiah(bebanAdmin)} ({calcExpPct(bebanAdmin)}%)</span>
               </div>
               <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
-                <div className="bg-amber-500 h-full rounded-full" style={{ width: '17.9%' }}></div>
+                <div className="bg-amber-500 h-full rounded-full" style={{ width: `${calcExpPct(bebanAdmin)}%` }}></div>
               </div>
             </div>
 
             <div>
               <div className="flex justify-between text-xs font-semibold mb-1">
                 <span className="text-slate-700">Beban Operasional Utilitas (Listrik/Air/Internet)</span>
-                <span className="text-slate-900 font-bold">{formatRupiah(bebanOperasional)} (12.9%)</span>
+                <span className="text-slate-900 font-bold">{formatRupiah(bebanOperasional)} ({calcExpPct(bebanOperasional)}%)</span>
               </div>
               <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
-                <div className="bg-indigo-500 h-full rounded-full" style={{ width: '12.9%' }}></div>
+                <div className="bg-indigo-500 h-full rounded-full" style={{ width: `${calcExpPct(bebanOperasional)}%` }}></div>
               </div>
             </div>
 
             <div>
               <div className="flex justify-between text-xs font-semibold mb-1">
                 <span className="text-slate-700">Beban Pendidikan & Lab</span>
-                <span className="text-slate-900 font-bold">{formatRupiah(bebanPendidikan)} (10.0%)</span>
+                <span className="text-slate-900 font-bold">{formatRupiah(bebanPendidikan)} ({calcExpPct(bebanPendidikan)}%)</span>
               </div>
               <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
-                <div className="bg-teal-500 h-full rounded-full" style={{ width: '10.0%' }}></div>
+                <div className="bg-teal-500 h-full rounded-full" style={{ width: `${calcExpPct(bebanPendidikan)}%` }}></div>
               </div>
             </div>
           </div>
@@ -329,18 +361,41 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
           
           <div
             onClick={() => onNavigateTab('master')}
-            className="bg-white p-4 rounded-xl border border-slate-200 hover:border-emerald-500 cursor-pointer transition flex items-center justify-between"
+            className="bg-white p-4 rounded-xl border border-slate-200 hover:border-emerald-500 cursor-pointer transition space-y-3"
           >
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-emerald-50 text-emerald-600 rounded-xl">
-                <GraduationCap className="w-5 h-5" />
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-emerald-50 text-emerald-600 rounded-xl">
+                  <GraduationCap className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500">Jumlah Siswa Terdaftar</p>
+                  <p className="font-bold text-slate-900 text-sm">{students.length} Siswa Total</p>
+                </div>
               </div>
-              <div>
-                <p className="text-xs text-slate-500">Jumlah Siswa Terdaftar</p>
-                <p className="font-bold text-slate-900 text-sm">{students.length} Siswa</p>
-              </div>
+              <span className="text-xs font-semibold text-emerald-600">Master Siswa &rarr;</span>
             </div>
-            <span className="text-xs font-semibold text-emerald-600">Kelola &rarr;</span>
+
+            {/* Rombel Breakdown Mini Badge Grid */}
+            <div className="grid grid-cols-3 gap-1.5 pt-2 border-t border-slate-100 text-[11px]">
+              {['Kelas 1', 'Kelas 2', 'Kelas 3', 'Kelas 4', 'Kelas 5', 'Kelas 6'].map((r) => {
+                const count = students.filter((s) => (s.gradeClass || '').toLowerCase().includes(r.toLowerCase())).length;
+                return (
+                  <div key={r} className="bg-slate-50 px-2 py-1 rounded-lg border border-slate-100 flex items-center justify-between">
+                    <span className="text-slate-500 font-medium">{r}</span>
+                    <span className="font-bold text-slate-900">{count}</span>
+                  </div>
+                );
+              })}
+            </div>
+            
+            <div 
+              onClick={(e) => { e.stopPropagation(); onNavigateTab('e_raport'); }}
+              className="text-[11px] font-bold text-indigo-600 hover:text-indigo-800 flex items-center justify-between pt-1 border-t border-dashed border-slate-200"
+            >
+              <span>Catatan Rombel & E-Raport Akademik</span>
+              <span>Buka Rombel &rarr;</span>
+            </div>
           </div>
 
           <div

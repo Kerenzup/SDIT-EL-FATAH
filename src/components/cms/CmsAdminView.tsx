@@ -13,6 +13,7 @@ import {
   PPDBConfig,
   PPDBFeeItem,
   PPDBScholarshipItem,
+  UserRole,
 } from '../../types';
 import { INITIAL_PPDB_CONFIG } from '../../data/initialData';
 import {
@@ -47,8 +48,10 @@ import {
 } from 'lucide-react';
 import { MediaUploader } from '../common/MediaUploader';
 import { safeSetLocalStorage } from '../../utils/safeStorage';
+import { isYouTubeUrl, isMediaVideo, getYoutubeEmbedUrl } from '../../utils/formatters';
 
 interface CmsAdminViewProps {
+  userRole?: UserRole;
   heroBanners: HeroBanner[];
   speeches: SpeechesCMS;
   visionMission: VisionMissionCMS;
@@ -74,6 +77,7 @@ interface CmsAdminViewProps {
 }
 
 export const CmsAdminView: React.FC<CmsAdminViewProps> = ({
+  userRole = 'SUPERADMIN',
   heroBanners,
   speeches,
   visionMission,
@@ -450,7 +454,7 @@ export const CmsAdminView: React.FC<CmsAdminViewProps> = ({
           </div>
           <h2 className="text-2xl font-black text-white">Penataan Layout Website & Pengaturan Foto Profesional</h2>
           <p className="text-xs text-slate-300">
-            Atur urutan sekso web, gaya bingkai foto, warna tema, serta upload foto logo, gedung, banner, dan berita secara instan.
+            Atur urutan seksi web, gaya bingkai foto, warna tema, serta upload foto logo, gedung, banner, berita, galeri, dan prestasi siswa secara instan.
           </p>
         </div>
 
@@ -460,6 +464,55 @@ export const CmsAdminView: React.FC<CmsAdminViewProps> = ({
             <span>Perubahan Berhasil Disimpan & Tampil Live!</span>
           </div>
         )}
+      </div>
+
+      {/* Otorisasi Admin Sekolah Banner */}
+      <div className="p-4 bg-gradient-to-r from-indigo-950 via-slate-900 to-blue-950 text-white rounded-2xl border border-indigo-500/40 shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 bg-yellow-400 text-slate-950 rounded-xl font-black text-xs shrink-0 shadow-md">
+            <Award className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-[10px] font-black uppercase px-2.5 py-0.5 bg-yellow-400/20 text-yellow-300 rounded-md border border-yellow-400/30 tracking-wider">
+                Otorisasi Input Admin Sekolah
+              </span>
+              <span className="text-xs font-extrabold text-sky-200">
+                {userRole === 'KEPALA_SEKOLAH' ? 'Akses Kepala Sekolah / Admin Sekolah' : userRole === 'BENDAHARA_SEKOLAH' ? 'Akses Bendahara Sekolah' : 'Akses Modul CMS Admin'}
+              </span>
+            </div>
+            <p className="text-xs text-slate-300 mt-1 font-medium">
+              Admin Sekolah berwenang penuh menginput <strong className="text-yellow-300">Berita & Pengumuman</strong>, <strong className="text-yellow-300">Galeri Foto/Video Aktivitas</strong>, serta <strong className="text-yellow-300">Medali & Prestasi Sekolah</strong>.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 shrink-0 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
+          <button
+            type="button"
+            onClick={() => setActiveTab('news')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${activeTab === 'news' ? 'bg-yellow-400 text-slate-950 shadow' : 'bg-slate-800 text-slate-200 hover:bg-slate-700'}`}
+          >
+            <Layers className="w-3.5 h-3.5" />
+            <span>Input Berita</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('gallery')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${activeTab === 'gallery' ? 'bg-yellow-400 text-slate-950 shadow' : 'bg-slate-800 text-slate-200 hover:bg-slate-700'}`}
+          >
+            <Video className="w-3.5 h-3.5" />
+            <span>Upload Galeri</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('achievements')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${activeTab === 'achievements' ? 'bg-yellow-400 text-slate-950 shadow' : 'bg-slate-800 text-slate-200 hover:bg-slate-700'}`}
+          >
+            <Award className="w-3.5 h-3.5" />
+            <span>Input Prestasi</span>
+          </button>
+        </div>
       </div>
 
       {/* Tabs Bar */}
@@ -897,7 +950,7 @@ export const CmsAdminView: React.FC<CmsAdminViewProps> = ({
                   type="text"
                   value={localProfile.aboutTitle || ''}
                   onChange={(e) => setLocalProfile({ ...localProfile, aboutTitle: e.target.value })}
-                  placeholder="Profil & Sejarah Yayasan Pendidikan Widya Nusantara"
+                  placeholder="Profil & Sejarah Yayasan Pendidikan Daarul Habibah"
                   className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:border-blue-500"
                 />
               </div>
@@ -1211,7 +1264,7 @@ export const CmsAdminView: React.FC<CmsAdminViewProps> = ({
                   type="email"
                   value={newOrgEmail}
                   onChange={(e) => setNewOrgEmail(e.target.value)}
-                  placeholder="Contoh: nama@widyanusantara.or.id"
+                  placeholder="Contoh: nama@daarulhabibah.or.id"
                   className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs"
                 />
               </div>
@@ -1342,11 +1395,16 @@ export const CmsAdminView: React.FC<CmsAdminViewProps> = ({
                       ) : (
                         <div className="flex items-start gap-3 justify-between">
                           <div className="flex items-start gap-3">
-                            <img
-                              src={member.photoUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80'}
-                              alt={member.name}
-                              className="w-14 h-14 rounded-2xl object-cover shrink-0 border border-slate-300 shadow-sm"
-                            />
+                            <div className="relative shrink-0">
+                              <img
+                                src={member.photoUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80'}
+                                alt={member.name}
+                                className="w-24 sm:w-28 aspect-[4/5] rounded-xl object-cover object-top border-2 border-slate-300 shadow-sm"
+                              />
+                              <span className="absolute bottom-1 left-1/2 -translate-x-1/2 px-1.5 py-0.2 bg-slate-900/80 text-white text-[8px] font-bold rounded-full whitespace-nowrap">
+                                4x5 cm
+                              </span>
+                            </div>
                             <div className="space-y-1">
                               <span className={`px-2 py-0.5 text-[10px] font-black rounded-md uppercase ${
                                 member.category === 'YAYASAN' ? 'bg-amber-100 text-amber-900' : 'bg-blue-100 text-blue-900'
@@ -1560,7 +1618,7 @@ export const CmsAdminView: React.FC<CmsAdminViewProps> = ({
                                 <img
                                   src={teacher.photoUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80'}
                                   alt={teacher.name}
-                                  className="w-12 h-12 rounded-xl object-cover shrink-0 border border-slate-300 shadow-sm"
+                                  className="w-18 h-24 rounded-xl object-cover object-top shrink-0 border border-slate-300 shadow-sm"
                                 />
                                 <div>
                                   <h5 className="font-extrabold text-slate-900 text-xs">{teacher.name}</h5>
@@ -2095,7 +2153,7 @@ export const CmsAdminView: React.FC<CmsAdminViewProps> = ({
                   required
                   value={newNewsTitle}
                   onChange={(e) => setNewNewsTitle(e.target.value)}
-                  placeholder="Contoh: SD Widya Nusantara Raih Medali Emas..."
+                  placeholder="Contoh: SD Daarul Habibah Raih Medali Emas..."
                   className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-semibold"
                 />
               </div>
@@ -2278,13 +2336,25 @@ export const CmsAdminView: React.FC<CmsAdminViewProps> = ({
               {localGallery.map((item) => (
                 <div key={item.id} className="p-3 bg-slate-50 rounded-2xl border border-slate-200 space-y-2 flex flex-col justify-between">
                   <div>
-                    {item.type === 'video' ? (
-                      <div className="w-full h-40 bg-slate-900 rounded-xl flex items-center justify-center text-white text-xs font-bold">
-                        Video Media
-                      </div>
+                    {item.type === 'video' || isMediaVideo(item.url) ? (
+                      isYouTubeUrl(item.url) ? (
+                        <iframe
+                          src={getYoutubeEmbedUrl(item.url)}
+                          title={item.title}
+                          className="w-full h-40 rounded-xl border-0"
+                          allowFullScreen
+                        />
+                      ) : (
+                        <video
+                          src={item.url}
+                          controls
+                          playsInline
+                          className="w-full h-40 object-contain bg-slate-950 rounded-xl"
+                        />
+                      )
                     ) : (
-                      <div className="w-full h-44 bg-slate-950 rounded-xl flex items-center justify-center p-1.5 overflow-hidden">
-                        <img src={item.url} alt={item.title} className="max-h-full max-w-full w-auto h-auto object-contain" />
+                      <div className="w-full h-44 rounded-xl overflow-hidden relative">
+                        <img src={item.url} alt={item.title} className="w-full h-full object-cover" />
                       </div>
                     )}
                     <span className="text-[10px] font-black px-2 py-0.5 bg-slate-200 text-slate-800 rounded-md mt-2 inline-block">

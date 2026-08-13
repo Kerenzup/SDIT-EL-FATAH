@@ -56,7 +56,7 @@ export const AiFinancialAdvisor: React.FC<AiFinancialAdvisorProps> = ({
       .reduce((sum, a) => sum + a.balance, 0);
 
     const reportSummary = {
-      yayasan: 'Yayasan Pendidikan Widya Nusantara',
+      yayasan: 'Yayasan Pendidikan Daarul Habibah',
       standar: 'ISAK 35',
       totalAset: formatRupiah(totalAset),
       totalKewajiban: formatRupiah(totalKewajiban),

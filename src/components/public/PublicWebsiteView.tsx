@@ -60,8 +60,10 @@ import {
   Users,
   Layers,
   Quote,
+  PlayCircle,
+  Play,
 } from 'lucide-react';
-import { formatRupiah, formatDateIndonesian, isMediaVideo, getYoutubeEmbedUrl } from '../../utils/formatters';
+import { formatRupiah, formatDateIndonesian, isMediaVideo, isYouTubeUrl, getYoutubeEmbedUrl } from '../../utils/formatters';
 import { printDocument } from '../../utils/printHelper';
 import { getSubjectsByClass } from '../academic/AcademicRombelView';
 
@@ -101,8 +103,12 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
   onOpenRoleLoginModal,
 }) => {
   const activePpdbConfig = ppdbConfig || INITIAL_PPDB_CONFIG;
-  const [activeTab, setActiveTab] = useState<'home' | 'tentang' | 'ppdb' | 'galeri' | 'berita' | 'kontak'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'tentang' | 'ppdb' | 'prestasi' | 'galeri' | 'berita' | 'kontak'>('home');
   const [activeBannerIdx, setActiveBannerIdx] = useState<number>(0);
+
+  // Prestasi States
+  const [achievementFilterLevel, setAchievementFilterLevel] = useState<string>('SEMUA');
+  const [achievementSearchQuery, setAchievementSearchQuery] = useState<string>('');
 
   // PPDB States
   const [ppdbSubTab, setPpdbSubTab] = useState<'pendaftaran' | 'status' | 'biaya'>('pendaftaran');
@@ -443,49 +449,50 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
       : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-950 via-teal-950 to-slate-950 text-emerald-50 flex flex-col font-sans relative selection:bg-yellow-400 selection:text-emerald-950">
-      {/* Top Sunny Yellow & Light Green Accent Bar */}
-      <div className="h-2 w-full bg-gradient-to-r from-yellow-400 via-lime-300 via-amber-300 to-yellow-400 shadow-md animate-pulse" />
+    <div className="min-h-screen bg-[#00BFFF] text-slate-800 flex flex-col font-sans relative selection:bg-sky-200 selection:text-sky-900">
+      {/* Top Soft Blue & Sky Accent Bar */}
+      <div className="h-1.5 w-full bg-gradient-to-r from-sky-500 via-blue-400 via-sky-300 to-sky-500 shadow-xs" />
 
-      {/* Top Header & Navbar */}
-      <header className="bg-emerald-950/95 backdrop-blur-xl sticky top-0 z-40 border-b border-yellow-400/30 text-white shadow-2xl">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex flex-wrap items-center justify-between gap-4">
+      {/* Top Header & Navbar - Brand Cyan Blue #0095D9 */}
+      <header className="bg-[#0095D9] sticky top-0 z-40 border-b border-sky-300/40 text-white shadow-md">
+        <div className="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">
           {/* Logo & School Name */}
           <div className="flex items-center gap-3 cursor-pointer group" onClick={() => setActiveTab('home')}>
             {foundationProfile.logoUrl ? (
-              <div className="p-0.5 rounded-2xl bg-gradient-to-tr from-yellow-400 via-lime-300 to-emerald-500 shadow-lg shadow-yellow-400/20 group-hover:scale-105 transition duration-300">
+              <div className="p-0.5 rounded-2xl bg-gradient-to-tr from-sky-300 via-blue-200 to-amber-300 shadow-md group-hover:scale-105 transition duration-300">
                 <img
                   src={foundationProfile.logoUrl}
                   alt={foundationProfile.name}
-                  className="w-11 h-11 rounded-xl object-cover bg-emerald-950 p-0.5"
+                  className="w-11 h-11 rounded-xl object-cover bg-slate-900 p-0.5"
                 />
               </div>
             ) : (
-              <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-yellow-400 via-lime-300 to-emerald-500 flex items-center justify-center text-emerald-950 shadow-lg shadow-yellow-400/20 font-black">
+              <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-sky-300 via-blue-200 to-amber-300 flex items-center justify-center text-slate-950 shadow-md font-black">
                 <GraduationCap className="w-6 h-6" />
               </div>
             )}
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="text-[9px] font-black px-2 py-0.5 bg-yellow-400 text-emerald-950 rounded uppercase tracking-widest shadow-sm">
+                <span className="text-[9px] font-black px-2 py-0.5 bg-amber-400 text-slate-950 rounded uppercase tracking-widest shadow-xs">
                   YAYASAN PENDIDIKAN
                 </span>
               </div>
-              <h1 className="font-black text-base sm:text-lg tracking-tight leading-tight text-white group-hover:text-yellow-300 transition">
+              <h1 className="font-black text-base sm:text-lg tracking-tight leading-tight text-white group-hover:text-amber-300 transition">
                 {foundationProfile.name}
               </h1>
-              <p className="text-[10px] text-emerald-300 font-semibold flex items-center gap-1">
-                <ShieldCheck className="w-3.5 h-3.5 text-yellow-400" /> Akreditasi A Unggul & Standardisasi Global
+              <p className="text-[10px] text-sky-100 font-semibold flex items-center gap-1">
+                <ShieldCheck className="w-3.5 h-3.5 text-amber-300" /> Akreditasi A Unggul & Standardisasi Global
               </p>
             </div>
           </div>
 
           {/* Nav Links */}
-          <nav className="flex items-center gap-1 sm:gap-2 bg-emerald-900/80 p-1.5 rounded-2xl border border-yellow-400/30 backdrop-blur-md">
+          <nav className="flex items-center gap-1 sm:gap-2 bg-black/20 p-1.5 rounded-2xl border border-white/20 backdrop-blur-md">
             {[
               { id: 'home', label: 'Home', icon: School },
               { id: 'tentang', label: 'Tentang Kami', icon: Building },
               { id: 'ppdb', label: 'PPDB 2026', icon: FileText },
+              { id: 'prestasi', label: 'Prestasi Sekolah', icon: Award },
               { id: 'galeri', label: 'Galeri & Aktivitas', icon: ImageIcon },
               { id: 'berita', label: 'Berita & E-Raport', icon: Newspaper },
               { id: 'kontak', label: 'Kontak', icon: Phone },
@@ -498,8 +505,8 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
                   onClick={() => setActiveTab(tab.id as any)}
                   className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
                     isActive
-                      ? 'bg-gradient-to-r from-yellow-400 via-lime-300 to-amber-300 text-emerald-950 shadow-lg shadow-yellow-400/25 font-black'
-                      : 'text-emerald-100 hover:text-white hover:bg-emerald-800/80'
+                      ? 'bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 text-slate-950 shadow-md font-black'
+                      : 'text-white hover:bg-white/20'
                   }`}
                 >
                   <Icon className="w-3.5 h-3.5" />
@@ -519,7 +526,7 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
                   onOpenInternalPortal('KEPALA_SEKOLAH');
                 }
               }}
-              className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-yellow-400 via-lime-300 to-amber-300 hover:brightness-110 text-emerald-950 font-black text-xs rounded-xl shadow-lg shadow-yellow-400/30 transition cursor-pointer hover:scale-105"
+              className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 hover:brightness-105 text-slate-950 font-black text-xs rounded-xl shadow-md transition cursor-pointer hover:scale-105"
             >
               <Lock className="w-3.5 h-3.5" />
               <span>Akses Internal Pengurus</span>
@@ -539,9 +546,9 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
                 return renderDraggableSection(
                   sec,
                   secIdx,
-                  <div key={sec.id} className="relative bg-gradient-to-br from-emerald-950 via-teal-900 via-emerald-900 to-slate-950 text-white overflow-hidden min-h-[480px] flex items-center rounded-3xl border-2 border-yellow-400/40 shadow-[0_0_60px_rgba(250,204,21,0.2)]">
+                  <div key={sec.id} className="relative bg-[#4169E1] text-white overflow-hidden min-h-[480px] flex items-center rounded-3xl border border-blue-300/50 shadow-md">
                     {heroBanners.length > 0 && (
-                      <div className="absolute inset-0 z-0 opacity-35">
+                      <div className="absolute inset-0 z-0 opacity-30">
                         {(() => {
                           const currentUrl = heroBanners[activeBannerIdx]?.imageUrl || heroBanners[0]?.imageUrl || '';
                           if (currentUrl.includes('youtube.com') || currentUrl.includes('youtu.be')) {
@@ -574,35 +581,35 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
                             );
                           }
                         })()}
-                        <div className="absolute inset-0 bg-gradient-to-r from-emerald-950 via-emerald-950/90 to-transparent" />
+                        <div className="absolute inset-0 bg-gradient-to-r from-[#4169E1] via-[#4169E1]/90 to-transparent" />
                       </div>
                     )}
 
-                    <div className="relative z-10 max-w-7xl mx-auto px-6 py-16 grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+                    <div className="relative z-10 max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8 py-16 grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
                       <div className="md:col-span-8 space-y-5">
-                        <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-gradient-to-r from-yellow-400 via-amber-300 to-lime-300 text-emerald-950 text-xs font-black rounded-full backdrop-blur-md uppercase tracking-wider shadow-md">
-                          <Sparkles className="w-4 h-4 text-emerald-950" /> INTERNATIONAL STANDARD FOUNDATION • AKREDITASI A (UNGGUL)
+                        <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-300 text-slate-950 text-xs font-black rounded-full backdrop-blur-md uppercase tracking-wider shadow-sm">
+                          <Sparkles className="w-4 h-4 text-slate-950" /> INTERNATIONAL STANDARD FOUNDATION • AKREDITASI A (UNGGUL)
                         </div>
-                        <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-yellow-200 to-lime-300 leading-tight">
+                        <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white leading-tight">
                           {heroBanners[activeBannerIdx]?.title || 'Pendidikan Berkarakter & Transparan World-Class'}
                         </h2>
-                        <p className="text-emerald-100 text-sm sm:text-base max-w-2xl leading-relaxed font-normal">
+                        <p className="text-blue-100 text-sm sm:text-base max-w-2xl leading-relaxed font-normal">
                           {heroBanners[activeBannerIdx]?.subtitle ||
                             'Membentuk generasi pembelajar Rombel Kelas 1 - 6 yang unggul berstandar global, berakhlak mulia, serta didukung transparansi anggaran berbasis ISAK 35.'}
                         </p>
                         <div className="pt-3 flex flex-wrap gap-3">
                           <button
                             onClick={() => setActiveTab('tentang')}
-                            className="px-6 py-3 bg-gradient-to-r from-yellow-400 via-amber-300 to-lime-400 hover:brightness-110 text-emerald-950 font-black text-xs rounded-xl shadow-xl shadow-yellow-400/25 transition flex items-center gap-2 cursor-pointer hover:scale-105"
+                            className="px-6 py-3 bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 hover:brightness-105 text-slate-950 font-black text-xs rounded-xl shadow-md transition flex items-center gap-2 cursor-pointer hover:scale-105"
                           >
                             <span>Jelajahi Profil Yayasan Internasional</span>
                             <ArrowRight className="w-4 h-4" />
                           </button>
                           <button
                             onClick={() => setActiveTab('berita')}
-                            className="px-6 py-3 bg-emerald-900/90 hover:bg-emerald-800 text-yellow-300 font-bold text-xs rounded-xl border border-yellow-400/50 transition flex items-center gap-2 cursor-pointer backdrop-blur-md"
+                            className="px-6 py-3 bg-blue-900/80 hover:bg-blue-900 text-amber-300 font-bold text-xs rounded-xl border border-blue-300/50 transition flex items-center gap-2 cursor-pointer backdrop-blur-md"
                           >
-                            <Search className="w-4 h-4 text-yellow-400" />
+                            <Search className="w-4 h-4 text-amber-300" />
                             <span>Cek E-Raport / Status SPP Online</span>
                           </button>
                         </div>
@@ -615,7 +622,7 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
                             key={idx}
                             onClick={() => setActiveBannerIdx(idx)}
                             className={`h-3 rounded-full transition-all cursor-pointer ${
-                              activeBannerIdx === idx ? 'w-8 bg-yellow-400 shadow-md shadow-yellow-400/60' : 'w-3 bg-emerald-900 hover:bg-emerald-800'
+                              activeBannerIdx === idx ? 'w-8 bg-amber-400 shadow-sm' : 'w-3 bg-white/40 hover:bg-white/60'
                             }`}
                           />
                         ))}
@@ -630,47 +637,47 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
                 return renderDraggableSection(
                   sec,
                   secIdx,
-                  <div key={sec.id} className="max-w-7xl mx-auto px-6 relative z-20">
+                  <div key={sec.id} className="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8 relative z-20">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      <div className="bg-gradient-to-b from-emerald-900/90 via-teal-950/80 to-emerald-950/90 p-5 rounded-2xl border border-lime-400/40 hover:border-yellow-400 shadow-2xl backdrop-blur-xl flex items-center gap-4 transition group">
-                        <div className="p-3 bg-gradient-to-tr from-yellow-400/30 to-lime-400/30 border border-yellow-400/60 text-yellow-300 rounded-2xl shrink-0 group-hover:scale-110 transition">
+                      <div className="bg-[#0000FF] p-5 rounded-2xl border border-blue-400/60 hover:border-white shadow-md flex items-center gap-4 transition group">
+                        <div className="p-3 bg-white/20 text-white rounded-2xl shrink-0 group-hover:scale-105 transition">
                           <GraduationCap className="w-6 h-6" />
                         </div>
                         <div>
-                          <p className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-yellow-200 to-lime-300">{students.length} Siswa</p>
-                          <p className="text-xs text-emerald-200 font-medium">Rombel Kelas 1 - 6</p>
+                          <p className="text-2xl font-black text-white">{students.length} Siswa</p>
+                          <p className="text-xs text-blue-100 font-medium">Rombel Kelas 1 - 6</p>
                         </div>
                       </div>
 
-                      <div className="bg-gradient-to-b from-emerald-900/90 via-teal-950/80 to-emerald-950/90 p-5 rounded-2xl border border-lime-400/40 hover:border-yellow-400 shadow-2xl backdrop-blur-xl flex items-center gap-4 transition group">
-                        <div className="p-3 bg-gradient-to-tr from-yellow-400/30 to-lime-400/30 border border-yellow-400/60 text-yellow-300 rounded-2xl shrink-0 group-hover:scale-110 transition">
+                      <div className="bg-[#0000FF] p-5 rounded-2xl border border-blue-400/60 hover:border-white shadow-md flex items-center gap-4 transition group">
+                        <div className="p-3 bg-white/20 text-white rounded-2xl shrink-0 group-hover:scale-105 transition">
                           <User className="w-6 h-6" />
                         </div>
                         <div>
-                          <p className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-yellow-200 to-lime-300">
+                          <p className="text-2xl font-black text-white">
                             {(teachers && teachers.length > 0 ? teachers.length : INITIAL_TEACHERS.length)} Guru & Staf
                           </p>
-                          <p className="text-xs text-emerald-200 font-medium">Pendidik S1/S2 Global</p>
+                          <p className="text-xs text-blue-100 font-medium">Pendidik S1/S2 Global</p>
                         </div>
                       </div>
 
-                      <div className="bg-gradient-to-b from-emerald-900/90 via-teal-950/80 to-emerald-950/90 p-5 rounded-2xl border border-lime-400/40 hover:border-yellow-400 shadow-2xl backdrop-blur-xl flex items-center gap-4 transition group">
-                        <div className="p-3 bg-gradient-to-tr from-yellow-400/30 to-lime-400/30 border border-yellow-400/60 text-yellow-300 rounded-2xl shrink-0 group-hover:scale-110 transition">
+                      <div className="bg-[#0000FF] p-5 rounded-2xl border border-blue-400/60 hover:border-white shadow-md flex items-center gap-4 transition group">
+                        <div className="p-3 bg-white/20 text-white rounded-2xl shrink-0 group-hover:scale-105 transition">
                           <Award className="w-6 h-6" />
                         </div>
                         <div>
-                          <p className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-yellow-200 to-lime-300">{achievements.length} Prestasi</p>
-                          <p className="text-xs text-emerald-200 font-medium">Nasional & Internasional</p>
+                          <p className="text-2xl font-black text-white">{achievements.length} Prestasi</p>
+                          <p className="text-xs text-blue-100 font-medium">Nasional & Internasional</p>
                         </div>
                       </div>
 
-                      <div className="bg-gradient-to-b from-emerald-900/90 via-teal-950/80 to-emerald-950/90 p-5 rounded-2xl border border-lime-400/40 hover:border-yellow-400 shadow-2xl backdrop-blur-xl flex items-center gap-4 transition group">
-                        <div className="p-3 bg-gradient-to-tr from-yellow-400/30 to-lime-400/30 border border-yellow-400/60 text-yellow-300 rounded-2xl shrink-0 group-hover:scale-110 transition">
+                      <div className="bg-[#0000FF] p-5 rounded-2xl border border-blue-400/60 hover:border-white shadow-md flex items-center gap-4 transition group">
+                        <div className="p-3 bg-white/20 text-white rounded-2xl shrink-0 group-hover:scale-105 transition">
                           <ShieldCheck className="w-6 h-6" />
                         </div>
                         <div>
-                          <p className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-yellow-200 to-lime-300">SiPLah & ISAK 35</p>
-                          <p className="text-xs text-emerald-200 font-medium">Audited & Transparan</p>
+                          <p className="text-2xl font-black text-white">SiPLah & ISAK 35</p>
+                          <p className="text-xs text-blue-100 font-medium">Audited & Transparan</p>
                         </div>
                       </div>
                     </div>
@@ -683,106 +690,110 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
                 return renderDraggableSection(
                   sec,
                   secIdx,
-                  <div key={sec.id} className="max-w-7xl mx-auto px-6 space-y-6">
+                  <div key={sec.id} className="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
                     <div className="text-center space-y-2">
-                      <span className="px-4 py-1 bg-yellow-400 text-emerald-950 text-xs font-black rounded-full uppercase shadow-md">
+                      <span className="px-4 py-1 bg-white/20 text-white border border-white/40 text-xs font-black rounded-full uppercase shadow-xs">
                         PIMPINAN & JAJARAN PENGURUS YAYASAN
                       </span>
                       <h3 className="text-2xl sm:text-3xl font-black text-white">{sec.title}</h3>
-                      <p className="text-xs text-emerald-200 max-w-2xl mx-auto">
+                      <p className="text-xs text-blue-100 max-w-2xl mx-auto">
                         Komitmen Pembina Yayasan, Ketua Yayasan, Sekretaris Yayasan, Bendahara Yayasan, dan Kepala Sekolah terhadap mutu akademik, pembentukan karakter, dan transparansi keuangan ISAK 35.
                       </p>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                       {/* 1. Pembina Yayasan */}
-                      <div className="bg-gradient-to-b from-emerald-900 via-teal-950 to-emerald-950 p-5 rounded-3xl border-2 border-yellow-400/40 shadow-2xl flex flex-col justify-between space-y-3 relative overflow-hidden group hover:border-yellow-300 transition">
-                        <div className="flex gap-4 items-start">
-                          <div className="p-1 bg-gradient-to-tr from-yellow-400 via-amber-300 to-lime-400 rounded-2xl shadow-lg shrink-0">
-                            <img
-                              src={getLocalPhotoUrl(foundationProfile.pembinaPhotoUrl || foundationProfile.orgStructure?.find(m => m.position.includes('Pembina'))?.photoUrl, 'Pembina Yayasan')}
-                              alt="Pembina Yayasan"
-                              className="w-20 h-20 rounded-xl object-cover object-top bg-emerald-950"
-                            />
-                          </div>
-                          <div>
-                            <span className="inline-block px-2.5 py-0.5 bg-yellow-400/20 text-yellow-300 text-[10px] font-black rounded-full uppercase border border-yellow-400/40">
-                              Pembina Yayasan
-                            </span>
-                            <h4 className="font-extrabold text-white text-sm mt-1">{foundationProfile.pembinaName || 'Abdul Muhyi S.Pd'}</h4>
-                            <p className="text-[10px] text-lime-300 font-medium">{foundationProfile.pembinaTitle || 'Pembina Yayasan'}</p>
-                          </div>
+                      <div className="bg-[#87CEFA] p-5 rounded-3xl border-2 border-sky-300 shadow-lg flex flex-col justify-between items-center text-center space-y-3 relative overflow-hidden group hover:border-slate-800 transition text-slate-950">
+                        <div className="p-1 bg-white/80 rounded-2xl shadow-md w-36 sm:w-44 lg:w-48 aspect-[4/5] mx-auto overflow-hidden shrink-0 ring-2 ring-slate-800/20 relative">
+                          <img
+                            src={getLocalPhotoUrl(foundationProfile.pembinaPhotoUrl || foundationProfile.orgStructure?.find(m => m.position.includes('Pembina'))?.photoUrl, 'Pembina Yayasan')}
+                            alt="Pembina Yayasan"
+                            className="w-full h-full object-cover object-top bg-sky-100 rounded-xl"
+                          />
+                          <span className="absolute bottom-1.5 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-slate-900/85 text-white text-[9px] font-extrabold rounded-full border border-white/40 whitespace-nowrap shadow-xs">
+                            Pasfoto Resmi 4x5 cm
+                          </span>
                         </div>
-                        <p className="text-xs text-emerald-100 italic font-serif leading-relaxed bg-emerald-950/90 p-3 rounded-2xl border border-lime-400/30">
+                        <div className="space-y-1 w-full">
+                          <span className="inline-block px-3 py-0.5 bg-slate-900 text-white text-[10px] font-black rounded-full uppercase shadow-xs">
+                            Pembina Yayasan
+                          </span>
+                          <h4 className="font-extrabold text-slate-950 text-base mt-1">{foundationProfile.pembinaName || 'Abdul Muhyi S.Pd'}</h4>
+                          <p className="text-[11px] text-sky-900 font-bold">{foundationProfile.pembinaTitle || 'Pembina Yayasan'}</p>
+                        </div>
+                        <p className="text-xs text-slate-900 italic font-serif leading-relaxed bg-white/80 p-3 rounded-2xl border border-sky-300 w-full mt-auto shadow-xs">
                           "{speeches.chairmanSpeech || 'Mengarahkan seluruh unit sekolah agar senantiasa berpedoman pada standar keunggulan global dan akhlak karimah.'}"
                         </p>
                       </div>
 
                       {/* 2. Ketua Yayasan */}
-                      <div className="bg-gradient-to-b from-emerald-900 via-teal-950 to-emerald-950 p-5 rounded-3xl border-2 border-yellow-400/40 shadow-2xl flex flex-col justify-between space-y-3 relative overflow-hidden group hover:border-yellow-300 transition">
-                        <div className="flex gap-4 items-start">
-                          <div className="p-1 bg-gradient-to-tr from-yellow-400 via-amber-300 to-lime-400 rounded-2xl shadow-lg shrink-0">
-                            <img
-                              src={getLocalPhotoUrl(foundationProfile.leaderPhotoUrl || foundationProfile.orgStructure?.find(m => m.position.includes('Ketua'))?.photoUrl, 'Ketua Yayasan')}
-                              alt="Ketua Yayasan"
-                              className="w-20 h-20 rounded-xl object-cover object-top bg-emerald-950"
-                            />
-                          </div>
-                          <div>
-                            <span className="inline-block px-2.5 py-0.5 bg-yellow-400/20 text-yellow-300 text-[10px] font-black rounded-full uppercase border border-yellow-400/40">
-                              Ketua Yayasan
-                            </span>
-                            <h4 className="font-extrabold text-white text-sm mt-1">{foundationProfile.leaderName || 'H. Ahmad Dahlan, M.Ag'}</h4>
-                            <p className="text-[10px] text-lime-300 font-medium">{foundationProfile.leaderTitle || 'Ketua Yayasan'}</p>
-                          </div>
+                      <div className="bg-[#87CEFA] p-5 rounded-3xl border-2 border-sky-300 shadow-lg flex flex-col justify-between items-center text-center space-y-3 relative overflow-hidden group hover:border-slate-800 transition text-slate-950">
+                        <div className="p-1 bg-white/80 rounded-2xl shadow-md w-36 sm:w-44 lg:w-48 aspect-[4/5] mx-auto overflow-hidden shrink-0 ring-2 ring-slate-800/20 relative">
+                          <img
+                            src={getLocalPhotoUrl(foundationProfile.leaderPhotoUrl || foundationProfile.orgStructure?.find(m => m.position.includes('Ketua'))?.photoUrl, 'Ketua Yayasan')}
+                            alt="Ketua Yayasan"
+                            className="w-full h-full object-cover object-top bg-sky-100 rounded-xl"
+                          />
+                          <span className="absolute bottom-1.5 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-slate-900/85 text-white text-[9px] font-extrabold rounded-full border border-white/40 whitespace-nowrap shadow-xs">
+                            Pasfoto Resmi 4x5 cm
+                          </span>
                         </div>
-                        <p className="text-xs text-emerald-100 italic font-serif leading-relaxed bg-emerald-950/90 p-3 rounded-2xl border border-lime-400/30">
+                        <div className="space-y-1 w-full">
+                          <span className="inline-block px-3 py-0.5 bg-slate-900 text-white text-[10px] font-black rounded-full uppercase shadow-xs">
+                            Ketua Yayasan
+                          </span>
+                          <h4 className="font-extrabold text-slate-950 text-base mt-1">{foundationProfile.leaderName || 'H. Ahmad Dahlan, M.Ag'}</h4>
+                          <p className="text-[11px] text-sky-900 font-bold">{foundationProfile.leaderTitle || 'Ketua Yayasan'}</p>
+                        </div>
+                        <p className="text-xs text-slate-900 italic font-serif leading-relaxed bg-white/80 p-3 rounded-2xl border border-sky-300 w-full mt-auto shadow-xs">
                           "{foundationProfile.welcomeMessage || 'Selamat datang di Portal Resmi Yayasan. Kami berkomitmen menyajikan pendidikan unggul berkarakter islami dan transparan.'}"
                         </p>
                       </div>
 
                       {/* 3. Sekretaris Yayasan */}
-                      <div className="bg-gradient-to-b from-emerald-900 via-teal-950 to-emerald-950 p-5 rounded-3xl border-2 border-yellow-400/40 shadow-2xl flex flex-col justify-between space-y-3 relative overflow-hidden group hover:border-yellow-300 transition">
-                        <div className="flex gap-4 items-start">
-                          <div className="p-1 bg-gradient-to-tr from-yellow-400 via-amber-300 to-lime-400 rounded-2xl shadow-lg shrink-0">
-                            <img
-                              src={getLocalPhotoUrl(foundationProfile.secretaryPhotoUrl || speeches.secretaryPhotoUrl || foundationProfile.orgStructure?.find(m => m.position.includes('Sekretaris'))?.photoUrl, 'Sekretaris Yayasan')}
-                              alt="Sekretaris Yayasan"
-                              className="w-20 h-20 rounded-xl object-cover object-top bg-emerald-950"
-                            />
-                          </div>
-                          <div>
-                            <span className="inline-block px-2.5 py-0.5 bg-yellow-400/20 text-yellow-300 text-[10px] font-black rounded-full uppercase border border-yellow-400/40">
-                              Sekretaris Yayasan
-                            </span>
-                            <h4 className="font-extrabold text-white text-sm mt-1">{foundationProfile.secretaryName || speeches.secretaryName || 'H. Ahmad Subagja, S.H'}</h4>
-                            <p className="text-[10px] text-lime-300 font-medium">{foundationProfile.secretaryTitle || speeches.secretaryTitle || 'Sekretaris Yayasan'}</p>
-                          </div>
+                      <div className="bg-[#87CEFA] p-5 rounded-3xl border-2 border-sky-300 shadow-lg flex flex-col justify-between items-center text-center space-y-3 relative overflow-hidden group hover:border-slate-800 transition text-slate-950">
+                        <div className="p-1 bg-white/80 rounded-2xl shadow-md w-36 sm:w-44 lg:w-48 aspect-[4/5] mx-auto overflow-hidden shrink-0 ring-2 ring-slate-800/20 relative">
+                          <img
+                            src={getLocalPhotoUrl(foundationProfile.secretaryPhotoUrl || speeches.secretaryPhotoUrl || foundationProfile.orgStructure?.find(m => m.position.includes('Sekretaris'))?.photoUrl, 'Sekretaris Yayasan')}
+                            alt="Sekretaris Yayasan"
+                            className="w-full h-full object-cover object-top bg-sky-100 rounded-xl"
+                          />
+                          <span className="absolute bottom-1.5 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-slate-900/85 text-white text-[9px] font-extrabold rounded-full border border-white/40 whitespace-nowrap shadow-xs">
+                            Pasfoto Resmi 4x5 cm
+                          </span>
                         </div>
-                        <p className="text-xs text-emerald-100 italic font-serif leading-relaxed bg-emerald-950/90 p-3 rounded-2xl border border-lime-400/30">
+                        <div className="space-y-1 w-full">
+                          <span className="inline-block px-3 py-0.5 bg-slate-900 text-white text-[10px] font-black rounded-full uppercase shadow-xs">
+                            Sekretaris Yayasan
+                          </span>
+                          <h4 className="font-extrabold text-slate-950 text-base mt-1">{foundationProfile.secretaryName || speeches.secretaryName || 'H. Ahmad Subagja, S.H'}</h4>
+                          <p className="text-[11px] text-sky-900 font-bold">{foundationProfile.secretaryTitle || speeches.secretaryTitle || 'Sekretaris Yayasan'}</p>
+                        </div>
+                        <p className="text-xs text-slate-900 italic font-serif leading-relaxed bg-white/80 p-3 rounded-2xl border border-sky-300 w-full mt-auto shadow-xs">
                           "{foundationProfile.secretarySpeech || speeches.secretarySpeech || 'Menjamin ketertiban administrasi, legalitas Kemenkumham, serta pelayanan publik dan orang tua murid yang responsif.'}"
                         </p>
                       </div>
 
                       {/* 4. Bendahara Yayasan */}
-                      <div className="bg-gradient-to-b from-emerald-900 via-teal-950 to-emerald-950 p-5 rounded-3xl border-2 border-yellow-400/40 shadow-2xl flex flex-col justify-between space-y-3 relative overflow-hidden group hover:border-yellow-300 transition">
-                        <div className="flex gap-4 items-start">
-                          <div className="p-1 bg-gradient-to-tr from-yellow-400 via-amber-300 to-lime-400 rounded-2xl shadow-lg shrink-0">
-                            <img
-                              src={getLocalPhotoUrl(foundationProfile.treasurerPhotoUrl || speeches.treasurerPhotoUrl || foundationProfile.orgStructure?.find(m => m.position.includes('Bendahara'))?.photoUrl, 'Bendahara Yayasan')}
-                              alt="Bendahara Yayasan"
-                              className="w-20 h-20 rounded-xl object-cover object-top bg-emerald-950"
-                            />
-                          </div>
-                          <div>
-                            <span className="inline-block px-2.5 py-0.5 bg-yellow-400/20 text-yellow-300 text-[10px] font-black rounded-full uppercase border border-yellow-400/40">
-                              Bendahara Yayasan
-                            </span>
-                            <h4 className="font-extrabold text-white text-sm mt-1">{foundationProfile.treasurerName || speeches.treasurerName || 'Hj. Nurul Aini, S.E., M.Ak'}</h4>
-                            <p className="text-[10px] text-lime-300 font-medium">{foundationProfile.treasurerTitle || speeches.treasurerTitle || 'Bendahara Yayasan'}</p>
-                          </div>
+                      <div className="bg-[#87CEFA] p-5 rounded-3xl border-2 border-sky-300 shadow-lg flex flex-col justify-between items-center text-center space-y-3 relative overflow-hidden group hover:border-slate-800 transition text-slate-950">
+                        <div className="p-1 bg-white/80 rounded-2xl shadow-md w-36 sm:w-44 lg:w-48 aspect-[4/5] mx-auto overflow-hidden shrink-0 ring-2 ring-slate-800/20 relative">
+                          <img
+                            src={getLocalPhotoUrl(foundationProfile.treasurerPhotoUrl || speeches.treasurerPhotoUrl || foundationProfile.orgStructure?.find(m => m.position.includes('Bendahara'))?.photoUrl, 'Bendahara Yayasan')}
+                            alt="Bendahara Yayasan"
+                            className="w-full h-full object-cover object-top bg-sky-100 rounded-xl"
+                          />
+                          <span className="absolute bottom-1.5 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-slate-900/85 text-white text-[9px] font-extrabold rounded-full border border-white/40 whitespace-nowrap shadow-xs">
+                            Pasfoto Resmi 4x5 cm
+                          </span>
                         </div>
-                        <p className="text-xs text-emerald-100 italic font-serif leading-relaxed bg-emerald-950/90 p-3 rounded-2xl border border-lime-400/30">
+                        <div className="space-y-1 w-full">
+                          <span className="inline-block px-3 py-0.5 bg-slate-900 text-white text-[10px] font-black rounded-full uppercase shadow-xs">
+                            Bendahara Yayasan
+                          </span>
+                          <h4 className="font-extrabold text-slate-950 text-base mt-1">{foundationProfile.treasurerName || speeches.treasurerName || 'Hj. Nurul Aini, S.E., M.Ak'}</h4>
+                          <p className="text-[11px] text-sky-900 font-bold">{foundationProfile.treasurerTitle || speeches.treasurerTitle || 'Bendahara Yayasan'}</p>
+                        </div>
+                        <p className="text-xs text-slate-900 italic font-serif leading-relaxed bg-white/80 p-3 rounded-2xl border border-sky-300 w-full mt-auto shadow-xs">
                           "{foundationProfile.treasurerSpeech || speeches.treasurerSpeech || 'Mengelola akuntabilitas keuangan berbasis ISAK 35, sistem kuitansi digital SPP, dan audit anggaran dana BOS.'}"
                         </p>
                       </div>
@@ -820,7 +831,9 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
                     return t.role.toLowerCase().includes('kepala') || t.role.toLowerCase().includes('wakasek') || t.role.toLowerCase().includes('pimpinan');
                   }
                   if (orgFilterCategory === 'ROMBEL') {
-                    return t.role.toLowerCase().includes('wali kelas') || t.classAssigned;
+                    const role = (t.role || '').toLowerCase();
+                    const rombel = `${t.assignedRombel || ''} ${t.classAssigned || ''}`.toLowerCase();
+                    return role.includes('wali kelas') || rombel.includes('kelas') || rombel.includes('rombel');
                   }
                   if (orgFilterCategory === 'MAPEL') {
                     return t.subject && !t.role.toLowerCase().includes('wali kelas') && !t.role.toLowerCase().includes('kepala');
@@ -832,23 +845,47 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
                 });
 
                 const headmaster = activeTeachers.find((t) => t.role.toLowerCase().includes('kepala sekolah')) || activeTeachers[0];
-                const viceHead = activeTeachers.find((t) => t.role.toLowerCase().includes('wakasek')) || activeTeachers[1];
-                const rombelTeachers = activeTeachers.filter((t) => t.role.toLowerCase().includes('wali kelas') || t.classAssigned);
-                const otherStaff = activeTeachers.filter((t) => t.id !== headmaster?.id && t.id !== viceHead?.id && !rombelTeachers.includes(t));
+                const viceHead = activeTeachers.find((t) => t.role.toLowerCase().includes('wakasek') || t.role.toLowerCase().includes('wakil kepala')) || activeTeachers[1];
+                
+                const getRombelNum = (t: Teacher) => {
+                  const text = `${t.assignedRombel || ''} ${t.role || ''} ${t.subjectTaught || ''}`.toLowerCase();
+                  const match = text.match(/kelas\s*(\d+)/i) || text.match(/rombel\s*(\d+)/i) || text.match(/(\d+)/);
+                  return match ? parseInt(match[1], 10) : 99;
+                };
+
+                const isRombelTeacher = (t: Teacher) => {
+                  const role = (t.role || '').toLowerCase();
+                  const rombel = `${t.assignedRombel || ''}`.toLowerCase();
+                  return role.includes('wali kelas') || rombel.includes('kelas') || rombel.includes('rombel');
+                };
+
+                const rombelTeachers = activeTeachers
+                  .filter(isRombelTeacher)
+                  .sort((a, b) => getRombelNum(a) - getRombelNum(b));
+
+                const otherStaff = activeTeachers.filter((t) => t.id !== headmaster?.id && t.id !== viceHead?.id && !rombelTeachers.some((rt) => rt.id === t.id));
+                const subjectTeachers = otherStaff.filter((t) => {
+                  const role = (t.role || '').toLowerCase();
+                  return !role.includes('staf') && !role.includes('tata usaha') && !role.includes('tu') && !role.includes('admin') && !role.includes('operasional');
+                });
+                const tuStaff = otherStaff.filter((t) => {
+                  const role = (t.role || '').toLowerCase();
+                  return role.includes('staf') || role.includes('tata usaha') || role.includes('tu') || role.includes('admin') || role.includes('operasional');
+                });
 
                 return renderDraggableSection(
                   sec,
                   secIdx,
-                  <div key={sec.id} className="max-w-7xl mx-auto px-6">
-                    <div className="bg-gradient-to-b from-slate-900 via-indigo-950 to-slate-950 p-6 sm:p-8 rounded-3xl border border-amber-400/40 shadow-2xl space-y-8">
+                  <div key={sec.id} className="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="bg-[#87CEFA] p-6 sm:p-8 rounded-3xl border border-sky-300 shadow-md space-y-8 text-slate-950">
                       {/* Section Header */}
-                      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-amber-400/20 pb-6">
+                      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-sky-400/60 pb-6">
                         <div className="space-y-2">
-                          <div className="inline-flex items-center gap-2 px-3.5 py-1 bg-amber-500/20 text-amber-300 text-xs font-black rounded-full uppercase border border-amber-400/30">
-                            <Network className="w-3.5 h-3.5 text-amber-400" /> STRUKTUR ORGANISASI GURU & STAF (DINAMIS)
+                          <div className="inline-flex items-center gap-2 px-3.5 py-1 bg-slate-900 text-white text-xs font-black rounded-full uppercase shadow-xs">
+                            <Network className="w-3.5 h-3.5 text-sky-200" /> STRUKTUR ORGANISASI GURU & STAF (DINAMIS)
                           </div>
-                          <h3 className="text-2xl sm:text-3xl font-black text-white">{sec.title}</h3>
-                          <p className="text-xs text-slate-300">
+                          <h3 className="text-2xl sm:text-3xl font-black text-slate-950">{sec.title}</h3>
+                          <p className="text-xs text-slate-800 font-medium">
                             Susunan struktural tenaga pendidik, wali kelas Rombel 1-6, guru mata pelajaran, dan staf tata usaha sekolah.
                           </p>
                         </div>
@@ -856,21 +893,21 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
                         {/* Controls: Search & View Mode */}
                         <div className="flex flex-wrap items-center gap-3">
                           <div className="relative">
-                            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                            <Search className="w-4 h-4 text-slate-600 absolute left-3 top-2.5" />
                             <input
                               type="text"
                               value={orgSearchQuery}
                               onChange={(e) => setOrgSearchQuery(e.target.value)}
                               placeholder="Cari guru / mapel..."
-                              className="pl-9 pr-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-amber-400 w-44 sm:w-56"
+                              className="pl-9 pr-3 py-2 bg-white border border-sky-300 rounded-xl text-xs text-slate-900 placeholder-slate-500 focus:outline-none focus:border-slate-900 w-44 sm:w-56 font-semibold"
                             />
                           </div>
 
-                          <div className="flex items-center bg-slate-900 p-1 rounded-xl border border-slate-700">
+                          <div className="flex items-center bg-white/60 p-1 rounded-xl border border-sky-300">
                             <button
                               onClick={() => setOrgViewMode('TREE')}
                               className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition cursor-pointer ${
-                                orgViewMode === 'TREE' ? 'bg-amber-500 text-slate-950 shadow' : 'text-slate-400 hover:text-white'
+                                orgViewMode === 'TREE' ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-800 hover:text-slate-950'
                               }`}
                             >
                               <Network className="w-3.5 h-3.5" />
@@ -879,7 +916,7 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
                             <button
                               onClick={() => setOrgViewMode('GRID')}
                               className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition cursor-pointer ${
-                                orgViewMode === 'GRID' ? 'bg-amber-500 text-slate-950 shadow' : 'text-slate-400 hover:text-white'
+                                orgViewMode === 'GRID' ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-800 hover:text-slate-950'
                               }`}
                             >
                               <Grid className="w-3.5 h-3.5" />
@@ -903,13 +940,13 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
                             onClick={() => setOrgFilterCategory(cat.id as any)}
                             className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 ${
                               orgFilterCategory === cat.id
-                                ? 'bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 shadow-md font-extrabold'
-                                : 'bg-slate-900/80 text-slate-300 hover:bg-slate-800 border border-slate-800'
+                                ? 'bg-slate-900 text-white shadow-xs font-extrabold'
+                                : 'bg-white/70 text-slate-800 hover:bg-white border border-sky-300'
                             }`}
                           >
                             <span>{cat.label}</span>
                             <span className={`px-1.5 py-0.2 text-[10px] rounded-full font-black ${
-                              orgFilterCategory === cat.id ? 'bg-slate-950 text-amber-300' : 'bg-slate-800 text-slate-400'
+                              orgFilterCategory === cat.id ? 'bg-amber-400 text-slate-950' : 'bg-slate-200 text-slate-800'
                             }`}>
                               {cat.count}
                             </span>
@@ -923,102 +960,156 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
                           {/* LEVEL 1: KEPALA SEKOLAH */}
                           {headmaster && (
                             <div className="flex flex-col items-center">
-                              <div className="bg-gradient-to-b from-slate-900 via-indigo-950 to-slate-950 p-5 rounded-2xl border-2 border-amber-400/60 shadow-2xl text-center max-w-xs w-full space-y-2 relative group hover:scale-105 transition">
-                                <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 text-[10px] font-black rounded-full uppercase shadow">
-                                  Top Leader / Kepala Sekolah
+                              <div className="bg-[#87CEFA] p-3 rounded-2xl border-2 border-slate-900 shadow-md text-center max-w-[260px] w-full space-y-2 relative group hover:scale-105 transition flex flex-col justify-between items-center text-slate-950">
+                                <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-slate-900 text-white text-[10px] font-black rounded-full uppercase shadow-xs whitespace-nowrap z-10">
+                                  Kepala Sekolah
                                 </span>
-                                <div className="p-1 bg-gradient-to-tr from-amber-500 via-amber-300 to-yellow-500 rounded-2xl w-20 h-20 mx-auto shadow-lg mt-1">
+                                <div className="p-1 bg-white/80 rounded-xl w-36 sm:w-44 aspect-[4/5] mx-auto shadow-sm overflow-hidden mt-1 relative">
                                   <img
                                     src={getLocalPhotoUrl(headmaster.photoUrl, headmaster.role || headmaster.name)}
                                     alt={headmaster.name}
-                                    className="w-full h-full object-cover rounded-xl bg-slate-950"
+                                    className="w-full h-full object-cover object-top rounded-lg bg-sky-100 shadow-inner"
                                   />
+                                  <span className="absolute bottom-1 left-1/2 -translate-x-1/2 px-1.5 py-0.2 bg-slate-900/80 text-white text-[8px] font-bold rounded-full whitespace-nowrap">
+                                    Pasfoto 4x5 cm
+                                  </span>
                                 </div>
-                                <div>
-                                  <h4 className="font-extrabold text-white text-sm">{headmaster.name}</h4>
-                                  <p className="text-xs text-amber-300 font-bold">{headmaster.role}</p>
-                                  <p className="text-[10px] text-slate-400 font-mono mt-0.5">{headmaster.nipOrNipy}</p>
+                                <div className="flex flex-col items-center justify-center space-y-0.5 w-full">
+                                  <span className="px-1.5 py-0.5 bg-slate-900 text-white text-[9px] sm:text-[10px] font-black rounded-full inline-block whitespace-nowrap">
+                                    Top Leader
+                                  </span>
+                                  <h5 className="font-extrabold text-slate-950 text-xs sm:text-sm leading-tight group-hover:text-sky-900 transition line-clamp-2 mt-0.5">{headmaster.name}</h5>
+                                  <p className="text-[9px] sm:text-[10px] text-slate-800 font-bold truncate max-w-full">{headmaster.role}</p>
+                                  {headmaster.nipOrNipy && <p className="text-[9px] text-slate-700 font-mono">{headmaster.nipOrNipy}</p>}
                                 </div>
                               </div>
-                              <div className="w-0.5 h-8 bg-amber-400/50 my-1"></div>
+                              <div className="w-0.5 h-8 bg-slate-800 my-1"></div>
                             </div>
                           )}
 
                           {/* LEVEL 2: WAKASEK & MANAGEMENT */}
                           {viceHead && (
                             <div className="flex flex-col items-center">
-                              <div className="bg-gradient-to-b from-slate-900 via-indigo-950 to-slate-950 p-4 rounded-2xl border border-amber-400/40 shadow-xl text-center max-w-xs w-full space-y-2 relative hover:border-amber-400 transition">
-                                <span className="px-2.5 py-0.5 bg-amber-500/20 text-amber-300 text-[9px] font-black rounded-full uppercase border border-amber-400/30">
-                                  Wakil Kepala Sekolah & Kurikulum
+                              <div className="bg-[#87CEFA] p-3 rounded-2xl border border-slate-800 shadow-md text-center max-w-[260px] w-full space-y-2 relative group hover:border-slate-950 transition flex flex-col justify-between items-center text-slate-950">
+                                <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-2.5 py-0.5 bg-slate-900 text-white text-[9px] font-black rounded-full uppercase shadow-xs whitespace-nowrap z-10">
+                                  Wakasek & Kurikulum
                                 </span>
-                                <div className="p-1 bg-gradient-to-tr from-amber-500 via-amber-300 to-yellow-500 rounded-xl w-16 h-16 mx-auto shadow-md">
+                                <div className="p-1 bg-white/80 rounded-xl w-36 sm:w-44 aspect-[4/5] mx-auto shadow-sm overflow-hidden mt-1 relative">
                                   <img
                                     src={getLocalPhotoUrl(viceHead.photoUrl, viceHead.role || viceHead.name)}
                                     alt={viceHead.name}
-                                    className="w-full h-full object-cover rounded-lg bg-slate-950"
+                                    className="w-full h-full object-cover object-top rounded-lg bg-sky-100 shadow-inner"
                                   />
+                                  <span className="absolute bottom-1 left-1/2 -translate-x-1/2 px-1.5 py-0.2 bg-slate-900/80 text-white text-[8px] font-bold rounded-full whitespace-nowrap">
+                                    Pasfoto 4x5 cm
+                                  </span>
                                 </div>
-                                <div>
-                                  <h4 className="font-extrabold text-white text-xs">{viceHead.name}</h4>
-                                  <p className="text-[11px] text-amber-300 font-semibold">{viceHead.role}</p>
-                                  <p className="text-[9px] text-slate-400 font-mono">{viceHead.nipOrNipy}</p>
+                                <div className="flex flex-col items-center justify-center space-y-0.5 w-full">
+                                  <span className="px-1.5 py-0.5 bg-slate-900 text-white text-[9px] sm:text-[10px] font-black rounded-full inline-block whitespace-nowrap">
+                                    Wakil Kepala
+                                  </span>
+                                  <h5 className="font-extrabold text-slate-950 text-xs sm:text-sm leading-tight group-hover:text-sky-900 transition line-clamp-2 mt-0.5">{viceHead.name}</h5>
+                                  <p className="text-[9px] sm:text-[10px] text-slate-800 font-bold truncate max-w-full">{viceHead.role}</p>
+                                  {viceHead.nipOrNipy && <p className="text-[9px] text-slate-700 font-mono">{viceHead.nipOrNipy}</p>}
                                 </div>
                               </div>
-                              <div className="w-0.5 h-8 bg-amber-400/50 my-1"></div>
+                              <div className="w-0.5 h-8 bg-slate-800 my-1"></div>
                             </div>
                           )}
 
                           {/* LEVEL 3: WALI KELAS ROMBEL 1-6 */}
                           <div className="space-y-3">
                             <div className="text-center space-y-1">
-                              <span className="px-3 py-1 bg-amber-500/20 text-amber-300 text-[10px] font-black rounded-full uppercase border border-amber-400/30">
+                              <span className="px-3 py-1 bg-slate-900 text-white text-[10px] font-black rounded-full uppercase shadow-xs">
                                 JAJARAN WALI KELAS ROMBEL (KELAS 1 - 6)
                               </span>
                             </div>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                            <div className="grid grid-cols-6 gap-2 sm:gap-3 w-full">
                               {rombelTeachers.map((t) => (
                                 <div
                                   key={t.id}
-                                  className="bg-slate-900/90 p-3 rounded-2xl border border-slate-800 hover:border-amber-400/50 transition text-center space-y-2 group shadow-md"
+                                  className="bg-[#87CEFA] p-2 sm:p-2.5 rounded-2xl border border-sky-400/80 hover:border-slate-900 transition text-center space-y-1.5 group shadow-md flex flex-col justify-between text-slate-950"
                                 >
-                                  <div className="p-0.5 bg-gradient-to-tr from-amber-500 to-yellow-400 rounded-xl w-12 h-12 mx-auto shadow">
+                                  <div className="p-0.5 bg-white/60 rounded-xl w-full aspect-[4/5] mx-auto shadow-xs overflow-hidden">
                                     <img
                                       src={getLocalPhotoUrl(t.photoUrl, t.role || t.name)}
                                       alt={t.name}
-                                      className="w-full h-full object-cover rounded-lg bg-slate-950"
+                                      className="w-full h-full object-cover object-top rounded-lg bg-sky-100 shadow-inner"
                                     />
                                   </div>
-                                  <div>
-                                    <span className="px-2 py-0.2 bg-amber-400/20 text-yellow-300 text-[9px] font-black rounded-full border border-amber-400/30">
-                                      {t.classAssigned || 'Rombel'}
+                                  <div className="flex flex-col items-center justify-center space-y-0.5">
+                                    <span className="px-1.5 py-0.5 bg-slate-900 text-white text-[9px] sm:text-[10px] font-black rounded-full inline-block whitespace-nowrap">
+                                      {t.assignedRombel || t.classAssigned || 'Rombel'}
                                     </span>
-                                    <h5 className="font-extrabold text-white text-[11px] mt-1 group-hover:text-amber-300 transition truncate">{t.name}</h5>
-                                    <p className="text-[9px] text-slate-400 truncate">{t.subject || t.role}</p>
+                                    <h5 className="font-extrabold text-slate-950 text-[10px] sm:text-[11px] leading-tight group-hover:text-sky-900 transition line-clamp-2 mt-0.5">{t.name}</h5>
+                                    <p className="text-[8px] sm:text-[9px] text-slate-800 font-medium truncate max-w-full">{t.role || t.subject || t.subjectTaught}</p>
                                   </div>
                                 </div>
                               ))}
                             </div>
                           </div>
 
-                          {/* LEVEL 4: OTHER TEACHERS & STAFF */}
-                          {otherStaff.length > 0 && (
-                            <div className="space-y-3 pt-4 border-t border-slate-800">
+                          {/* LEVEL 4: GURU MATA PELAJARAN */}
+                          {subjectTeachers.length > 0 && (
+                            <div className="space-y-3 pt-4 border-t border-sky-400/60">
                               <div className="text-center">
-                                <span className="px-3 py-1 bg-slate-800 text-slate-300 text-[10px] font-black rounded-full uppercase">
-                                  GURU MATA PELAJARAN & STAF TATA USAHA
+                                <span className="px-3 py-1 bg-slate-900 text-white text-[10px] font-black rounded-full uppercase shadow-xs">
+                                  GURU MATA PELAJARAN
                                 </span>
                               </div>
-                              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                                {otherStaff.map((t) => (
-                                  <div key={t.id} className="bg-slate-900 p-3 rounded-2xl border border-slate-800 text-center space-y-1.5">
-                                    <img
-                                      src={getLocalPhotoUrl(t.photoUrl, t.role || t.name)}
-                                      alt={t.name}
-                                      className="w-10 h-10 object-cover rounded-full mx-auto border border-amber-400/40"
-                                    />
-                                    <div>
-                                      <h5 className="font-bold text-white text-[11px] truncate">{t.name}</h5>
-                                      <p className="text-[10px] text-amber-300 truncate">{t.role}</p>
+                              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 sm:gap-3 w-full">
+                                {subjectTeachers.map((t) => (
+                                  <div
+                                    key={t.id}
+                                    className="bg-[#87CEFA] p-2 sm:p-2.5 rounded-2xl border border-sky-400/80 hover:border-slate-900 transition text-center space-y-1.5 group shadow-md flex flex-col justify-between text-slate-950"
+                                  >
+                                    <div className="p-0.5 bg-white/60 rounded-xl w-full aspect-[4/5] mx-auto shadow-xs overflow-hidden">
+                                      <img
+                                        src={getLocalPhotoUrl(t.photoUrl, t.role || t.name)}
+                                        alt={t.name}
+                                        className="w-full h-full object-cover object-top rounded-lg bg-sky-100 shadow-inner"
+                                      />
+                                    </div>
+                                    <div className="flex flex-col items-center justify-center space-y-0.5">
+                                      <span className="px-1.5 py-0.5 bg-slate-900 text-white text-[9px] sm:text-[10px] font-black rounded-full inline-block whitespace-nowrap">
+                                        {t.subject || t.subjectTaught || 'Guru Mapel'}
+                                      </span>
+                                      <h5 className="font-extrabold text-slate-950 text-[10px] sm:text-[11px] leading-tight group-hover:text-sky-900 transition line-clamp-2 mt-0.5">{t.name}</h5>
+                                      <p className="text-[8px] sm:text-[9px] text-slate-800 font-medium truncate max-w-full">{t.role}</p>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* LEVEL 5: STAF TATA USAHA & OPERASIONAL (BAGIAN BAWAH) */}
+                          {tuStaff.length > 0 && (
+                            <div className="space-y-3 pt-4 border-t-2 border-slate-900">
+                              <div className="text-center">
+                                <span className="px-3.5 py-1 bg-amber-400 text-slate-950 text-[10px] font-black rounded-full uppercase shadow-xs">
+                                  STAF TATA USAHA & OPERASIONAL SEKOLAH (BAGIAN BAWAH)
+                                </span>
+                              </div>
+                              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 sm:gap-3 w-full">
+                                {tuStaff.map((t) => (
+                                  <div
+                                    key={t.id}
+                                    className="bg-[#87CEFA] p-2 sm:p-2.5 rounded-2xl border border-sky-400/80 hover:border-slate-900 transition text-center space-y-1.5 group shadow-md flex flex-col justify-between text-slate-950"
+                                  >
+                                    <div className="p-0.5 bg-white/60 rounded-xl w-full aspect-[4/5] mx-auto shadow-xs overflow-hidden">
+                                      <img
+                                        src={getLocalPhotoUrl(t.photoUrl, t.role || t.name)}
+                                        alt={t.name}
+                                        className="w-full h-full object-cover object-top rounded-lg bg-sky-100 shadow-inner"
+                                      />
+                                    </div>
+                                    <div className="flex flex-col items-center justify-center space-y-0.5">
+                                      <span className="px-1.5 py-0.5 bg-slate-900 text-white text-[9px] sm:text-[10px] font-black rounded-full inline-block whitespace-nowrap">
+                                        {t.role || 'Staf TU'}
+                                      </span>
+                                      <h5 className="font-extrabold text-slate-950 text-[10px] sm:text-[11px] leading-tight group-hover:text-sky-900 transition line-clamp-2 mt-0.5">{t.name}</h5>
+                                      <p className="text-[8px] sm:text-[9px] text-slate-800 font-medium truncate max-w-full">Staf Tata Usaha</p>
                                     </div>
                                   </div>
                                 ))}
@@ -1034,35 +1125,35 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
                           {filteredTeachers.map((t) => (
                             <div
                               key={t.id}
-                              className="bg-gradient-to-b from-slate-900 via-indigo-950 to-slate-950 p-5 rounded-2xl border border-amber-400/30 shadow-xl hover:border-amber-400/70 transition flex flex-col justify-between space-y-3 group"
+                              className="bg-[#87CEFA] p-5 rounded-2xl border border-sky-400/80 shadow-md hover:border-slate-900 transition flex flex-col justify-between space-y-3 group text-slate-950"
                             >
                               <div className="space-y-3 text-center">
-                                <div className="p-1 bg-gradient-to-tr from-amber-500 via-amber-300 to-yellow-500 rounded-2xl w-20 h-20 mx-auto shadow-lg">
+                                <div className="p-0.5 bg-white/60 rounded-2xl w-32 aspect-[4/5] mx-auto shadow-xs overflow-hidden">
                                   <img
                                     src={getLocalPhotoUrl(t.photoUrl, t.role || t.name)}
                                     alt={t.name}
-                                    className="w-full h-full object-cover rounded-xl bg-slate-950"
+                                    className="w-full h-full object-cover object-top rounded-xl bg-sky-100 shadow-inner"
                                   />
                                 </div>
                                 <div className="space-y-1">
-                                  <span className="px-2.5 py-0.5 bg-amber-500/20 text-amber-300 text-[9px] font-black rounded-full border border-amber-400/30 uppercase">
-                                    {t.classAssigned ? `Wali ${t.classAssigned}` : t.role}
+                                  <span className="px-2.5 py-0.5 bg-slate-900 text-white text-[9px] font-black rounded-full uppercase shadow-xs">
+                                    {(t.assignedRombel || t.classAssigned) ? `Wali ${t.assignedRombel || t.classAssigned}` : t.role}
                                   </span>
-                                  <h4 className="font-extrabold text-white text-xs group-hover:text-amber-300 transition">{t.name}</h4>
-                                  <p className="text-[11px] text-amber-400 font-medium">{t.subject || t.role}</p>
-                                  <p className="text-[10px] text-slate-400 font-mono">{t.nipOrNipy}</p>
+                                  <h4 className="font-extrabold text-slate-950 text-xs group-hover:text-sky-900 transition">{t.name}</h4>
+                                  <p className="text-[11px] text-slate-800 font-semibold">{t.subject || t.role}</p>
+                                  <p className="text-[10px] text-slate-700 font-mono">{t.nipOrNipy}</p>
                                 </div>
                               </div>
 
-                              <div className="pt-3 border-t border-slate-800 space-y-1 text-[10px]">
-                                <div className="flex items-center justify-between text-slate-300">
-                                  <span className="text-slate-400">Pendidikan:</span>
-                                  <span className="font-bold text-amber-200">{t.education || 'S1 Pendidikan'}</span>
+                              <div className="pt-3 border-t border-sky-400/60 space-y-1 text-[10px]">
+                                <div className="flex items-center justify-between text-slate-800">
+                                  <span className="text-slate-700 font-semibold">Pendidikan:</span>
+                                  <span className="font-bold text-slate-950">{t.education || 'S1 Pendidikan'}</span>
                                 </div>
                                 {t.phone && (
-                                  <div className="flex items-center justify-between text-slate-300">
-                                    <span className="text-slate-400">No. Kontak:</span>
-                                    <span className="font-mono text-slate-200">{t.phone}</span>
+                                  <div className="flex items-center justify-between text-slate-800">
+                                    <span className="text-slate-700 font-semibold">No. Kontak:</span>
+                                    <span className="font-mono text-slate-950">{t.phone}</span>
                                   </div>
                                 )}
                               </div>
@@ -1080,29 +1171,29 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
                 return renderDraggableSection(
                   sec,
                   secIdx,
-                  <div key={sec.id} className="max-w-7xl mx-auto px-6">
-                    <div className="bg-gradient-to-r from-emerald-950 via-teal-900 to-emerald-950 text-white rounded-3xl p-8 shadow-2xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-center border-2 border-yellow-400/40">
+                  <div key={sec.id} className="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="bg-[#00A3DA] text-white rounded-3xl p-8 shadow-md grid grid-cols-1 lg:grid-cols-12 gap-8 items-center border border-sky-300/60">
                       <div className="lg:col-span-5 space-y-4">
-                        <div className="inline-flex items-center gap-2 px-3.5 py-1 bg-yellow-400 text-emerald-950 text-xs font-black rounded-full uppercase tracking-wider shadow">
-                          <Building className="w-3.5 h-3.5 text-emerald-950" /> VISI UTAMA YAYASAN
+                        <div className="inline-flex items-center gap-2 px-3.5 py-1 bg-white/20 text-white text-xs font-black rounded-full uppercase tracking-wider shadow-xs border border-white/30">
+                          <Building className="w-3.5 h-3.5 text-white" /> VISI UTAMA YAYASAN
                         </div>
                         <h3 className="text-2xl sm:text-3xl font-black text-white">{sec.title}</h3>
-                        <p className="text-xs text-emerald-100 leading-relaxed bg-emerald-900/90 p-5 rounded-2xl border border-lime-400/30 italic font-serif">
+                        <p className="text-sm sm:text-base text-white leading-relaxed bg-cyan-950/60 p-5 rounded-2xl border border-sky-200/40 italic font-serif">
                           "{visionMission?.vision || 'Menjadi lembaga pendidikan terkemuka berakhlak mulia.'}"
                         </p>
                       </div>
 
                       <div className="lg:col-span-7 space-y-4">
-                        <h4 className="text-xs font-black uppercase text-yellow-300 tracking-widest border-b border-lime-400/30 pb-2">
+                        <h4 className="text-xs font-black uppercase text-sky-100 tracking-widest border-b border-sky-300/50 pb-2">
                           MISI STRATEGIS SEKOLAH INTERNASIONAL
                         </h4>
                         <div className="space-y-2.5">
                           {(visionMission?.mission || []).map((m, idx) => (
-                            <div key={idx} className="flex items-start gap-3 bg-emerald-900/80 p-3.5 rounded-2xl border border-lime-400/30 hover:border-yellow-400 transition">
-                              <div className="w-7 h-7 rounded-xl bg-gradient-to-tr from-yellow-400 to-lime-300 text-emerald-950 font-black text-xs flex items-center justify-center shrink-0 shadow-md">
+                            <div key={idx} className="flex items-start gap-3 bg-cyan-950/60 p-3.5 rounded-2xl border border-sky-200/40 hover:border-white transition">
+                              <div className="w-7 h-7 rounded-xl bg-white text-cyan-950 font-black text-xs flex items-center justify-center shrink-0 shadow-xs">
                                 {idx + 1}
                               </div>
-                              <p className="text-xs text-emerald-100 leading-relaxed pt-0.5">{m}</p>
+                              <p className="text-sm text-white leading-relaxed pt-0.5">{m}</p>
                             </div>
                           ))}
                         </div>
@@ -1117,35 +1208,35 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
                 return renderDraggableSection(
                   sec,
                   secIdx,
-                  <div key={sec.id} className="max-w-7xl mx-auto px-6">
-                    <div className="bg-gradient-to-b from-emerald-900 via-teal-950 to-emerald-950 p-6 sm:p-8 rounded-3xl border-2 border-yellow-400/40 shadow-2xl space-y-5">
-                      <div className="flex items-center gap-3 border-b border-lime-400/30 pb-4">
-                        <div className="p-3 bg-gradient-to-tr from-yellow-400 to-lime-300 text-emerald-950 rounded-2xl shrink-0 shadow-md">
+                  <div key={sec.id} className="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="bg-[#0000FF] p-6 sm:p-8 rounded-3xl border border-blue-400/60 shadow-md space-y-5 text-white">
+                      <div className="flex items-center gap-3 border-b border-blue-400/50 pb-4">
+                        <div className="p-3 bg-white/20 text-white rounded-2xl shrink-0 shadow-xs">
                           <Search className="w-6 h-6" />
                         </div>
                         <div>
                           <h3 className="font-extrabold text-white text-lg">{sec.title}</h3>
-                          <p className="text-xs text-emerald-200">
+                          <p className="text-xs text-blue-100">
                             Cek Hasil E-Raport Digital & Status Pembayaran SPP Bulanan berdasarkan Nama Siswa atau NISN Rombel.
                           </p>
                         </div>
                       </div>
 
-                      <form onSubmit={handleParentSearch} className="grid grid-cols-1 sm:grid-cols-12 gap-3 bg-emerald-950/80 p-3.5 rounded-2xl border border-lime-400/30">
+                      <form onSubmit={handleParentSearch} className="grid grid-cols-1 sm:grid-cols-12 gap-3 bg-blue-900/80 p-3.5 rounded-2xl border border-blue-400/50">
                         <div className="sm:col-span-5">
                           <input
                             type="text"
                             value={searchStudentName}
                             onChange={(e) => setSearchStudentName(e.target.value)}
                             placeholder="Ketik Nama Siswa (Contoh: Ahmad Rizky)..."
-                            className="w-full bg-emerald-900 border border-emerald-700 text-white rounded-xl px-4 py-2.5 text-xs font-semibold focus:outline-none focus:border-yellow-400 placeholder-emerald-400"
+                            className="w-full bg-white border border-blue-300 text-slate-800 rounded-xl px-4 py-2.5 text-xs font-semibold focus:outline-none focus:border-white placeholder-slate-400"
                           />
                         </div>
                         <div className="sm:col-span-4">
                           <select
                             value={searchStudentClass}
                             onChange={(e) => setSearchStudentClass(e.target.value)}
-                            className="w-full bg-emerald-900 border border-emerald-700 rounded-xl px-4 py-2.5 text-xs font-bold text-yellow-300 focus:outline-none focus:border-yellow-400"
+                            className="w-full bg-white border border-blue-300 text-slate-800 rounded-xl px-4 py-2.5 text-xs font-bold focus:outline-none focus:border-white"
                           >
                             <option value="SEMUA">-- Semua Kelas / Rombel --</option>
                             <option value="Kelas 1">Kelas 1</option>
@@ -1159,7 +1250,7 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
                         <div className="sm:col-span-3">
                           <button
                             type="submit"
-                            className="w-full py-2.5 bg-gradient-to-r from-yellow-400 via-lime-300 to-amber-300 hover:brightness-110 text-emerald-950 rounded-xl text-xs font-black shadow-lg shadow-yellow-400/20 flex items-center justify-center gap-1.5 cursor-pointer shrink-0 transition"
+                            className="w-full py-2.5 bg-white text-blue-900 hover:bg-blue-100 rounded-xl text-xs font-black shadow-xs flex items-center justify-center gap-1.5 cursor-pointer shrink-0 transition"
                           >
                             <Search className="w-4 h-4" />
                             <span>Cari Data Siswa</span>
@@ -1171,30 +1262,30 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
                       {hasSearched && (
                         <div className="pt-2">
                           {!searchedStudent && !searchedRaport ? (
-                            <div className="p-4 bg-yellow-400/10 border border-yellow-400/30 rounded-2xl text-yellow-300 text-xs flex items-center gap-2">
-                              <AlertTriangle className="w-4 h-4 shrink-0 text-yellow-400" />
+                            <div className="p-4 bg-amber-100 border border-amber-300 rounded-2xl text-amber-950 text-xs flex items-center gap-2">
+                              <AlertTriangle className="w-4 h-4 shrink-0 text-amber-700" />
                               <span>Data NISN / Nama siswa tidak ditemukan. Silakan hubungi Wali Kelas Rombel.</span>
                             </div>
                           ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               {/* Student SPP Card */}
                               {searchedStudent && (
-                                <div className="p-5 bg-emerald-950/90 border border-yellow-400/30 rounded-2xl space-y-2">
+                                <div className="p-5 bg-blue-900/90 border border-blue-400/60 rounded-2xl space-y-2 text-white">
                                   <div className="flex justify-between items-center">
-                                    <span className="text-[10px] font-black text-yellow-300 uppercase">Status SPP Siswa</span>
+                                    <span className="text-[10px] font-black text-blue-200 uppercase">Status SPP Siswa</span>
                                     <span
                                       className={`text-[10px] font-bold px-3 py-0.5 rounded-full ${
                                         searchedStudent.sppStatus === 'LUNAS'
-                                          ? 'bg-lime-400/20 text-lime-300 border border-lime-400/30'
-                                          : 'bg-yellow-400/20 text-yellow-300 border border-yellow-400/30'
+                                          ? 'bg-white/20 text-white border border-white/40'
+                                          : 'bg-amber-400 text-slate-900 font-extrabold'
                                       }`}
                                     >
                                       {searchedStudent.sppStatus}
                                     </span>
                                   </div>
                                   <h4 className="font-extrabold text-white text-sm">{searchedStudent.name}</h4>
-                                  <p className="text-xs text-emerald-200">
-                                    NISN: <span className="font-mono font-bold text-yellow-300">{searchedStudent.nis}</span> &bull; {searchedStudent.gradeClass}
+                                  <p className="text-xs text-blue-100">
+                                    NISN: <span className="font-mono font-bold text-white">{searchedStudent.nis}</span> &bull; {searchedStudent.gradeClass}
                                   </p>
                                   <p className="text-xs font-bold text-white">
                                     Nominal SPP: {formatRupiah(searchedStudent.sppAmount)} / bulan
@@ -1204,19 +1295,19 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
 
                               {/* Student E-Raport Summary */}
                               {searchedRaport && (
-                                <div className="p-5 bg-emerald-950/90 border border-yellow-400/30 rounded-2xl space-y-2">
+                                <div className="p-5 bg-blue-900/90 border border-blue-400/60 rounded-2xl space-y-2 text-white">
                                   <div className="flex justify-between items-center">
-                                    <span className="text-[10px] font-black text-yellow-300 uppercase">E-Raport Semester</span>
-                                    <span className="text-[10px] font-bold px-3 py-0.5 bg-lime-400/20 text-lime-300 rounded-full border border-lime-400/30">
+                                    <span className="text-[10px] font-black text-blue-200 uppercase">E-Raport Semester</span>
+                                    <span className="text-[10px] font-bold px-3 py-0.5 bg-white/20 text-white rounded-full border border-white/40">
                                       {searchedRaport.status}
                                     </span>
                                   </div>
                                   <h4 className="font-extrabold text-white text-sm">{searchedRaport.studentName}</h4>
-                                  <p className="text-xs text-emerald-200">T.A: {searchedRaport.academicYear}</p>
-                                  <p className="text-xs text-emerald-200 font-medium italic">"{searchedRaport.teacherNotes}"</p>
+                                  <p className="text-xs text-blue-100">T.A: {searchedRaport.academicYear}</p>
+                                  <p className="text-xs text-blue-100 font-medium italic">"{searchedRaport.teacherNotes}"</p>
                                   <button
                                     onClick={() => printDocument('printable-raport', `E-Raport ${searchedRaport.studentName}`)}
-                                    className="mt-2 w-full py-2 bg-gradient-to-r from-yellow-400 via-lime-300 to-amber-300 text-emerald-950 rounded-xl text-xs font-black shadow-lg flex items-center justify-center gap-1.5 cursor-pointer hover:brightness-110 transition"
+                                    className="mt-2 w-full py-2 bg-white text-blue-900 hover:bg-blue-100 rounded-xl text-xs font-black shadow-xs flex items-center justify-center gap-1.5 cursor-pointer transition"
                                   >
                                     <Printer className="w-3.5 h-3.5" />
                                     <span>Cetak E-Raport Lembar Hasil Belajar</span>
@@ -1237,16 +1328,16 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
                 return renderDraggableSection(
                   sec,
                   secIdx,
-                  <div key={sec.id} className="max-w-7xl mx-auto px-6 space-y-6">
-                    <div className="flex justify-between items-end border-b border-lime-400/30 pb-4">
+                  <div key={sec.id} className="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+                    <div className="flex justify-between items-end border-b border-blue-400/50 pb-4">
                       <div>
-                        <span className="text-[10px] font-black uppercase tracking-widest text-yellow-300">PUBLIKASI RESMI</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-blue-100">PUBLIKASI RESMI</span>
                         <h3 className="text-2xl sm:text-3xl font-black text-white">{sec.title}</h3>
-                        <p className="text-xs text-emerald-200">Kabar agenda internasional, prestasi, dan pengumuman yayasan.</p>
+                        <p className="text-xs text-blue-100">Kabar agenda internasional, prestasi, dan pengumuman yayasan.</p>
                       </div>
                       <button
                         onClick={() => setActiveTab('berita')}
-                        className="text-xs font-bold text-yellow-300 hover:text-yellow-200 flex items-center gap-1 cursor-pointer transition"
+                        className="text-xs font-bold text-white hover:text-blue-200 flex items-center gap-1 cursor-pointer transition"
                       >
                         <span>Lihat Berita Selengkapnya</span>
                         <ChevronRight className="w-4 h-4" />
@@ -1255,22 +1346,22 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
 
                     <div className={`grid ${newsGridClass} gap-6`}>
                       {newsArticles.slice(0, 3).map((item) => (
-                        <div key={item.id} className="bg-gradient-to-b from-emerald-900 via-teal-950 to-emerald-950 rounded-3xl border border-lime-400/40 hover:border-yellow-400 shadow-xl overflow-hidden flex flex-col justify-between transition group">
+                        <div key={item.id} className="bg-[#0000FF] rounded-3xl border border-blue-400/60 hover:border-white shadow-md overflow-hidden flex flex-col justify-between transition group text-white">
                           <div>
-                            <div className="w-full h-52 bg-emerald-950 p-3 flex items-center justify-center rounded-t-3xl overflow-hidden relative">
-                              <img src={item.imageUrl} alt={item.title} className="max-h-full max-w-full w-auto h-auto object-contain rounded-xl group-hover:scale-105 transition duration-500" />
+                            <div className="w-full h-56 overflow-hidden relative rounded-t-3xl">
+                              <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
                             </div>
                             <div className="p-5 space-y-2.5">
-                              <span className="text-[10px] font-black px-2.5 py-0.5 bg-yellow-400/20 text-yellow-300 rounded-md border border-yellow-400/30 uppercase">
+                              <span className="text-[10px] font-black px-2.5 py-0.5 bg-white/20 text-white rounded-md border border-white/30 uppercase">
                                 {item.category}
                               </span>
-                              <h4 className="font-extrabold text-white text-sm line-clamp-2 leading-snug group-hover:text-yellow-300 transition">{item.title}</h4>
-                              <p className="text-xs text-emerald-200 line-clamp-2 leading-relaxed">{item.excerpt}</p>
+                              <h4 className="font-extrabold text-white text-sm line-clamp-2 leading-snug group-hover:text-blue-200 transition">{item.title}</h4>
+                              <p className="text-xs text-blue-100 line-clamp-2 leading-relaxed">{item.excerpt}</p>
                             </div>
                           </div>
-                          <div className="p-5 pt-0 text-[10px] text-emerald-300 font-mono flex items-center justify-between border-t border-emerald-900 mt-2">
+                          <div className="p-5 pt-0 text-[10px] text-blue-200 font-mono flex items-center justify-between border-t border-blue-400/40 mt-2">
                             <span>{formatDateIndonesian(item.date)}</span>
-                            <span className="text-yellow-300 font-bold group-hover:translate-x-1 transition flex items-center gap-1">
+                            <span className="text-white font-bold group-hover:translate-x-1 transition flex items-center gap-1">
                               Baca <ArrowRight className="w-3 h-3" />
                             </span>
                           </div>
@@ -1286,16 +1377,16 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
                 return renderDraggableSection(
                   sec,
                   secIdx,
-                  <div key={sec.id} className="max-w-7xl mx-auto px-6 space-y-6">
-                    <div className="flex justify-between items-end border-b border-lime-400/30 pb-4">
+                  <div key={sec.id} className="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+                    <div className="flex justify-between items-end border-b border-blue-400/50 pb-4">
                       <div>
-                        <span className="text-[10px] font-black uppercase tracking-widest text-yellow-300">DOKUMENTASI DIPLOMASI & KEGIATAN</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-blue-100">DOKUMENTASI DIPLOMASI & KEGIATAN</span>
                         <h3 className="text-2xl sm:text-3xl font-black text-white">{sec.title}</h3>
-                        <p className="text-xs text-emerald-200">Aktivitas belajar Rombel, sarana kampus modern, dan ajang internasional.</p>
+                        <p className="text-xs text-blue-100">Aktivitas belajar Rombel, sarana kampus modern, dan ajang internasional.</p>
                       </div>
                       <button
                         onClick={() => setActiveTab('galeri')}
-                        className="text-xs font-bold text-yellow-300 hover:text-yellow-200 flex items-center gap-1 cursor-pointer transition"
+                        className="text-xs font-bold text-white hover:text-blue-200 flex items-center gap-1 cursor-pointer transition"
                       >
                         <span>Buka Galeri Utama</span>
                         <ChevronRight className="w-4 h-4" />
@@ -1307,25 +1398,51 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
                         <div
                           key={item.id}
                           onClick={() => setSelectedGalleryItem(item)}
-                          className="relative group overflow-hidden bg-emerald-950 rounded-2xl shadow-xl border border-lime-400/40 hover:border-yellow-400 cursor-pointer transition flex flex-col justify-between"
+                          className="relative group overflow-hidden bg-[#0000FF] rounded-2xl shadow-md border border-blue-400/60 hover:border-white cursor-pointer transition flex flex-col justify-between"
                         >
-                          {isMediaVideo(item.url) ? (
-                            <div className="w-full h-52 bg-emerald-900 flex items-center justify-center text-yellow-300 text-xs font-bold">
-                              Video Media
+                          {isYouTubeUrl(item.url) ? (
+                            <div className="w-full h-52 bg-slate-900 relative overflow-hidden flex items-center justify-center group/vid">
+                              <iframe
+                                src={getYoutubeEmbedUrl(item.url)}
+                                title={item.title}
+                                className="w-full h-full border-0 pointer-events-none opacity-80"
+                              />
+                              <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center group-hover/vid:bg-black/20 transition">
+                                <div className="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-md group-hover/vid:scale-110 transition">
+                                  <PlayCircle className="w-7 h-7 fill-white text-blue-600" />
+                                </div>
+                                <span className="text-[10px] font-extrabold text-amber-300 mt-1 uppercase tracking-wider">Putar YouTube</span>
+                              </div>
+                            </div>
+                          ) : (item.type === 'video' || isMediaVideo(item.url) || (item as any).mediaType === 'video') ? (
+                            <div className="w-full h-52 bg-slate-900 relative overflow-hidden flex items-center justify-center group/vid cursor-pointer" onClick={() => setSelectedGalleryItem(item)}>
+                              <video
+                                src={item.url}
+                                muted
+                                playsInline
+                                preload="metadata"
+                                className="w-full h-full object-cover opacity-85"
+                              />
+                              <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center group-hover/vid:bg-black/20 transition">
+                                <div className="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-md group-hover/vid:scale-110 transition">
+                                  <PlayCircle className="w-7 h-7 fill-white text-blue-600" />
+                                </div>
+                                <span className="text-[10px] font-extrabold text-amber-300 mt-1 uppercase tracking-wider">Putar Video</span>
+                              </div>
                             </div>
                           ) : (
-                            <div className="w-full h-56 bg-emerald-950 p-2 flex items-center justify-center overflow-hidden">
+                            <div className="w-full h-56 overflow-hidden relative">
                               <img
                                 src={item.url}
                                 alt={item.title}
-                                className="max-h-full max-w-full w-auto h-auto object-contain transition-transform duration-500 group-hover:scale-105"
+                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                               />
                             </div>
                           )}
-                          <div className="absolute inset-0 bg-gradient-to-t from-emerald-950 via-emerald-950/70 to-transparent opacity-0 group-hover:opacity-100 transition duration-300 p-4 flex flex-col justify-end text-white">
-                            <span className="text-[10px] font-bold text-yellow-300 uppercase tracking-wide">{item.category}</span>
+                          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/70 to-transparent opacity-0 group-hover:opacity-100 transition duration-300 p-4 flex flex-col justify-end text-white">
+                            <span className="text-[10px] font-bold text-amber-300 uppercase tracking-wide">{item.category}</span>
                             <h4 className="font-extrabold text-xs line-clamp-1 text-white">{item.title}</h4>
-                            <p className="text-[10px] text-emerald-200 line-clamp-1">{item.description}</p>
+                            <p className="text-[10px] text-blue-200 line-clamp-1">{item.description}</p>
                           </div>
                         </div>
                       ))}
@@ -1339,20 +1456,20 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
                 return renderDraggableSection(
                   sec,
                   secIdx,
-                  <div key={sec.id} className="max-w-7xl mx-auto px-6 space-y-6">
+                  <div key={sec.id} className="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
                     <div className="text-center space-y-2">
-                      <span className="px-3.5 py-1 bg-amber-500/20 text-amber-300 text-xs font-black rounded-full uppercase border border-amber-400/30">
+                      <span className="px-3.5 py-1 bg-white/20 text-white border border-white/40 text-xs font-black rounded-full uppercase">
                         REKAM JEJAK KEJUARAAN GLOBAL
                       </span>
                       <h3 className="text-2xl sm:text-3xl font-black text-white">{sec.title}</h3>
-                      <p className="text-xs text-slate-400 max-w-xl mx-auto">Kebanggaan sekolah atas medali dan gelar juara internasional & nasional yang diraih para siswa Rombel.</p>
+                      <p className="text-xs text-blue-100 max-w-xl mx-auto">Kebanggaan sekolah atas medali dan gelar juara internasional & nasional yang diraih para siswa Rombel.</p>
                     </div>
 
                     <div className={`grid ${achievementGridClass} gap-6`}>
                       {achievements.map((ach) => (
-                        <div key={ach.id} className="bg-gradient-to-b from-slate-900 via-indigo-950 to-slate-950 rounded-3xl border border-amber-400/30 hover:border-amber-400/70 shadow-2xl overflow-hidden flex flex-col justify-between transition-all duration-300 group hover:-translate-y-1">
+                        <div key={ach.id} className="bg-[#0000FF] rounded-3xl border border-blue-400/60 hover:border-white shadow-md overflow-hidden flex flex-col justify-between transition-all duration-300 group hover:-translate-y-0.5 text-white">
                           <div
-                            className="w-full h-56 sm:h-64 bg-slate-950 overflow-hidden relative cursor-pointer group/img"
+                            className="w-full h-56 sm:h-64 bg-blue-900 overflow-hidden relative cursor-pointer group/img"
                             onClick={() => {
                               setSelectedGalleryItem({
                                 id: ach.id,
@@ -1368,16 +1485,16 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
                               alt={ach.studentName}
                               className="w-full h-full object-cover transition-transform duration-500 group-hover/img:scale-105"
                             />
-                            <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent opacity-70"></div>
-                            <div className="absolute top-3 right-3 px-3 py-1.5 bg-slate-900/90 text-white rounded-xl text-[11px] font-bold opacity-0 group-hover/img:opacity-100 transition flex items-center gap-1.5 shadow-lg border border-amber-400/40">
-                              <Eye className="w-3.5 h-3.5 text-amber-400" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent opacity-60"></div>
+                            <div className="absolute top-3 right-3 px-3 py-1.5 bg-white/90 text-slate-800 rounded-xl text-[11px] font-bold opacity-0 group-hover/img:opacity-100 transition flex items-center gap-1.5 shadow-xs border border-blue-200">
+                              <Eye className="w-3.5 h-3.5 text-blue-700" />
                               <span>Lihat Foto Full</span>
                             </div>
                           </div>
 
                           <div className="p-5 space-y-2.5">
                             <div className="flex items-center justify-between gap-2">
-                              <span className="text-[10px] font-black px-2.5 py-0.5 bg-amber-500/20 text-amber-300 rounded-md uppercase border border-amber-400/30">
+                              <span className="text-[10px] font-black px-2.5 py-0.5 bg-white/20 text-white rounded-md uppercase border border-white/30">
                                 Tingkat {ach.level}
                               </span>
                               <button
@@ -1390,20 +1507,31 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
                                     category: 'Prestasi Siswa',
                                   });
                                 }}
-                                className="text-[11px] font-bold text-amber-400 hover:text-amber-300 flex items-center gap-1 cursor-pointer"
+                                className="text-[11px] font-bold text-white hover:text-blue-200 flex items-center gap-1 cursor-pointer"
                               >
                                 <Eye className="w-3.5 h-3.5" />
                                 <span>Foto Full</span>
                               </button>
                             </div>
                             <h4 className="font-extrabold text-white text-sm leading-snug">{ach.achievementTitle}</h4>
-                            <p className="text-xs font-bold text-amber-400">{ach.competitionName}</p>
-                            <p className="text-xs text-slate-300">
+                            <p className="text-xs font-bold text-blue-100">{ach.competitionName}</p>
+                            <p className="text-xs text-blue-100">
                               Siswa: <span className="font-bold text-white">{ach.studentName}</span> ({ach.gradeClass})
                             </p>
                           </div>
                         </div>
                       ))}
+                    </div>
+
+                    <div className="text-center pt-2">
+                      <button
+                        onClick={() => setActiveTab('prestasi')}
+                        className="px-6 py-3 bg-white text-blue-900 hover:bg-blue-100 font-black text-xs rounded-2xl shadow-xs transition cursor-pointer hover:scale-105 inline-flex items-center gap-2"
+                      >
+                        <Award className="w-4 h-4 text-blue-900" />
+                        <span>Buka Halaman Prestasi Sekolah & Medali Lengkap</span>
+                        <ChevronRight className="w-4 h-4 text-blue-900" />
+                      </button>
                     </div>
                   </div>
                 );
@@ -1414,9 +1542,9 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
                 return renderDraggableSection(
                   sec,
                   secIdx,
-                  <div key={sec.id} className="max-w-7xl mx-auto px-6">
-                    <div className="bg-gradient-to-r from-slate-950 via-indigo-950 to-slate-950 p-8 rounded-3xl border border-amber-400/40 shadow-2xl grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-                      <div className="p-1 bg-gradient-to-tr from-amber-500 via-amber-300 to-yellow-500 rounded-2xl shadow-xl">
+                  <div key={sec.id} className="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="bg-[#0000FF] p-8 rounded-3xl border border-blue-400/60 shadow-md grid grid-cols-1 md:grid-cols-2 gap-8 items-center text-white">
+                      <div className="p-0.5 bg-blue-300/40 rounded-2xl shadow-xs">
                         <img
                           src={foundationProfile.buildingPhotoUrl || 'https://images.unsplash.com/photo-1580582932707-520aed937b7b?auto=format&fit=crop&w=1000&q=80'}
                           alt="Gedung Kampus"
@@ -1424,16 +1552,16 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
                         />
                       </div>
                       <div className="space-y-4">
-                        <span className="px-3.5 py-1 bg-amber-500/20 text-amber-300 text-xs font-black rounded-full uppercase border border-amber-400/30">
+                        <span className="px-3.5 py-1 bg-white/20 text-white text-xs font-black rounded-full uppercase border border-white/30">
                           {sec.title}
                         </span>
                         <h3 className="text-2xl sm:text-3xl font-black text-white">{foundationProfile.name}</h3>
-                        <p className="text-xs text-slate-300 leading-relaxed font-normal">
+                        <p className="text-xs text-blue-100 leading-relaxed font-normal">
                           Menyelenggarakan pendidikan formal berstandar internasional dari jenjang Sekolah Dasar hingga menengah, dilengkapi akreditasi unggul, fasilitas sarana modern, serta tata kelola keuangan ISAK 35 terpercaya.
                         </p>
                         <button
                           onClick={() => setActiveTab('tentang')}
-                          className="px-6 py-3 bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500 text-slate-950 font-black text-xs rounded-xl shadow-lg flex items-center gap-2 cursor-pointer hover:brightness-110 transition"
+                          className="px-6 py-3 bg-white text-blue-900 hover:bg-blue-100 font-black text-xs rounded-xl shadow-xs flex items-center gap-2 cursor-pointer transition"
                         >
                           <span>Selengkapnya Tentang Sekolah</span>
                           <ArrowRight className="w-4 h-4" />
@@ -1449,18 +1577,18 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
                 return renderDraggableSection(
                   sec,
                   secIdx,
-                  <div key={sec.id} className="max-w-7xl mx-auto px-6">
-                    <div className="bg-gradient-to-r from-slate-950 via-indigo-950 to-slate-950 text-white p-8 rounded-3xl shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6 border border-amber-400/40">
+                  <div key={sec.id} className="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="bg-[#0000FF] text-white p-8 rounded-3xl shadow-md flex flex-col md:flex-row items-center justify-between gap-6 border border-blue-400/60">
                       <div className="space-y-2">
-                        <span className="px-3 py-0.5 bg-amber-500/20 text-amber-300 text-[10px] font-black rounded-full border border-amber-400/30 uppercase tracking-widest">LAYANAN INFORMASI PPDB & AKADEMIK</span>
-                        <h3 className="text-2xl sm:text-3xl font-black">{sec.title}</h3>
-                        <p className="text-xs text-slate-300">
+                        <span className="px-3 py-0.5 bg-white/20 text-white text-[10px] font-black rounded-full border border-white/30 uppercase tracking-widest">LAYANAN INFORMASI PPDB & AKADEMIK</span>
+                        <h3 className="text-2xl sm:text-3xl font-black text-white">{sec.title}</h3>
+                        <p className="text-xs text-blue-100">
                           Hubungi Layanan Pendaftaran Siswa Baru (PPDB), Informasi E-Raport, atau Keuangan SPP.
                         </p>
                       </div>
                       <button
                         onClick={() => setActiveTab('kontak')}
-                        className="px-6 py-3 bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500 hover:brightness-110 text-slate-950 font-black text-xs rounded-2xl shadow-xl shadow-amber-500/20 flex items-center gap-2 cursor-pointer shrink-0 transition"
+                        className="px-6 py-3 bg-white text-blue-900 hover:bg-blue-100 font-black text-xs rounded-2xl shadow-xs flex items-center gap-2 cursor-pointer shrink-0 transition"
                       >
                         <Phone className="w-4 h-4" />
                         <span>Kirim Pesan / Hubungi Kami</span>
@@ -1477,24 +1605,24 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
 
         {/* ==================== TENTANG KAMI PAGE ==================== */}
         {activeTab === 'tentang' && (
-          <div className="max-w-7xl mx-auto px-6 py-12 space-y-12">
+          <div className="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12">
             <div className="text-center space-y-3">
-              <span className="px-4 py-1.5 bg-amber-500/20 text-amber-300 text-xs font-black rounded-full uppercase border border-amber-400/30 tracking-wider">
+              <span className="px-4 py-1.5 bg-emerald-100 text-emerald-900 text-xs font-black rounded-full uppercase border border-emerald-300 tracking-wider">
                 PROFIL YAYASAN PENDIDIKAN INTERNASIONAL
               </span>
-              <h2 className="text-3xl sm:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-amber-100 to-amber-300">{foundationProfile.aboutTitle || foundationProfile.name}</h2>
+              <h2 className="text-3xl sm:text-4xl font-black text-emerald-950">{foundationProfile.aboutTitle || foundationProfile.name}</h2>
               {foundationProfile.aboutSubtitle && (
-                <p className="text-sm font-bold text-amber-300 max-w-2xl mx-auto">
+                <p className="text-sm font-bold text-emerald-800 max-w-2xl mx-auto">
                   {foundationProfile.aboutSubtitle}
                 </p>
               )}
-              <p className="text-xs text-slate-400 max-w-2xl mx-auto font-mono">
+              <p className="text-xs text-slate-500 max-w-2xl mx-auto font-mono">
                 Pengesahan Kemenkumham: {foundationProfile.legalNumber}
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center bg-gradient-to-b from-slate-900 via-indigo-950 to-slate-950 p-8 rounded-3xl border border-amber-400/30 shadow-2xl">
-              <div className="p-1 bg-gradient-to-tr from-amber-500 via-amber-300 to-yellow-500 rounded-2xl shadow-xl">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center bg-[#0000FF] p-8 rounded-3xl border border-blue-400/60 shadow-md text-white">
+              <div className="p-0.5 bg-blue-300/40 rounded-2xl shadow-xs">
                 <img
                   src={foundationProfile.buildingPhotoUrl || 'https://images.unsplash.com/photo-1580582932707-520aed937b7b?auto=format&fit=crop&w=1000&q=80'}
                   alt="Gedung Sekolah"
@@ -1503,26 +1631,26 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
               </div>
               <div className="space-y-4">
                 <h3 className="text-xl font-black text-white">Sejarah & Filosofi Pendirian</h3>
-                <p className="text-xs text-slate-300 leading-relaxed whitespace-pre-line">
+                <p className="text-xs text-blue-100 leading-relaxed whitespace-pre-line">
                   {foundationProfile.aboutHistory ||
-                    'Yayasan Pendidikan Widya Nusantara didirikan untuk memberikan pendidikan berkualitas tinggi berstandar internasional berbasis nilai-nilai keislaman dan kebudayaan nasional. Sekolah mengelola Rombongan Belajar (Rombel) dari Kelas 1 hingga Kelas 6 dengan ruang kelas modern ber-AC, perpustakaan digital, serta laboratorium sains & komputer.'}
+                    'Yayasan Pendidikan Daarul Habibah didirikan untuk memberikan pendidikan berkualitas tinggi berstandar internasional berbasis nilai-nilai keislaman dan kebudayaan nasional. Sekolah mengelola Rombongan Belajar (Rombel) dari Kelas 1 hingga Kelas 6 dengan ruang kelas modern ber-AC, perpustakaan digital, serta laboratorium sains & komputer.'}
                 </p>
                 {foundationProfile.aboutDescription && (
-                  <p className="text-xs text-amber-200 font-medium bg-slate-900/90 p-4 rounded-2xl border border-amber-400/20 leading-relaxed italic">
+                  <p className="text-xs text-white font-medium bg-blue-900/80 p-4 rounded-2xl border border-blue-400/50 leading-relaxed italic">
                     {foundationProfile.aboutDescription}
                   </p>
                 )}
-                <div className="p-4 bg-slate-950/80 rounded-2xl border border-amber-400/20 shadow-inner space-y-2 text-xs">
-                  <div className="flex items-center gap-2 text-slate-300">
-                    <MapPin className="w-4 h-4 text-amber-400 shrink-0" />
+                <div className="p-4 bg-blue-900/80 rounded-2xl border border-blue-400/50 shadow-inner space-y-2 text-xs text-white">
+                  <div className="flex items-center gap-2 text-blue-100">
+                    <MapPin className="w-4 h-4 text-blue-300 shrink-0" />
                     <span>{foundationProfile.address}</span>
                   </div>
-                  <div className="flex items-center gap-2 text-slate-300">
-                    <Phone className="w-4 h-4 text-amber-400 shrink-0" />
+                  <div className="flex items-center gap-2 text-blue-100">
+                    <Phone className="w-4 h-4 text-blue-300 shrink-0" />
                     <span>{foundationProfile.phone}</span>
                   </div>
-                  <div className="flex items-center gap-2 text-slate-300">
-                    <Mail className="w-4 h-4 text-amber-400 shrink-0" />
+                  <div className="flex items-center gap-2 text-blue-100">
+                    <Mail className="w-4 h-4 text-blue-300 shrink-0" />
                     <span>{foundationProfile.email}</span>
                   </div>
                 </div>
@@ -1530,39 +1658,39 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
             </div>
 
             {/* Visi & Misi Ringkas di Halaman Tentang */}
-            <div className="bg-gradient-to-r from-slate-950 via-indigo-950 to-slate-950 text-white rounded-3xl p-8 shadow-2xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-center border border-amber-400/30">
+            <div className="bg-[#00A3DA] text-white rounded-3xl p-8 shadow-md grid grid-cols-1 lg:grid-cols-12 gap-8 items-center border border-sky-300/60">
               <div className="lg:col-span-5 space-y-3">
-                <div className="inline-flex items-center gap-2 px-3.5 py-1 bg-amber-500/20 text-amber-300 text-xs font-black rounded-full border border-amber-400/30">
-                  <Building className="w-3.5 h-3.5 text-amber-400" /> VISI UTAMA YAYASAN
+                <div className="inline-flex items-center gap-2 px-3.5 py-1 bg-white/20 text-white text-xs font-black rounded-full border border-white/30">
+                  <Building className="w-3.5 h-3.5 text-sky-100" /> VISI UTAMA YAYASAN
                 </div>
                 <h3 className="text-2xl font-black text-white">Visi Strategis</h3>
-                <p className="text-xs text-slate-200 leading-relaxed bg-slate-900/90 p-4 rounded-2xl border border-amber-400/20 italic font-serif">
+                <p className="text-sm sm:text-base text-sky-50 leading-relaxed bg-cyan-950/60 p-4 rounded-2xl border border-sky-200/40 italic font-serif">
                   "{visionMission?.vision || 'Menjadi lembaga pendidikan terkemuka berakhlak mulia.'}"
                 </p>
               </div>
 
               <div className="lg:col-span-7 space-y-3">
-                <h4 className="text-xs font-black uppercase text-amber-300 tracking-widest border-b border-amber-500/20 pb-2">
+                <h4 className="text-xs font-black uppercase text-sky-100 tracking-widest border-b border-sky-300/40 pb-2">
                   MISI STRATEGIS SEKOLAH
                 </h4>
                 <div className="space-y-2">
                   {(visionMission?.mission || []).map((m, idx) => (
-                    <div key={idx} className="flex items-start gap-3 bg-slate-900/80 p-3.5 rounded-2xl border border-indigo-800/80">
-                      <div className="w-6 h-6 rounded-lg bg-gradient-to-tr from-amber-500 to-yellow-400 text-slate-950 font-black text-xs flex items-center justify-center shrink-0">
+                    <div key={idx} className="flex items-start gap-3 bg-cyan-950/60 p-3.5 rounded-2xl border border-sky-200/40">
+                      <div className="w-6 h-6 rounded-lg bg-white text-cyan-950 font-black text-xs flex items-center justify-center shrink-0 font-bold">
                         {idx + 1}
                       </div>
-                      <p className="text-xs text-slate-200 leading-relaxed">{m}</p>
+                      <p className="text-sm text-sky-50 leading-relaxed">{m}</p>
                     </div>
                   ))}
                 </div>
               </div>
             </div>
 
-            {/* PIDATO & FOTO PIMPANAN YAYASAN (TENTANG KAMI DEDICATED PAGE) */}
-            <div className="bg-gradient-to-b from-slate-900 via-indigo-950 to-slate-950 p-8 sm:p-10 rounded-3xl border-2 border-amber-400/40 shadow-2xl space-y-6">
-              <div className="flex flex-col md:flex-row items-center justify-between gap-4 border-b border-amber-400/20 pb-4">
+            {/* PIDATO & FOTO PIMPINAN YAYASAN */}
+            <div className="bg-[#0000FF] p-8 sm:p-10 rounded-3xl border border-blue-400/60 shadow-md space-y-6 text-white">
+              <div className="flex flex-col md:flex-row items-center justify-between gap-4 border-b border-blue-400/40 pb-4">
                 <div className="space-y-1">
-                  <span className="px-3.5 py-1 bg-amber-500/20 text-amber-300 text-xs font-black rounded-full uppercase border border-amber-400/30">
+                  <span className="px-3.5 py-1 bg-white/20 text-white text-xs font-black rounded-full uppercase border border-white/30">
                     PIDATO & AMANAT STRATEGIS PIMPINAN YAYASAN
                   </span>
                   <h3 className="text-xl sm:text-2xl font-black text-white">
@@ -1576,51 +1704,54 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
                     setSpeechCopied(true);
                     setTimeout(() => setSpeechCopied(false), 3000);
                   }}
-                  className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-amber-300 text-xs font-bold rounded-xl border border-amber-400/30 flex items-center gap-2 transition shrink-0 cursor-pointer"
+                  className="px-4 py-2 bg-white/20 hover:bg-white/30 text-white text-xs font-bold rounded-xl border border-white/40 flex items-center gap-2 transition shrink-0 cursor-pointer"
                 >
-                  {speechCopied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4 text-amber-400" />}
+                  {speechCopied ? <Check className="w-4 h-4 text-emerald-300" /> : <Copy className="w-4 h-4 text-white" />}
                   <span>{speechCopied ? 'Tersalin ke Clipboard!' : 'Salin Teks Pidato'}</span>
                 </button>
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                 {/* Foto Pimpinan Card */}
-                <div className="lg:col-span-4 bg-slate-950/90 p-6 rounded-2xl border border-amber-400/30 shadow-xl text-center space-y-4">
-                  <div className="p-1 bg-gradient-to-tr from-amber-500 via-amber-300 to-yellow-500 rounded-2xl w-40 h-40 mx-auto shadow-xl">
+                <div className="lg:col-span-4 bg-blue-900/80 p-6 rounded-2xl border border-blue-400/50 shadow-md text-center space-y-4">
+                  <div className="p-1 bg-white/90 rounded-2xl w-48 sm:w-56 lg:w-60 aspect-[4/5] mx-auto shadow-xl ring-2 ring-blue-300/80 overflow-hidden relative">
                     <img
                       src={getLocalPhotoUrl(foundationProfile.leaderPhotoUrl || foundationProfile.orgStructure?.find(m => m.position.includes('Ketua'))?.photoUrl, 'Ketua Yayasan')}
                       alt="Ketua Yayasan"
-                      className="w-full h-full object-cover rounded-xl bg-slate-950"
+                      className="w-full h-full object-cover object-top rounded-xl bg-white shadow-inner"
                     />
+                    <span className="absolute bottom-2 left-1/2 -translate-x-1/2 px-2.5 py-0.5 bg-slate-900/90 text-white text-[10px] font-extrabold rounded-full border border-white/40 whitespace-nowrap shadow-md">
+                      Pasfoto Resmi 4x5 cm
+                    </span>
                   </div>
                   <div>
-                    <span className="px-3 py-0.5 bg-yellow-400/20 text-yellow-300 text-[10px] font-black rounded-full uppercase border border-yellow-400/40">
+                    <span className="px-3 py-0.5 bg-white/20 text-white text-[10px] font-black rounded-full uppercase border border-white/30">
                       Ketua Yayasan
                     </span>
                     <h4 className="font-extrabold text-white text-base mt-1.5">{foundationProfile.leaderName || 'H. Ahmad Dahlan, M.Ag'}</h4>
-                    <p className="text-xs text-amber-400 font-medium">{foundationProfile.leaderTitle || 'Ketua Yayasan'}</p>
-                    <p className="text-[10px] text-slate-400 font-mono mt-1">{foundationProfile.leaderNip || 'NIPY. 20120502'}</p>
+                    <p className="text-xs text-blue-200 font-bold">{foundationProfile.leaderTitle || 'Ketua Yayasan'}</p>
+                    <p className="text-[10px] text-blue-200 font-mono mt-1">{foundationProfile.leaderNip || 'NIPY. 20120502'}</p>
                   </div>
-                  <div className="pt-3 border-t border-slate-800 text-left space-y-2 text-[11px] text-slate-300">
+                  <div className="pt-3 border-t border-blue-400/40 text-left space-y-2 text-[11px] text-blue-100">
                     <div className="flex items-center gap-2">
-                      <Award className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                      <Award className="w-3.5 h-3.5 text-blue-300 shrink-0" />
                       <span>Akreditasi Unggul Yayasan</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <BookOpen className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                      <BookOpen className="w-3.5 h-3.5 text-blue-300 shrink-0" />
                       <span>Pendidikan Karakter & ISAK 35</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Teks Isi Pidato Amanat Pimpinan */}
-                <div className="lg:col-span-8 space-y-4 text-xs text-slate-200 leading-relaxed bg-slate-950/80 p-6 rounded-2xl border border-amber-400/20 shadow-inner">
-                  <div className="flex items-center gap-2 text-amber-300 font-serif text-sm font-bold border-b border-slate-800 pb-2">
-                    <Quote className="w-5 h-5 text-amber-400 shrink-0" />
+                <div className="lg:col-span-8 space-y-4 text-sm sm:text-base text-white leading-relaxed bg-blue-900/80 p-6 rounded-2xl border border-blue-400/50 shadow-inner">
+                  <div className="flex items-center gap-2 text-white font-serif text-base font-bold border-b border-blue-400/40 pb-2">
+                    <Quote className="w-5 h-5 text-blue-300 shrink-0" />
                     <span>Naskah Pidato Amanat & Arahan Strategis Pimpinan:</span>
                   </div>
 
-                  <div className="space-y-3 font-serif leading-loose text-slate-200 text-xs sm:text-sm whitespace-pre-line">
+                  <div className="space-y-3.5 font-serif leading-loose text-blue-100 text-sm sm:text-base whitespace-pre-line">
                     {foundationProfile.leaderSpeechContent || (
                       <>
                         <p>Bismillahirahmanirrahim. Assalamu'alaikum Warahmatullahi Wabarakatuh.</p>
@@ -1628,16 +1759,16 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
                           Puji dan syukur senantiasa kita panjatkan ke hadirat Allah SWT atas limpahan rahmat dan hidayah-Nya. Shalawat serta salam semoga tercurahkan kepada Uswah Hasanah kita, Nabi Muhammad SAW.
                         </p>
                         <p>
-                          Lembaga pendidikan bukan sekadar tempat mentransfer ilmu pengetahuan, melainkan kawah candradimuka dalam membentuk watak, adab, dan integritas kepemimpinan masa depan. Di tengah pesatnya perkembangan arus digitalisasi dan kecerdasan buatan (AI), Yayasan Pendidikan Widya Nusantara berdiri kokoh memadukan kurikulum nasional yang adaptif dengan pondasi tauhid yang tangguh.
+                          Lembaga pendidikan bukan sekadar tempat mentransfer ilmu pengetahuan, melainkan kawah candradimuka dalam membentuk watak, adab, dan integritas kepemimpinan masa depan. Di tengah pesatnya perkembangan arus digitalisasi dan kecerdasan buatan (AI), Yayasan Pendidikan Daarul Habibah berdiri kokoh memadukan kurikulum nasional yang adaptif dengan pondasi tauhid yang tangguh.
                         </p>
-                        <p className="font-semibold text-amber-200">
+                        <p className="font-semibold text-white">
                           Dalam mewujudkan visi strategis ini, yayasan menerapkan 4 Pilar Keunggulan Utama:
                         </p>
-                        <ol className="list-decimal list-inside space-y-1.5 text-slate-300 pl-2">
-                          <li><strong className="text-amber-300">Penguatan Aqidah dan Akhlakul Karimah:</strong> Menjadikan Al-Qur'an dan Sunnah sebagai kompas moral peserta didik melalui program Tahfidz dan Budaya 5S.</li>
-                          <li><strong className="text-amber-300">Keunggulan Akademik & Digital Literacy:</strong> Menyelenggarakan pembelajaran Rombel berbasis ruang kelas digital dan E-Raport real-time.</li>
-                          <li><strong className="text-amber-300">Tata Kelola Keuangan ISAK 35:</strong> Mengelola seluruh dana SPP dan Dana BOS dengan transparansi publik terintegrasi.</li>
-                          <li><strong className="text-amber-300">Sinergi Sekolah & Wali Murid:</strong> Membuka portal interaktif demi perkembangan holistik anak.</li>
+                        <ol className="list-decimal list-inside space-y-2 text-blue-100 text-sm sm:text-base pl-2">
+                          <li><strong className="text-white">Penguatan Aqidah dan Akhlakul Karimah:</strong> Menjadikan Al-Qur'an dan Sunnah sebagai kompas moral peserta didik melalui program Tahfidz dan Budaya 5S.</li>
+                          <li><strong className="text-white">Keunggulan Akademik & Digital Literacy:</strong> Menyelenggarakan pembelajaran Rombel berbasis ruang kelas digital dan E-Raport real-time.</li>
+                          <li><strong className="text-white">Tata Kelola Keuangan ISAK 35:</strong> Mengelola seluruh dana SPP dan Dana BOS dengan transparansi publik terintegrasi.</li>
+                          <li><strong className="text-white">Sinergi Sekolah & Wali Murid:</strong> Membuka portal interaktif demi perkembangan holistik anak.</li>
                         </ol>
                         <p>
                           Kami mengajak seluruh bapak/ibu orang tua murid dan pemangku kepentingan untuk terus bergandengan tangan, mendukung putra-putri kita agar tumbuh menjadi pribadi yang berilmu, berakhlak mulia, dan siap memimpin peradaban.
@@ -1652,39 +1783,42 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
 
             {/* Struktur Organisasi Section */}
             {foundationProfile.orgStructure && foundationProfile.orgStructure.length > 0 && (
-              <div className="pt-8 border-t border-slate-800 space-y-6">
+              <div className="pt-8 border-t border-blue-400/40 space-y-6">
                 <div className="text-center space-y-2">
-                  <span className="px-4 py-1.5 bg-amber-500/20 text-amber-300 text-xs font-black rounded-full uppercase border border-amber-400/30">
+                  <span className="px-4 py-1.5 bg-white/20 text-white text-xs font-black rounded-full uppercase border border-white/30">
                     JAJARAN PENGURUS & PIMPINAN
                   </span>
                   <h3 className="text-2xl sm:text-3xl font-black text-white">Struktur Organisasi Yayasan</h3>
-                  <p className="text-xs text-slate-400 max-w-xl mx-auto">
+                  <p className="text-xs text-blue-100 max-w-xl mx-auto">
                     Susunan kepengurusan Pengurus Pembina Yayasan dan Pimpinan Kepala Sekolah / Rombel secara transparan dan terakreditasi.
                   </p>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 w-full">
                   {foundationProfile.orgStructure.map((member) => (
                     <div
                       key={member.id}
-                      className="bg-gradient-to-b from-slate-900 via-indigo-950 to-slate-950 p-6 rounded-3xl border border-amber-400/30 shadow-xl hover:border-amber-400/60 transition flex flex-col items-center text-center space-y-3 group"
+                      className="bg-[#87CEFA] p-4 sm:p-6 rounded-3xl border border-sky-300 hover:border-slate-800 shadow-md transition flex flex-col items-center text-center space-y-3 group text-slate-950"
                     >
-                      <div className="p-1 bg-gradient-to-tr from-amber-500 via-amber-300 to-yellow-500 rounded-2xl shadow-lg">
+                      <div className="p-1 bg-white/80 rounded-2xl shadow-md w-36 sm:w-44 md:w-48 aspect-[4/5] overflow-hidden ring-2 ring-slate-800/20 relative">
                         <img
                           src={getLocalPhotoUrl(member.photoUrl, member.position || member.name)}
                           alt={member.name}
-                          className={`w-28 h-28 object-cover ${getPhotoClasses()} rounded-xl bg-slate-950`}
+                          className={`w-full h-full object-cover object-top ${getPhotoClasses()} rounded-xl bg-sky-100 shadow-inner`}
                         />
+                        <span className="absolute bottom-1.5 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-slate-900/85 text-white text-[9px] font-extrabold rounded-full border border-white/40 whitespace-nowrap shadow-xs">
+                          Pasfoto 4x5 cm
+                        </span>
                       </div>
-                      <div className="space-y-1">
-                        <span className={`px-3 py-0.5 text-[10px] font-black rounded-full uppercase border ${
-                          member.category === 'YAYASAN' ? 'bg-amber-500/20 text-amber-300 border-amber-400/30' : 'bg-blue-500/20 text-sky-300 border-blue-400/30'
+                      <div className="space-y-1 w-full">
+                        <span className={`px-3 py-0.5 text-[10px] font-black rounded-full uppercase shadow-xs ${
+                          member.category === 'YAYASAN' ? 'bg-slate-900 text-white' : 'bg-slate-800 text-sky-100'
                         }`}>
                           {member.category === 'YAYASAN' ? 'Pengurus Yayasan' : 'Pimpinan Sekolah'}
                         </span>
-                        <h4 className="font-extrabold text-white text-sm mt-1.5 group-hover:text-amber-300 transition">{member.name}</h4>
-                        <p className="text-xs font-bold text-amber-400">{member.position}</p>
-                        {member.nipOrNipy && <p className="text-[11px] text-slate-400 font-mono">{member.nipOrNipy}</p>}
+                        <h4 className="font-extrabold text-slate-950 text-xs sm:text-sm mt-1.5 group-hover:text-sky-900 transition line-clamp-2">{member.name}</h4>
+                        <p className="text-[11px] sm:text-xs font-bold text-sky-900">{member.position}</p>
+                        {member.nipOrNipy && <p className="text-[10px] sm:text-[11px] text-slate-700 font-mono">{member.nipOrNipy}</p>}
                       </div>
                     </div>
                   ))}
@@ -1696,35 +1830,34 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
 
         {/* ==================== PPDB PAGE ==================== */}
         {activeTab === 'ppdb' && (
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
+          <div className="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
             {/* Header Banner */}
-            <div className="bg-gradient-to-r from-emerald-950 via-teal-900 to-slate-950 rounded-3xl text-white p-8 sm:p-10 shadow-2xl border border-yellow-400/40 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-96 h-96 bg-yellow-400/10 rounded-full blur-3xl pointer-events-none"></div>
+            <div className="bg-[#0095D9] rounded-3xl text-white p-8 sm:p-10 shadow-md border border-sky-300/50 relative overflow-hidden">
               <div className="max-w-3xl space-y-3 relative z-10">
-                <span className="bg-gradient-to-r from-yellow-400 to-amber-500 text-slate-950 font-black text-xs px-3.5 py-1 rounded-full uppercase tracking-wider shadow-md">
+                <span className="bg-amber-400 text-slate-950 font-black text-xs px-3.5 py-1 rounded-full uppercase tracking-wider shadow-xs">
                   Penerimaan Peserta Didik Baru (PPDB) T.A 2026/2027
                 </span>
                 <h1 className="text-3xl sm:text-4xl font-black text-white">
                   Pendaftaran Online Terpadu Sekolah & Rombel
                 </h1>
-                <p className="text-xs sm:text-sm text-emerald-100 leading-relaxed">
+                <p className="text-xs sm:text-sm text-sky-100 leading-relaxed">
                   Selamat datang calon peserta didik dan santri baru! Mari bergabung bersama {foundationProfile.name} untuk mewujudkan generasi Rabbani, berilmu luas, dan unggul dalam teknologi.
                 </p>
               </div>
             </div>
 
             {/* PPDB Subtabs Navigation */}
-            <div className="flex flex-wrap items-center gap-2 border-b border-slate-800 pb-4">
+            <div className="flex flex-wrap items-center gap-2 border-b border-white/30 pb-4">
               <button
                 type="button"
                 onClick={() => setPpdbSubTab('pendaftaran')}
                 className={`px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-extrabold transition cursor-pointer flex items-center gap-2 ${
                   ppdbSubTab === 'pendaftaran'
-                    ? 'bg-gradient-to-r from-yellow-400 to-amber-500 text-slate-950 shadow-lg font-black'
-                    : 'bg-slate-900 text-slate-300 hover:bg-slate-800 border border-slate-800'
+                    ? 'bg-amber-400 text-slate-950 shadow-md font-black'
+                    : 'bg-[#0095D9] text-white hover:bg-sky-600 border border-sky-300/40'
                 }`}
               >
-                <FileText className="w-4 h-4 text-emerald-950" />
+                <FileText className="w-4 h-4" />
                 <span>1. Form Pendaftaran Online</span>
               </button>
 
@@ -1733,11 +1866,11 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
                 onClick={() => setPpdbSubTab('status')}
                 className={`px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-extrabold transition cursor-pointer flex items-center gap-2 ${
                   ppdbSubTab === 'status'
-                    ? 'bg-gradient-to-r from-yellow-400 to-amber-500 text-slate-950 shadow-lg font-black'
-                    : 'bg-slate-900 text-slate-300 hover:bg-slate-800 border border-slate-800'
+                    ? 'bg-amber-400 text-slate-950 shadow-md font-black'
+                    : 'bg-[#0095D9] text-white hover:bg-sky-600 border border-sky-300/40'
                 }`}
               >
-                <Search className="w-4 h-4 text-emerald-950" />
+                <Search className="w-4 h-4" />
                 <span>2. Cek Status Pendaftaran</span>
               </button>
 
@@ -1746,11 +1879,11 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
                 onClick={() => setPpdbSubTab('biaya')}
                 className={`px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-extrabold transition cursor-pointer flex items-center gap-2 ${
                   ppdbSubTab === 'biaya'
-                    ? 'bg-gradient-to-r from-yellow-400 to-amber-500 text-slate-950 shadow-lg font-black'
-                    : 'bg-slate-900 text-slate-300 hover:bg-slate-800 border border-slate-800'
+                    ? 'bg-amber-400 text-slate-950 shadow-md font-black'
+                    : 'bg-[#0095D9] text-white hover:bg-sky-600 border border-sky-300/40'
                 }`}
               >
-                <Award className="w-4 h-4 text-emerald-950" />
+                <Award className="w-4 h-4" />
                 <span>3. Rincian Biaya & Beasiswa</span>
               </button>
             </div>
@@ -1759,18 +1892,18 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
             {ppdbSubTab === 'pendaftaran' && (
               <div className="space-y-8 animate-in fade-in duration-300">
                 {submittedRegNo ? (
-                  <div className="bg-emerald-950/90 border-2 border-emerald-400/50 rounded-3xl p-8 text-center space-y-4 shadow-2xl max-w-2xl mx-auto">
-                    <div className="w-16 h-16 bg-gradient-to-tr from-yellow-400 to-amber-400 text-slate-950 rounded-full mx-auto flex items-center justify-center font-black text-3xl shadow-lg">
+                  <div className="bg-[#0095D9] border border-sky-300/50 rounded-3xl p-8 text-center space-y-4 shadow-md max-w-2xl mx-auto text-white">
+                    <div className="w-16 h-16 bg-amber-400 text-slate-950 rounded-full mx-auto flex items-center justify-center font-black text-3xl shadow-xs">
                       ✓
                     </div>
                     <h2 className="text-2xl font-black text-white">Pendaftaran Berhasil Dikirim!</h2>
-                    <p className="text-xs sm:text-sm text-slate-300">
+                    <p className="text-xs sm:text-sm text-sky-100">
                       Nomor Registrasi Resmi Pendaftaran Anda:
                     </p>
-                    <div className="inline-block bg-slate-900 text-yellow-300 text-2xl font-mono font-black px-6 py-2.5 rounded-2xl tracking-widest border border-amber-400/40 shadow-inner">
+                    <div className="inline-block bg-white text-blue-900 text-2xl font-mono font-black px-6 py-2.5 rounded-2xl tracking-widest border border-white shadow-inner">
                       {submittedRegNo}
                     </div>
-                    <p className="text-xs text-slate-300 max-w-lg mx-auto leading-relaxed">
+                    <p className="text-xs text-sky-100 max-w-lg mx-auto leading-relaxed">
                       Simpan nomor pendaftaran ini untuk melakukan verifikasi status berkas, informasi jadwal tes, dan penerbitan bukti kelulusan pada menu Cek Status.
                     </p>
                     <div className="pt-4 flex items-center justify-center gap-3">
@@ -1781,24 +1914,24 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
                           setSearchRegNo(submittedRegNo);
                           setPpdbSubTab('status');
                         }}
-                        className="bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-500 text-slate-950 font-black px-6 py-3 rounded-xl text-xs hover:brightness-110 transition cursor-pointer shadow-lg"
+                        className="bg-amber-400 hover:bg-amber-300 text-slate-950 font-black px-6 py-3 rounded-xl text-xs transition cursor-pointer shadow-md"
                       >
                         Buka Cek Status Pendaftaran
                       </button>
                     </div>
                   </div>
                 ) : (
-                  <form onSubmit={handlePPDBSubmit} className="bg-slate-900/90 rounded-3xl border border-amber-400/30 p-8 shadow-2xl space-y-6">
-                    <div className="border-b border-slate-800 pb-4">
+                  <form onSubmit={handlePPDBSubmit} className="bg-[#0095D9] rounded-3xl border border-sky-300/50 p-8 shadow-md space-y-6 text-white">
+                    <div className="border-b border-white/30 pb-4">
                       <h2 className="text-xl font-black text-white">Formulir Isian Calon Peserta Didik Baru</h2>
-                      <p className="text-xs text-slate-400">
+                      <p className="text-xs text-sky-100">
                         Isi data calon siswa secara benar dan lengkap. Field bertanda (*) wajib diisi.
                       </p>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
-                        <label className="block text-xs font-bold text-slate-300 mb-1.5">
+                        <label className="block text-xs font-bold text-sky-100 mb-1.5">
                           Nama Lengkap Calon Siswa *
                         </label>
                         <input
@@ -1807,12 +1940,12 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
                           value={ppdbFormData.namaLengkap}
                           onChange={(e) => setPpdbFormData({ ...ppdbFormData, namaLengkap: e.target.value })}
                           placeholder="Nama lengkap sesuai Akta / Ijazah"
-                          className="w-full px-4 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-xs sm:text-sm font-semibold text-white focus:outline-none focus:border-amber-400"
+                          className="w-full px-4 py-2.5 bg-white border border-sky-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-800 focus:outline-none focus:border-amber-400"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-xs font-bold text-slate-300 mb-1.5">
+                        <label className="block text-xs font-bold text-sky-100 mb-1.5">
                           NISN / NIK Calon Siswa
                         </label>
                         <input
@@ -1820,12 +1953,12 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
                           value={ppdbFormData.nisnAsal}
                           onChange={(e) => setPpdbFormData({ ...ppdbFormData, nisnAsal: e.target.value })}
                           placeholder="Contoh: 0012345678"
-                          className="w-full px-4 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-xs sm:text-sm font-semibold text-white focus:outline-none focus:border-amber-400"
+                          className="w-full px-4 py-2.5 bg-white border border-sky-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-800 focus:outline-none focus:border-amber-400"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-xs font-bold text-slate-300 mb-1.5">
+                        <label className="block text-xs font-bold text-sky-100 mb-1.5">
                           Sekolah Asal (TK/PAUD/SD/SMP)
                         </label>
                         <input
@@ -1833,18 +1966,18 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
                           value={ppdbFormData.sekolahAsal}
                           onChange={(e) => setPpdbFormData({ ...ppdbFormData, sekolahAsal: e.target.value })}
                           placeholder="Contoh: TK IT El-Fatah / PAUD Melati"
-                          className="w-full px-4 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-xs sm:text-sm font-semibold text-white focus:outline-none focus:border-amber-400"
+                          className="w-full px-4 py-2.5 bg-white border border-sky-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-800 focus:outline-none focus:border-amber-400"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-xs font-bold text-slate-300 mb-1.5">
+                        <label className="block text-xs font-bold text-sky-100 mb-1.5">
                           Pilihan Rombel Kelas Target *
                         </label>
                         <select
                           value={ppdbFormData.pilihanJurusanKelas}
                           onChange={(e) => setPpdbFormData({ ...ppdbFormData, pilihanJurusanKelas: e.target.value })}
-                          className="w-full px-4 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-xs sm:text-sm font-semibold text-white focus:outline-none focus:border-amber-400"
+                          className="w-full px-4 py-2.5 bg-white border border-sky-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-800 focus:outline-none focus:border-amber-400"
                         >
                           <option value="SDIT - Kelas 1 (Tahfidz & Coding)">SDIT - Kelas 1 (Program Tahfidz & Coding)</option>
                           <option value="SDIT - Kelas 2 s.d 6 (Siswa Pindahan)">SDIT - Kelas 2-6 (Pindahan Rombel)</option>
@@ -1854,7 +1987,7 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
                       </div>
 
                       <div>
-                        <label className="block text-xs font-bold text-slate-300 mb-1.5">
+                        <label className="block text-xs font-bold text-sky-100 mb-1.5">
                           Nama Orang Tua / Wali Murid *
                         </label>
                         <input
@@ -1863,12 +1996,12 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
                           value={ppdbFormData.namaOrangTua}
                           onChange={(e) => setPpdbFormData({ ...ppdbFormData, namaOrangTua: e.target.value })}
                           placeholder="Nama Ayah/Ibu/Wali"
-                          className="w-full px-4 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-xs sm:text-sm font-semibold text-white focus:outline-none focus:border-amber-400"
+                          className="w-full px-4 py-2.5 bg-white border border-sky-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-800 focus:outline-none focus:border-amber-400"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-xs font-bold text-slate-300 mb-1.5">
+                        <label className="block text-xs font-bold text-sky-100 mb-1.5">
                           No. WhatsApp / HP Aktif *
                         </label>
                         <input
@@ -1877,18 +2010,18 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
                           value={ppdbFormData.noHpOrangTua}
                           onChange={(e) => setPpdbFormData({ ...ppdbFormData, noHpOrangTua: e.target.value })}
                           placeholder="Contoh: 081234567890"
-                          className="w-full px-4 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-xs sm:text-sm font-semibold text-white focus:outline-none focus:border-amber-400"
+                          className="w-full px-4 py-2.5 bg-white border border-sky-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-800 focus:outline-none focus:border-amber-400"
                         />
                       </div>
                     </div>
 
                     {/* Checkbox Berkas */}
-                    <div className="pt-4 border-t border-slate-800 space-y-2">
+                    <div className="pt-4 border-t border-white/30 space-y-2">
                       <label className="block text-xs font-bold text-amber-300">
                         Kelengkapan Berkas Administrasi Fisik / Digital:
                       </label>
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-                        <label className="flex items-center gap-2 p-3 bg-slate-950 rounded-xl border border-slate-800 text-slate-300 cursor-pointer hover:border-slate-700">
+                        <label className="flex items-center gap-2 p-3 bg-black/20 rounded-xl border border-white/20 text-white cursor-pointer hover:border-white">
                           <input
                             type="checkbox"
                             checked={ppdbFormData.berkas.ijazah}
@@ -1897,7 +2030,7 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
                           />
                           <span>Ijazah / SKL TK</span>
                         </label>
-                        <label className="flex items-center gap-2 p-3 bg-slate-950 rounded-xl border border-slate-800 text-slate-300 cursor-pointer hover:border-slate-700">
+                        <label className="flex items-center gap-2 p-3 bg-black/20 rounded-xl border border-white/20 text-white cursor-pointer hover:border-white">
                           <input
                             type="checkbox"
                             checked={ppdbFormData.berkas.kk}
@@ -1906,7 +2039,7 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
                           />
                           <span>Kartu Keluarga</span>
                         </label>
-                        <label className="flex items-center gap-2 p-3 bg-slate-950 rounded-xl border border-slate-800 text-slate-300 cursor-pointer hover:border-slate-700">
+                        <label className="flex items-center gap-2 p-3 bg-black/20 rounded-xl border border-white/20 text-white cursor-pointer hover:border-white">
                           <input
                             type="checkbox"
                             checked={ppdbFormData.berkas.akta}
@@ -1915,7 +2048,7 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
                           />
                           <span>Akta Kelahiran</span>
                         </label>
-                        <label className="flex items-center gap-2 p-3 bg-slate-950 rounded-xl border border-slate-800 text-slate-300 cursor-pointer hover:border-slate-700">
+                        <label className="flex items-center gap-2 p-3 bg-black/20 rounded-xl border border-white/20 text-white cursor-pointer hover:border-white">
                           <input
                             type="checkbox"
                             checked={ppdbFormData.berkas.pasFoto}
@@ -1929,7 +2062,7 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
 
                     <button
                       type="submit"
-                      className="w-full bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-500 text-slate-950 font-black py-3.5 rounded-2xl text-xs sm:text-sm hover:brightness-110 transition shadow-xl flex items-center justify-center gap-2 cursor-pointer"
+                      className="w-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-black py-3.5 rounded-2xl text-xs sm:text-sm transition shadow-md flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <FileText className="w-4 h-4" />
                       <span>Kirim Formulir Pendaftaran PPDB</span>
@@ -1941,10 +2074,10 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
 
             {/* SUBTAB 2: CEK STATUS PENDAFTARAN */}
             {ppdbSubTab === 'status' && (
-              <div className="space-y-6 animate-in fade-in duration-300">
-                <div className="bg-slate-900/90 rounded-3xl border border-amber-400/30 p-6 shadow-2xl space-y-4">
+              <div className="space-y-6 animate-in fade-in duration-300 text-white">
+                <div className="bg-[#0095D9] rounded-3xl border border-sky-300/50 p-6 shadow-md space-y-4">
                   <h3 className="text-base font-extrabold text-white flex items-center gap-2">
-                    <Search className="w-5 h-5 text-amber-400" />
+                    <Search className="w-5 h-5 text-amber-300" />
                     <span>Pencarian Status Verifikasi PPDB</span>
                   </h3>
 
@@ -1954,18 +2087,18 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
                       value={searchRegNo}
                       onChange={(e) => setSearchRegNo(e.target.value)}
                       placeholder="Masukkan Nomor Registrasi (Contoh: PPDB2026001)"
-                      className="flex-1 px-4 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-xs sm:text-sm font-semibold text-white focus:outline-none focus:border-amber-400"
+                      className="flex-1 px-4 py-2.5 bg-white border border-sky-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-800 focus:outline-none focus:border-amber-400"
                     />
                     <button
                       type="submit"
-                      className="bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-500 text-slate-950 font-black px-6 py-2.5 rounded-xl text-xs sm:text-sm cursor-pointer hover:brightness-110 transition shrink-0"
+                      className="bg-amber-400 hover:bg-amber-300 text-slate-950 font-black px-6 py-2.5 rounded-xl text-xs sm:text-sm cursor-pointer transition shrink-0 shadow-md"
                     >
                       Cari Data Pendaftaran
                     </button>
                   </form>
 
                   {searchError && (
-                    <div className="p-3 bg-rose-950/80 text-rose-300 rounded-xl border border-rose-800 text-xs font-semibold">
+                    <div className="p-3 bg-rose-500/20 text-rose-100 rounded-xl border border-rose-400/40 text-xs font-semibold">
                       {searchError}
                     </div>
                   )}
@@ -1973,20 +2106,20 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
 
                 {/* Status Card Result */}
                 {searchResult && (
-                  <div className="bg-slate-900/90 rounded-3xl border border-amber-400/30 p-8 shadow-2xl space-y-6">
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+                  <div className="bg-[#0095D9] rounded-3xl border border-sky-300/50 p-8 shadow-md space-y-6 text-white">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-white/30 pb-4">
                       <div>
-                        <span className="text-xs text-slate-400 font-medium">Nomor Registrasi Resmikan:</span>
-                        <h3 className="text-2xl font-black text-amber-400 font-mono">{searchResult.nomorRegistrasi}</h3>
+                        <span className="text-xs text-sky-100 font-medium">Nomor Registrasi Resmi:</span>
+                        <h3 className="text-2xl font-black text-amber-300 font-mono">{searchResult.nomorRegistrasi}</h3>
                       </div>
 
                       <span
                         className={`px-4 py-1.5 rounded-full font-black text-xs uppercase tracking-wider ${
                           searchResult.status === 'Lulus Seleksi'
-                            ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/40'
+                            ? 'bg-amber-400 text-slate-950 border border-amber-300'
                             : searchResult.status === 'Berkas Lengkap'
-                            ? 'bg-amber-400 text-slate-950 font-black'
-                            : 'bg-slate-800 text-slate-300 border border-slate-700'
+                            ? 'bg-white text-blue-900 font-black'
+                            : 'bg-white/20 text-white border border-white/30'
                         }`}
                       >
                         {searchResult.status}
@@ -1994,29 +2127,29 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-xs">
-                      <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800">
-                        <span className="text-slate-400 block mb-1">Nama Calon Siswa:</span>
+                      <div className="bg-black/20 p-4 rounded-2xl border border-white/20">
+                        <span className="text-sky-100 block mb-1">Nama Calon Siswa:</span>
                         <span className="font-extrabold text-white text-sm">{searchResult.namaLengkap}</span>
                       </div>
-                      <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800">
-                        <span className="text-slate-400 block mb-1">Sekolah Asal:</span>
-                        <span className="font-bold text-amber-200">{searchResult.sekolahAsal}</span>
+                      <div className="bg-black/20 p-4 rounded-2xl border border-white/20">
+                        <span className="text-sky-100 block mb-1">Sekolah Asal:</span>
+                        <span className="font-bold text-white">{searchResult.sekolahAsal}</span>
                       </div>
-                      <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800">
-                        <span className="text-slate-400 block mb-1">Pilihan Rombel Kelas:</span>
-                        <span className="font-bold text-emerald-300">{searchResult.pilihanJurusanKelas}</span>
+                      <div className="bg-black/20 p-4 rounded-2xl border border-white/20">
+                        <span className="text-sky-100 block mb-1">Pilihan Rombel Kelas:</span>
+                        <span className="font-bold text-amber-300">{searchResult.pilihanJurusanKelas}</span>
                       </div>
-                      <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800">
-                        <span className="text-slate-400 block mb-1">Orang Tua / Wali:</span>
+                      <div className="bg-black/20 p-4 rounded-2xl border border-white/20">
+                        <span className="text-sky-100 block mb-1">Orang Tua / Wali:</span>
                         <span className="font-bold text-white">{searchResult.namaOrangTua}</span>
                       </div>
-                      <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800">
-                        <span className="text-slate-400 block mb-1">No. WhatsApp / Kontak:</span>
+                      <div className="bg-black/20 p-4 rounded-2xl border border-white/20">
+                        <span className="text-sky-100 block mb-1">No. WhatsApp / Kontak:</span>
                         <span className="font-mono text-amber-300 font-bold">{searchResult.noHpOrangTua}</span>
                       </div>
-                      <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800">
-                        <span className="text-slate-400 block mb-1">Tanggal Pendaftaran:</span>
-                        <span className="font-mono text-slate-300">{searchResult.tanggalDaftar}</span>
+                      <div className="bg-black/20 p-4 rounded-2xl border border-white/20">
+                        <span className="text-sky-100 block mb-1">Tanggal Pendaftaran:</span>
+                        <span className="font-mono text-white">{searchResult.tanggalDaftar}</span>
                       </div>
                     </div>
                   </div>
@@ -2026,55 +2159,55 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
 
             {/* SUBTAB 3: BIAYA & BEASISWA */}
             {ppdbSubTab === 'biaya' && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in fade-in duration-300">
-                <div className="bg-slate-900/90 rounded-3xl border border-amber-400/30 p-8 shadow-2xl space-y-4">
-                  <h3 className="text-xl font-black text-amber-300 flex items-center gap-2">
-                    <Award className="w-5 h-5 text-amber-400" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in fade-in duration-300 text-white">
+                <div className="bg-[#0095D9] rounded-3xl border border-sky-300/50 p-8 shadow-md space-y-4">
+                  <h3 className="text-xl font-black text-white flex items-center gap-2">
+                    <Award className="w-5 h-5 text-amber-300" />
                     <span>Komponen Biaya Pendidikan {activePpdbConfig.academicYear}</span>
                   </h3>
 
-                  <div className="space-y-3 text-xs text-slate-300">
+                  <div className="space-y-3 text-xs text-white">
                     {activePpdbConfig.fees.map((fee) => (
-                      <div key={fee.id} className="flex items-center justify-between p-3.5 bg-slate-950 rounded-xl border border-slate-800">
+                      <div key={fee.id} className="flex items-center justify-between p-3.5 bg-black/20 rounded-xl border border-white/20">
                         <div>
                           <span className="font-bold text-white block">{fee.name}</span>
-                          {fee.notes && <span className="text-[10px] text-slate-400 block mt-0.5">{fee.notes}</span>}
+                          {fee.notes && <span className="text-[10px] text-sky-100 block mt-0.5">{fee.notes}</span>}
                         </div>
-                        <span className="font-black text-amber-400 shrink-0 ml-2">{fee.amountText}</span>
+                        <span className="font-black text-amber-300 shrink-0 ml-2">{fee.amountText}</span>
                       </div>
                     ))}
                   </div>
 
                   {activePpdbConfig.infoNote && (
-                    <div className="p-3 bg-amber-950/40 border border-amber-800/60 rounded-xl text-[11px] text-amber-200 mt-4">
-                      <strong>Info Pembayaran:</strong> {activePpdbConfig.infoNote}
+                    <div className="p-3 bg-black/20 border border-white/20 rounded-xl text-[11px] text-sky-100 mt-4">
+                      <strong className="text-amber-300">Info Pembayaran:</strong> {activePpdbConfig.infoNote}
                     </div>
                   )}
                 </div>
 
-                <div className="bg-gradient-to-br from-emerald-950 via-teal-900 to-slate-950 text-white rounded-3xl p-8 border border-yellow-400/40 shadow-2xl space-y-4">
-                  <h3 className="text-xl font-black text-yellow-300 flex items-center gap-2">
-                    <ShieldCheck className="w-6 h-6 text-yellow-400" />
+                <div className="bg-[#0095D9] text-white rounded-3xl p-8 border border-sky-300/50 shadow-md space-y-4">
+                  <h3 className="text-xl font-black text-white flex items-center gap-2">
+                    <ShieldCheck className="w-6 h-6 text-amber-300" />
                     <span>Program Beasiswa Unggulan Yayasan</span>
                   </h3>
 
-                  <ul className="space-y-3 text-xs text-emerald-100 leading-relaxed">
+                  <ul className="space-y-3 text-xs text-white leading-relaxed">
                     {activePpdbConfig.scholarships.map((sch) => (
-                      <li key={sch.id} className="flex items-start gap-2.5 bg-emerald-900/40 p-3 rounded-xl border border-emerald-800">
-                        <ShieldCheck className="w-4 h-4 text-yellow-400 shrink-0 mt-0.5" />
-                        <span><strong>{sch.title}:</strong> {sch.description}</span>
+                      <li key={sch.id} className="flex items-start gap-2.5 bg-black/20 p-3 rounded-xl border border-white/20">
+                        <ShieldCheck className="w-4 h-4 text-amber-300 shrink-0 mt-0.5" />
+                        <span><strong className="text-amber-300">{sch.title}:</strong> {sch.description}</span>
                       </li>
                     ))}
                   </ul>
 
                   {activePpdbConfig.contactWhatsapp && (
-                    <div className="p-3 bg-emerald-900/50 border border-emerald-700/60 rounded-xl text-xs text-emerald-200 mt-4 flex items-center justify-between">
+                    <div className="p-3 bg-black/20 border border-white/20 rounded-xl text-xs text-white mt-4 flex items-center justify-between">
                       <span>Konsultasi Biaya / Beasiswa:</span>
                       <a
                         href={`https://wa.me/${activePpdbConfig.contactWhatsapp.replace(/[^0-9]/g, '')}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="font-mono font-bold text-yellow-300 underline hover:text-yellow-200"
+                        className="font-mono font-bold text-amber-300 underline hover:text-amber-200"
                       >
                         {activePpdbConfig.contactWhatsapp}
                       </a>
@@ -2086,11 +2219,280 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
           </div>
         )}
 
+        {/* ==================== PRESTASI PAGE ==================== */}
+        {activeTab === 'prestasi' && (
+          <div className="space-y-12 pb-16">
+            {/* Hero Banner Section */}
+            <div className="bg-[#0095D9] text-white py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden border-b border-sky-300/50 shadow-md">
+              <div className="max-w-[1536px] mx-auto space-y-8 relative z-10">
+                <div className="text-center max-w-3xl mx-auto space-y-3">
+                  <span className="inline-flex items-center gap-1.5 px-3.5 py-1 bg-amber-400 text-slate-950 text-xs font-black rounded-full uppercase shadow-xs">
+                    <Award className="w-4 h-4 text-slate-950" /> ETALASE KEJUARAAN & MEDALI UNGGUL
+                  </span>
+                  <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight leading-tight">
+                    Prestasi & Rekam Jejak Medali Siswa
+                  </h2>
+                  <p className="text-sm text-sky-100 leading-relaxed">
+                    Apresiasi setinggi-tingginya atas perjuangan para siswa Rombel dalam meraih medali emas, perak, perunggu, serta tropi kejuaraan di tingkat Kabupaten/Kota, Provinsi, Nasional, hingga Internasional.
+                  </p>
+                </div>
+
+                {/* Stat Counter Grid */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
+                  <div className="bg-black/20 p-4 rounded-2xl border border-white/20 text-center shadow-xs">
+                    <p className="text-3xl font-black text-amber-300">{achievements.length}</p>
+                    <p className="text-[11px] font-extrabold text-white uppercase mt-1">Total Prestasi & Medali</p>
+                  </div>
+                  <div className="bg-black/20 p-4 rounded-2xl border border-white/20 text-center shadow-xs">
+                    <p className="text-3xl font-black text-white">
+                      {achievements.filter((a) => a.level === 'INTERNASIONAL' || a.level === 'NASIONAL').length}
+                    </p>
+                    <p className="text-[11px] font-extrabold text-white uppercase mt-1">Tingkat Nasional / Intl</p>
+                  </div>
+                  <div className="bg-black/20 p-4 rounded-2xl border border-white/20 text-center shadow-xs">
+                    <p className="text-3xl font-black text-sky-100">
+                      {achievements.filter((a) => a.level === 'PROVINSI').length}
+                    </p>
+                    <p className="text-[11px] font-extrabold text-white uppercase mt-1">Tingkat Provinsi</p>
+                  </div>
+                  <div className="bg-black/20 p-4 rounded-2xl border border-white/20 text-center shadow-xs">
+                    <p className="text-3xl font-black text-sky-200">
+                      {achievements.filter((a) => a.level === 'KABUPATEN').length}
+                    </p>
+                    <p className="text-[11px] font-extrabold text-white uppercase mt-1">Tingkat Kabupaten/Kota</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Filter & Content Section */}
+            <div className="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+              {/* Search & Level Filter Header */}
+              <div className="bg-[#0095D9] p-6 rounded-3xl border border-sky-300/50 shadow-md space-y-4 text-white">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                  <div className="space-y-1">
+                    <h3 className="font-extrabold text-white text-lg flex items-center gap-2">
+                      <Award className="w-5 h-5 text-amber-300" />
+                      <span>Daftar Juara & Medali Terakreditasi</span>
+                    </h3>
+                    <p className="text-xs text-sky-100">
+                      Diinput langsung secara terverifikasi oleh Admin Sekolah & Tim Kesiswaan melalui Portal CMS Internal.
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2 w-full md:w-auto">
+                    <div className="relative flex-1 md:w-72">
+                      <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="text"
+                        value={achievementSearchQuery}
+                        onChange={(e) => setAchievementSearchQuery(e.target.value)}
+                        placeholder="Cari nama siswa, ajang, atau medali..."
+                        className="w-full pl-9 pr-3 py-2 bg-white text-slate-800 border border-sky-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-amber-400"
+                      />
+                      {achievementSearchQuery && (
+                        <button
+                          onClick={() => setAchievementSearchQuery('')}
+                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs font-bold"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        if (onOpenRoleLoginModal) {
+                          onOpenRoleLoginModal('KEPALA_SEKOLAH');
+                        } else {
+                          onOpenInternalPortal('KEPALA_SEKOLAH');
+                        }
+                      }}
+                      className="px-3.5 py-2 bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-black rounded-xl shadow-md flex items-center gap-1.5 shrink-0 transition cursor-pointer"
+                      title="Akses Admin Sekolah untuk input data prestasi baru"
+                    >
+                      <Lock className="w-3.5 h-3.5 text-slate-950" />
+                      <span className="hidden sm:inline">Input Prestasi (Admin Sekolah)</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Level Tabs */}
+                <div className="flex flex-wrap gap-2 pt-2 border-t border-white/20">
+                  {['SEMUA', 'INTERNASIONAL', 'NASIONAL', 'PROVINSI', 'KABUPATEN'].map((lvl) => {
+                    const count = lvl === 'SEMUA' ? achievements.length : achievements.filter((a) => a.level === lvl).length;
+                    const isActive = achievementFilterLevel === lvl;
+                    return (
+                      <button
+                        key={lvl}
+                        onClick={() => setAchievementFilterLevel(lvl)}
+                        className={`px-4 py-2 rounded-xl text-xs font-black transition flex items-center gap-1.5 cursor-pointer ${
+                          isActive
+                            ? 'bg-amber-400 text-slate-950 shadow-md font-extrabold'
+                            : 'bg-black/20 text-white hover:bg-white/20 border border-white/20'
+                        }`}
+                      >
+                        <span>{lvl === 'SEMUA' ? 'Semua Level' : `Tingkat ${lvl}`}</span>
+                        <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${isActive ? 'bg-slate-950 text-amber-300 font-black' : 'bg-white/20 text-white'}`}>
+                          {count}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Grid of Achievements */}
+              {(() => {
+                const filtered = achievements.filter((ach) => {
+                  const matchLevel = achievementFilterLevel === 'SEMUA' || ach.level === achievementFilterLevel;
+                  const q = achievementSearchQuery.trim().toLowerCase();
+                  const matchQuery =
+                    !q ||
+                    ach.studentName.toLowerCase().includes(q) ||
+                    ach.competitionName.toLowerCase().includes(q) ||
+                    ach.achievementTitle.toLowerCase().includes(q) ||
+                    ach.gradeClass.toLowerCase().includes(q);
+                  return matchLevel && matchQuery;
+                });
+
+                if (filtered.length === 0) {
+                  return (
+                    <div className="p-12 text-center bg-[#0095D9] text-white border border-sky-300/50 rounded-3xl shadow-md space-y-3 max-w-lg mx-auto">
+                      <div className="w-16 h-16 bg-amber-400 text-slate-950 rounded-2xl flex items-center justify-center mx-auto">
+                        <Award className="w-8 h-8" />
+                      </div>
+                      <h4 className="font-extrabold text-white text-base">Tidak Ada Data Prestasi Ditemukan</h4>
+                      <p className="text-xs text-sky-100 leading-relaxed">
+                        Coba ubah kata kunci pencarian atau pilih filter tingkat kejuaraan yang lain.
+                      </p>
+                      {(achievementFilterLevel !== 'SEMUA' || achievementSearchQuery) && (
+                        <button
+                          onClick={() => {
+                            setAchievementFilterLevel('SEMUA');
+                            setAchievementSearchQuery('');
+                          }}
+                          className="px-4 py-2 bg-amber-400 text-slate-950 text-xs font-black rounded-xl hover:bg-amber-300 transition shadow-md"
+                        >
+                          Reset Filter & Pencarian
+                        </button>
+                      )}
+                    </div>
+                  );
+                }
+
+                return (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filtered.map((ach) => {
+                      const defaultImg = 'https://images.unsplash.com/photo-1567427017947-545c5f8d16ad?auto=format&fit=crop&w=1200&q=80';
+                      const photo = ach.photoUrl || defaultImg;
+                      const isGold = ach.achievementTitle.toLowerCase().includes('emas') || ach.achievementTitle.toLowerCase().includes('juara 1');
+                      const isSilver = ach.achievementTitle.toLowerCase().includes('perak') || ach.achievementTitle.toLowerCase().includes('juara 2');
+                      const isBronze = ach.achievementTitle.toLowerCase().includes('perunggu') || ach.achievementTitle.toLowerCase().includes('juara 3');
+
+                      return (
+                        <div
+                          key={ach.id}
+                          className="bg-[#0095D9] rounded-3xl border border-sky-300/50 hover:border-white shadow-md overflow-hidden flex flex-col justify-between transition-all duration-300 group hover:-translate-y-1 text-white"
+                        >
+                          <div>
+                            {/* Image Box */}
+                            <div
+                              className="w-full h-64 sm:h-72 overflow-hidden relative cursor-pointer group/img"
+                              onClick={() => {
+                                setSelectedGalleryItem({
+                                  id: ach.id,
+                                  title: `${ach.achievementTitle} - ${ach.competitionName}`,
+                                  description: `Siswa: ${ach.studentName} (${ach.gradeClass}) - Tingkat ${ach.level} (${ach.year})`,
+                                  url: photo,
+                                  category: 'Prestasi Siswa',
+                                  type: 'photo',
+                                  date: ach.year,
+                                });
+                              }}
+                            >
+                              <img
+                                src={photo}
+                                alt={ach.studentName}
+                                className="w-full h-full object-cover transition-transform duration-500 group-hover/img:scale-105"
+                              />
+                              <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent opacity-80"></div>
+
+                              {/* Medal / Trophy Badge Overlay */}
+                              <div className="absolute top-3 left-3 flex items-center gap-1.5 px-3 py-1 bg-amber-400 text-slate-950 rounded-xl text-xs font-black shadow-md border border-amber-300">
+                                <Award className={`w-4 h-4 ${isGold ? 'text-slate-950 animate-pulse' : isSilver ? 'text-slate-800' : isBronze ? 'text-amber-900' : 'text-slate-950'}`} />
+                                <span>Tingkat {ach.level}</span>
+                              </div>
+
+                              <div className="absolute top-3 right-3 px-3 py-1 bg-black/60 text-amber-300 border border-white/20 rounded-xl text-[10px] font-black uppercase shadow-xs">
+                                {ach.year}
+                              </div>
+
+                              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition bg-slate-950/40">
+                                <span className="px-3 py-1.5 bg-amber-400 text-slate-950 rounded-xl text-xs font-black shadow-md flex items-center gap-1">
+                                  <Eye className="w-4 h-4" /> Lihat Foto Utuh
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Content Box */}
+                            <div className="p-5 space-y-3">
+                              <div>
+                                <span className="text-[10px] font-black px-2.5 py-0.5 bg-amber-400 text-slate-950 rounded-full uppercase shadow-xs">
+                                  {ach.achievementTitle}
+                                </span>
+                                <h4 className="font-extrabold text-white text-base mt-2 leading-snug group-hover:text-amber-300 transition">
+                                  {ach.competitionName}
+                                </h4>
+                              </div>
+
+                              <div className="pt-2 border-t border-white/20 flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-white/20 text-white flex items-center justify-center font-black text-sm shrink-0 border border-white/30">
+                                  <User className="w-5 h-5 text-amber-300" />
+                                </div>
+                                <div>
+                                  <p className="text-xs font-extrabold text-white">{ach.studentName}</p>
+                                  <p className="text-[11px] text-amber-300 font-semibold">{ach.gradeClass}</p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Card Footer Button */}
+                          <div className="p-5 pt-0">
+                            <button
+                              onClick={() => {
+                                setSelectedGalleryItem({
+                                  id: ach.id,
+                                  title: `${ach.achievementTitle} - ${ach.competitionName}`,
+                                  description: `Pemenang: ${ach.studentName} (${ach.gradeClass}) | Ajang Kejuaraan Tingkat ${ach.level} Tahun ${ach.year}`,
+                                  url: photo,
+                                  category: 'Prestasi Siswa',
+                                  type: 'photo',
+                                  date: ach.year,
+                                });
+                              }}
+                              className="w-full py-2 bg-amber-400 hover:bg-amber-300 text-slate-950 rounded-xl text-xs font-black transition shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
+                            >
+                              <Eye className="w-4 h-4" />
+                              <span>Buka Sertifikat / Foto Dokumentasi</span>
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
+            </div>
+          </div>
+        )}
+
         {/* ==================== GALERI PAGE ==================== */}
         {activeTab === 'galeri' && (
-          <div className="max-w-7xl mx-auto px-6 py-10 space-y-8">
+          <div className="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
             <div className="text-center space-y-2">
-              <h2 className="text-3xl font-black text-slate-900">Galeri Foto & Aktivitas Video</h2>
+              <h2 className="text-3xl font-black text-emerald-950">Galeri Foto & Aktivitas Video</h2>
               <p className="text-xs text-slate-500">Dokumentasi nyata suasana belajar mengajar dan fasilitas kampus.</p>
 
               <div className="pt-4 flex flex-wrap justify-center gap-2">
@@ -2100,8 +2502,8 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
                     onClick={() => setGalleryCategory(cat)}
                     className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
                       galleryCategory === cat
-                        ? 'bg-blue-600 text-white shadow'
-                        : 'bg-white text-slate-700 hover:bg-blue-50 border border-slate-200'
+                        ? 'bg-emerald-700 text-white shadow-2xs'
+                        : 'bg-white text-slate-700 hover:bg-emerald-50 border border-emerald-200'
                     }`}
                   >
                     {cat}
@@ -2112,42 +2514,74 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
 
             <div className={`grid ${galleryGridClass} gap-6`}>
               {filteredGallery.map((item) => (
-                <div key={item.id} className="bg-white rounded-3xl border border-blue-100 shadow-sm overflow-hidden flex flex-col justify-between hover:shadow-md transition group">
+                <div key={item.id} className="bg-white rounded-3xl border border-emerald-200/90 shadow-xs overflow-hidden flex flex-col justify-between hover:shadow-md transition group">
                   <div>
-                    {isMediaVideo(item.url) ? (
-                      <div className="w-full h-64 bg-slate-950 flex items-center justify-center text-white text-xs font-bold">
-                        Video Media
+                    {isYouTubeUrl(item.url) ? (
+                      <div
+                        className="w-full h-64 sm:h-72 bg-slate-900 rounded-t-3xl overflow-hidden relative cursor-pointer group/vid shadow-inner flex items-center justify-center"
+                        onClick={() => setSelectedGalleryItem(item)}
+                      >
+                        <iframe
+                          src={getYoutubeEmbedUrl(item.url)}
+                          title={item.title}
+                          className="w-full h-full border-0 pointer-events-none opacity-80"
+                        />
+                        <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center group-hover/vid:bg-black/20 transition">
+                          <div className="w-14 h-14 rounded-full bg-emerald-600 text-white flex items-center justify-center shadow-xl group-hover/vid:scale-110 transition">
+                            <PlayCircle className="w-8 h-8 fill-white text-emerald-600" />
+                          </div>
+                          <span className="text-xs font-black text-emerald-200 mt-2 uppercase tracking-wider">Putar Video YouTube</span>
+                        </div>
+                      </div>
+                    ) : (item.type === 'video' || isMediaVideo(item.url) || (item as any).mediaType === 'video') ? (
+                      <div
+                        className="w-full h-64 sm:h-72 bg-slate-900 rounded-t-3xl overflow-hidden relative group/vid shadow-inner flex items-center justify-center"
+                      >
+                        <video
+                          src={item.url}
+                          controls
+                          playsInline
+                          preload="metadata"
+                          className="w-full h-full object-contain bg-black"
+                        />
+                        <button
+                          onClick={() => setSelectedGalleryItem(item)}
+                          className="absolute top-3 right-3 px-3 py-1.5 bg-slate-900/90 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-lg border border-slate-700 hover:bg-slate-800 cursor-pointer z-10"
+                        >
+                          <Eye className="w-4 h-4 text-emerald-300" />
+                          <span>Layar Penuh</span>
+                        </button>
                       </div>
                     ) : (
                       <div
-                        className="w-full h-64 sm:h-72 bg-slate-950/95 rounded-t-3xl overflow-hidden flex items-center justify-center p-2.5 relative cursor-pointer group/img shadow-inner"
+                        className="w-full h-64 sm:h-72 rounded-t-3xl overflow-hidden relative cursor-pointer group/img"
                         onClick={() => setSelectedGalleryItem(item)}
                       >
                         <img
                           src={item.url}
                           alt={item.title}
-                          className="max-h-full max-w-full w-auto h-auto object-contain transition-transform duration-300 group-hover/img:scale-105"
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover/img:scale-105"
                         />
-                        <div className="absolute top-3 right-3 px-3 py-1.5 bg-slate-900/90 text-white rounded-xl text-xs font-bold opacity-0 group-hover/img:opacity-100 transition flex items-center gap-1.5 shadow-lg border border-slate-700">
-                          <Eye className="w-4 h-4 text-amber-400" />
+                        <div className="absolute top-3 right-3 px-3 py-1.5 bg-slate-900/80 backdrop-blur-sm text-white rounded-xl text-xs font-bold opacity-0 group-hover/img:opacity-100 transition flex items-center gap-1.5 shadow-lg border border-slate-700">
+                          <Eye className="w-4 h-4 text-emerald-300" />
                           <span>Lihat Foto Full</span>
                         </div>
                       </div>
                     )}
                     <div className="p-5 space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-black px-2.5 py-0.5 bg-blue-100 text-blue-800 rounded-md uppercase">
+                        <span className="text-[10px] font-black px-2.5 py-0.5 bg-emerald-100 text-emerald-800 rounded-md uppercase">
                           {item.category}
                         </span>
                         <button
                           onClick={() => setSelectedGalleryItem(item)}
-                          className="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1 cursor-pointer"
+                          className="text-xs font-bold text-emerald-700 hover:text-emerald-900 flex items-center gap-1 cursor-pointer"
                         >
                           <Eye className="w-3.5 h-3.5" />
                           <span>Zoom Full</span>
                         </button>
                       </div>
-                      <h4 className="font-extrabold text-slate-900 text-sm">{item.title}</h4>
+                      <h4 className="font-extrabold text-emerald-950 text-sm">{item.title}</h4>
                       <p className="text-xs text-slate-600 leading-relaxed">{item.description}</p>
                     </div>
                   </div>
@@ -2159,7 +2593,7 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
 
         {/* ==================== BERITA & E-RAPORT PAGE ==================== */}
         {activeTab === 'berita' && (
-          <div className="max-w-7xl mx-auto px-6 py-10 space-y-12">
+          <div className="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12">
             
             {/* TOP LAYOUT: E-RAPORT DIGITAL & HASIL BELAJAR SISWA */}
             <div className="bg-gradient-to-br from-indigo-950 via-slate-900 to-blue-950 text-white rounded-3xl p-6 sm:p-8 shadow-2xl border border-indigo-800 space-y-6">
@@ -2616,11 +3050,11 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
                 {newsArticles.map((item) => (
                   <div key={item.id} className="bg-white rounded-2xl border border-blue-100 shadow-sm overflow-hidden flex flex-col justify-between hover:shadow-md transition">
                     <div>
-                      <div className="w-full h-56 bg-slate-950 p-2.5 flex items-center justify-center rounded-t-2xl overflow-hidden shadow-inner">
+                      <div className="w-full h-64 overflow-hidden relative rounded-t-2xl">
                         <img
                           src={item.imageUrl}
                           alt={item.title}
-                          className="max-h-full max-w-full w-auto h-auto object-contain rounded-xl transition duration-300 hover:scale-105"
+                          className="w-full h-full object-cover transition duration-500 hover:scale-105"
                         />
                       </div>
                       <div className="p-5 space-y-2">
@@ -2654,7 +3088,7 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
 
         {/* ==================== KONTAK PAGE ==================== */}
         {activeTab === 'kontak' && (
-          <div className="max-w-7xl mx-auto px-6 py-10 space-y-8">
+          <div className="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
             <div className="text-center space-y-2">
               <h2 className="text-3xl font-black text-slate-900">Hubungi Kami</h2>
               <p className="text-xs text-slate-500">Layanan Informasi Pendaftaran, Keuangan, & Akademik Sekolah.</p>
@@ -2878,13 +3312,22 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
               </button>
             </div>
 
-            <div className="flex-1 bg-black p-4 flex items-center justify-center overflow-auto min-h-[300px]">
-              {isMediaVideo(selectedGalleryItem.url) ? (
+            <div className="flex-1 bg-black p-4 flex items-center justify-center overflow-auto min-h-[320px]">
+              {isYouTubeUrl(selectedGalleryItem.url) ? (
                 <iframe
                   src={getYoutubeEmbedUrl(selectedGalleryItem.url)}
                   title={selectedGalleryItem.title}
-                  className="w-full h-96 rounded-2xl"
+                  className="w-full h-80 sm:h-[480px] rounded-2xl border-0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
+                />
+              ) : (selectedGalleryItem.type === 'video' || isMediaVideo(selectedGalleryItem.url) || (selectedGalleryItem as any).mediaType === 'video') ? (
+                <video
+                  src={selectedGalleryItem.url}
+                  controls
+                  autoPlay
+                  playsInline
+                  className="max-h-[72vh] w-full object-contain rounded-xl shadow-2xl bg-black"
                 />
               ) : (
                 <img
@@ -2932,11 +3375,11 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
             </div>
 
             <div className="p-6 overflow-y-auto space-y-4">
-              <div className="relative bg-slate-950 rounded-2xl overflow-hidden flex items-center justify-center p-3 border border-amber-400/20 shadow-inner">
+              <div className="relative w-full h-72 sm:h-80 bg-slate-900 rounded-2xl overflow-hidden border border-amber-400/20 shadow-md">
                 <img
                   src={selectedNews.imageUrl}
                   alt={selectedNews.title}
-                  className="max-h-80 w-auto object-contain rounded-xl"
+                  className="w-full h-full object-cover"
                 />
               </div>
               <div className="space-y-3">
@@ -2963,46 +3406,46 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
         </div>
       )}
 
-      {/* Public Footer */}
-      <footer className="bg-slate-950 text-slate-300 py-12 px-6 border-t border-amber-500/30 text-xs relative overflow-hidden">
-        <div className="absolute top-0 inset-x-0 h-0.5 bg-gradient-to-r from-amber-500 via-yellow-300 to-amber-500"></div>
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+      {/* Public Footer - Brand Cyan Blue #0095D9 */}
+      <footer className="bg-[#0095D9] text-white py-12 px-6 border-t border-sky-300/40 text-xs relative overflow-hidden">
+        <div className="absolute top-0 inset-x-0 h-0.5 bg-gradient-to-r from-sky-200 via-white to-sky-200"></div>
+        <div className="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <Building className="w-5 h-5 text-amber-400" />
+              <Building className="w-5 h-5 text-amber-300" />
               <h4 className="font-black text-white text-base tracking-wide">{foundationProfile.name}</h4>
             </div>
-            <p className="text-slate-400 text-xs leading-relaxed">{foundationProfile.address}</p>
+            <p className="text-sky-100 text-xs leading-relaxed">{foundationProfile.address}</p>
             <p className="mt-2 text-[11px] text-amber-300 font-mono">Pengesahan Kemenkumham: {foundationProfile.legalNumber}</p>
           </div>
 
           <div className="space-y-2">
-            <h4 className="font-extrabold text-amber-300 text-xs uppercase tracking-widest border-b border-slate-800 pb-2">Navigasi Halaman Utama</h4>
+            <h4 className="font-extrabold text-amber-300 text-xs uppercase tracking-widest border-b border-white/30 pb-2">Navigasi Halaman Utama</h4>
             <ul className="space-y-2 text-xs">
               <li>
-                <button onClick={() => setActiveTab('home')} className="hover:text-amber-300 text-slate-300 transition cursor-pointer flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span> Home Utama Yayasan
+                <button onClick={() => setActiveTab('home')} className="hover:text-amber-300 text-sky-100 transition cursor-pointer flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-300"></span> Home Utama Yayasan
                 </button>
               </li>
               <li>
-                <button onClick={() => setActiveTab('tentang')} className="hover:text-amber-300 text-slate-300 transition cursor-pointer flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span> Profil & Jajaran Pengurus
+                <button onClick={() => setActiveTab('tentang')} className="hover:text-amber-300 text-sky-100 transition cursor-pointer flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-300"></span> Profil & Jajaran Pengurus
                 </button>
               </li>
               <li>
-                <button onClick={() => setActiveTab('galeri')} className="hover:text-amber-300 text-slate-300 transition cursor-pointer flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span> Galeri & Prestasi Kejuaraan
+                <button onClick={() => setActiveTab('galeri')} className="hover:text-amber-300 text-sky-100 transition cursor-pointer flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-300"></span> Galeri & Prestasi Kejuaraan
                 </button>
               </li>
             </ul>
           </div>
 
           <div className="space-y-2">
-            <h4 className="font-extrabold text-amber-300 text-xs uppercase tracking-widest border-b border-slate-800 pb-2">Sistem Informasi & Tata Kelola</h4>
-            <p className="text-[11px] text-slate-400 leading-relaxed">
+            <h4 className="font-extrabold text-amber-300 text-xs uppercase tracking-widest border-b border-white/30 pb-2">Sistem Informasi & Tata Kelola</h4>
+            <p className="text-[11px] text-sky-100 leading-relaxed">
               Sistem Informasi Keuangan ISAK 35, SiPLah Procurements, Rombel Akademik E-Raport & Portal Web Publik Terpadu.
             </p>
-            <p className="text-[10px] text-amber-400/80 pt-2 font-mono">
+            <p className="text-[10px] text-amber-200 pt-2 font-mono">
               &copy; {new Date().getFullYear()} {foundationProfile.name}. All Rights Reserved.
             </p>
           </div>

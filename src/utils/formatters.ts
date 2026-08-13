@@ -56,17 +56,32 @@ export function exportToCSV(filename: string, rows: (string | number)[][]) {
   document.body.removeChild(link);
 }
 
+export function isYouTubeUrl(url: string): boolean {
+  if (!url) return false;
+  const lower = url.toLowerCase();
+  return lower.includes('youtube.com') || lower.includes('youtu.be');
+}
+
 export function isMediaVideo(url: string): boolean {
   if (!url) return false;
   const lower = url.toLowerCase();
   return (
     lower.startsWith('data:video/') ||
+    lower.startsWith('data:application/octet-stream') ||
+    (lower.startsWith('data:') && lower.includes('video')) ||
+    lower.startsWith('blob:') ||
     lower.includes('.mp4') ||
     lower.includes('.webm') ||
     lower.includes('.mov') ||
+    lower.includes('.m4v') ||
+    lower.includes('.mkv') ||
+    lower.includes('.avi') ||
+    lower.includes('.3gp') ||
     lower.includes('.ogg') ||
-    lower.includes('youtube.com') ||
-    lower.includes('youtu.be')
+    lower.includes('.flv') ||
+    lower.includes('vimeo.com') ||
+    lower.includes('drive.google.com') ||
+    isYouTubeUrl(url)
   );
 }
 
@@ -78,7 +93,7 @@ export function getYoutubeEmbedUrl(url: string): string {
   const match = url.match(regExp);
 
   if (match && match[2] && match[2].length === 11) {
-    return `https://www.youtube.com/embed/${match[2]}?autoplay=1&mute=1&loop=1&playlist=${match[2]}`;
+    return `https://www.youtube.com/embed/${match[2]}`;
   }
   return url;
 }

@@ -1,5 +1,16 @@
 @import "tailwindcss";
 
+:root {
+  font-size: 17.5px; /* Increases font size by 1 level globally across all pages and views */
+}
+
+body {
+  font-size: 1rem;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 @media print {
   /* Reset background and text colors for print readability */
   body, html {
