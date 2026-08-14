@@ -1,17 +1,12 @@
 /**
- * Safe wrapper for LocalStorage access to prevent QuotaExceededError or JSON parse errors
- * from crashing the React app tree and causing a blank screen.
- */
-
-import { setIDBItem, getIDBItem } from './indexedDBStorage';
-
-/**
  * Safe wrapper for LocalStorage & IndexedDB access to prevent QuotaExceededError
  * and permanently persist large media files (videos, high-res photos) without data loss.
  */
 
+import { setIDBItem, getIDBItem, removeIDBItem } from './indexedDBStorage';
+
 export const safeSetLocalStorage = (key: string, value: any): boolean => {
-  // Always persist to IndexedDB asynchronously for permanent large storage support
+  // Always persist to IndexedDB asynchronously for permanent large storage support (hundreds of MBs/GBs)
   setIDBItem(key, value).catch((err) => {
     console.warn(`[IndexedDB] Async persist error for key "${key}":`, err);
   });
@@ -20,7 +15,7 @@ export const safeSetLocalStorage = (key: string, value: any): boolean => {
     localStorage.setItem(key, JSON.stringify(value));
     return true;
   } catch (err) {
-    console.warn(`[SafeStorage] LocalStorage quota exceeded for key "${key}". Value saved safely in IndexedDB:`, err);
+    console.warn(`[SafeStorage] LocalStorage quota exceeded for key "${key}". Value saved safely in permanent IndexedDB store.`);
     return false;
   }
 };
@@ -35,4 +30,6 @@ export const safeGetLocalStorage = <T>(key: string, fallback: T): T => {
     return fallback;
   }
 };
+
+export { getIDBItem, setIDBItem, removeIDBItem };
 

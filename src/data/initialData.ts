@@ -48,25 +48,36 @@ export const INITIAL_ORG_STRUCTURE: OrgStructureMember[] = [
   },
   {
     id: 'org-5',
-    name: 'Dr. H. Bambang Widjaja, M.Pd',
+    name: 'Masykur Rohana, S.Sos',
     position: 'Kepala Sekolah',
     category: 'SEKOLAH',
     nipOrNipy: 'NIPY. 1985031201',
-    phone: '0813-7777-8888',
-    email: 'bambang.widjaja@daarulhabibah.sch.id',
+    phone: '0812-8899-0011',
+    email: 'masykur.rohana@daarulhabibah.sch.id',
     photoUrl: LOCAL_IMAGES.kepalaSekolah,
     order: 5,
   },
   {
     id: 'org-6',
-    name: 'Hj. Fatimah Zahra, S.Pd',
-    position: 'Wakasek Kurikulum & Wali Kelas 6',
+    name: 'Iis Rohmayanti, S.Pd',
+    position: 'Wakasek Kurikulum & Wali Kelas 4',
     category: 'SEKOLAH',
     nipOrNipy: 'NIPY. 1990041502',
     phone: '0813-9999-0000',
-    email: 'fatimah.zahra@daarulhabibah.sch.id',
+    email: 'iis.rohmayanti@daarulhabibah.sch.id',
     photoUrl: LOCAL_IMAGES.guruWanita,
     order: 6,
+  },
+  {
+    id: 'org-7',
+    name: 'Mega Andini Putri, S.Pd',
+    position: 'Kesiswaan & Wali Kelas 6',
+    category: 'SEKOLAH',
+    nipOrNipy: 'NIPY. 1992082003',
+    phone: '0814-1234-5678',
+    email: 'mega.andini@daarulhabibah.sch.id',
+    photoUrl: LOCAL_IMAGES.guruWanita,
+    order: 7,
   },
 ];
 
@@ -93,7 +104,7 @@ export const INITIAL_FOUNDATION_PROFILE: FoundationProfile = {
   treasurerTitle: 'Bendahara Yayasan',
   treasurerNip: 'NIPY. 20180209',
   treasurerPhotoUrl: LOCAL_IMAGES.bendahara,
-  headmasterName: 'Dr. H. Bambang Widjaja, M.Pd',
+  headmasterName: 'Masykur Rohana, S.Sos',
   headmasterTitle: 'Kepala Sekolah',
   headmasterNip: 'NIPY. 1985031201',
   headmasterPhotoUrl: LOCAL_IMAGES.kepalaSekolah,
@@ -327,7 +338,7 @@ export const INITIAL_SIPLAH_PROCUREMENTS = [
     merchantName: 'PT Gramedia Asri Media (Mitra SiPLah)',
     category: 'ASET_TETAP' as const,
     amount: 85000000,
-    proposedBy: 'Dr. H. Bambang Widjaja, M.Pd (Kepala Sekolah)',
+    proposedBy: 'Masykur Rohana, S.Sos (Kepala Sekolah)',
     proposedDate: '2026-08-01',
     approvedByTreasurer: 'Hj. Nurul Aini, S.E., M.Ak (Bendahara Yayasan)',
     approvedTreasurerDate: '2026-08-02',
@@ -347,7 +358,7 @@ export const INITIAL_SIPLAH_PROCUREMENTS = [
     merchantName: 'CV Penerbit Erlangga (SiPLah Blibli)',
     category: 'BUKU_MODUL' as const,
     amount: 28500000,
-    proposedBy: 'Dr. H. Bambang Widjaja, M.Pd (Kepala Sekolah)',
+    proposedBy: 'Masykur Rohana, S.Sos (Kepala Sekolah)',
     proposedDate: '2026-08-02',
     approvedByTreasurer: 'Hj. Nurul Aini, S.E., M.Ak (Bendahara Yayasan)',
     approvedTreasurerDate: '2026-08-03',
@@ -365,7 +376,7 @@ export const INITIAL_SIPLAH_PROCUREMENTS = [
     merchantName: 'Toko ATK Makmur Jaya (SiPLah)',
     category: 'PERLENGKAPAN_ATK' as const,
     amount: 6500000,
-    proposedBy: 'Dr. H. Bambang Widjaja, M.Pd (Kepala Sekolah)',
+    proposedBy: 'Masykur Rohana, S.Sos (Kepala Sekolah)',
     proposedDate: '2026-08-03',
     status: 'DIUSULKAN_KEPSEK' as const,
     fundingSource: 'DANA_SPP' as const,
@@ -410,8 +421,8 @@ export const INITIAL_SPEECHES = {
   treasurerPhotoUrl: LOCAL_IMAGES.bendahara,
   treasurerSpeech:
     'Mengelola akuntabilitas keuangan berbasis ISAK 35, transparansi dana BOS, sistem kuitansi digital SPP, dan efisiensi anggaran sekolah.',
-  headmasterName: 'Dr. H. Bambang Widjaja, M.Pd',
-  headmasterTitle: 'Kepala Sekolah SD Daarul Habibah',
+  headmasterName: 'Masykur Rohana, S.Sos',
+  headmasterTitle: 'Kepala Sekolah',
   headmasterPhotoUrl: LOCAL_IMAGES.kepalaSekolah,
   headmasterSpeech:
     'Assalamu’alaikum Wr. Wb. Sebagai pimpinan sekolah, fokus utama kami adalah mutu pembelajaran di setiap Rombongan Belajar (Rombel Kelas 1 - Kelas 6). Melalui sistem e-Raport digital dan modul pengadaan belanja barang SiPLah yang disetujui Pengurus Yayasan, kami memastikan setiap rupiah berdampak langsung pada kualitas belajar anak-anak didik kita.',
@@ -503,6 +514,24 @@ export const INITIAL_GALLERY_ITEMS = [
     date: '2026-07-10',
     category: 'Acara Yayasan' as const,
   },
+  {
+    id: 'gal-5',
+    title: 'Video Pembelajaran Praktik Sains & Laboratorium Komputer',
+    type: 'video' as const,
+    url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+    description: 'Dokumentasi video suasana interaktif siswa dalam praktikum sains dan simulasi ANBK.',
+    date: '2026-08-05',
+    category: 'Kegiatan Belajar' as const,
+  },
+  {
+    id: 'gal-6',
+    title: 'Video Wisuda Tahfidz Qur\'an Santri & Pentas Seni Siswa',
+    type: 'video' as const,
+    url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+    description: 'Rekaman video prosesi wisuda tahfidz juz 30 dan penampilan kreasi seni santri.',
+    date: '2026-08-10',
+    category: 'Prestasi Siswa' as const,
+  },
 ];
 
 export const INITIAL_ACHIEVEMENTS = [
@@ -538,17 +567,110 @@ export const INITIAL_ACHIEVEMENTS = [
   },
 ];
 
+// --- HELPER FUNCTIONS FOR WALI KELAS & ROMBEL MATCHING ---
+export interface WaliKelasDetail {
+  rombel: string;
+  name: string;
+  nip: string;
+  nipy: string;
+  phone: string;
+  role: string;
+  teacherId: string;
+}
+
+export const getWaliKelasDetailByGrade = (gradeClass: string, teachersList: Teacher[] = INITIAL_TEACHERS): WaliKelasDetail => {
+  const norm = (gradeClass || '').toLowerCase().trim();
+  const digit = norm.match(/\d+/)?.[0];
+
+  const found = teachersList.find((t) => {
+    const roleLower = (t.role || '').toLowerCase();
+    const rombelLower = (t.assignedRombel || '').toLowerCase();
+    if (digit) {
+      return (
+        roleLower.includes(`kelas ${digit}`) ||
+        rombelLower.includes(`kelas ${digit}`) ||
+        rombelLower === `kelas ${digit}`
+      );
+    }
+    return rombelLower.includes(norm) || roleLower.includes(norm);
+  });
+
+  if (found) {
+    return {
+      rombel: gradeClass || `Kelas ${digit || '1'}`,
+      name: found.name,
+      nip: found.nip,
+      nipy: found.nipy || `NIPY. ${found.nip}`,
+      phone: found.phone,
+      role: found.role,
+      teacherId: found.id,
+    };
+  }
+
+  // Exact fallback mapped strictly to registered official teachers
+  const map: Record<string, WaliKelasDetail> = {
+    '1': { rombel: 'Kelas 1', name: 'Uyat Sukriyati, S.Pd', nip: '1991051005', nipy: 'NIPY. 1991051005', phone: '081233445566', role: 'Wali Kelas 1', teacherId: 'tch-5' },
+    '2': { rombel: 'Kelas 2', name: 'Setia Widi Mawaddah, S.Pd', nip: '1993071206', nipy: 'NIPY. 1993071206', phone: '081277889900', role: 'Wali Kelas 2', teacherId: 'tch-6' },
+    '3': { rombel: 'Kelas 3', name: 'Ojah Nasiah Ulfah, S.Ag', nip: '1988110504', nipy: 'NIPY. 1988110504', phone: '081577889900', role: 'Koor. Qur\'an & Wali Kelas 3', teacherId: 'tch-4' },
+    '4': { rombel: 'Kelas 4', name: 'Iis Rohmayanti, S.Pd', nip: '1990041502', nipy: 'NIPY. 1990041502', phone: '081399990000', role: 'Wakasek Kurikulum & Wali Kelas 4', teacherId: 'tch-2' },
+    '5': { rombel: 'Kelas 5', name: 'Nurbibiyatillah', nip: '1994011507', nipy: 'NIPY. 1994011507', phone: '081311223344', role: 'Wali Kelas 5', teacherId: 'tch-7' },
+    '6': { rombel: 'Kelas 6', name: 'Mega Andini Putri, S.Pd', nip: '1992082003', nipy: 'NIPY. 1992082003', phone: '081412345678', role: 'Kesiswaan & Wali Kelas 6', teacherId: 'tch-3' },
+  };
+
+  if (digit && map[digit]) return map[digit];
+
+  return {
+    rombel: gradeClass || 'Kelas 1',
+    name: 'Masykur Rohana, S.Sos',
+    nip: '1985031201',
+    nipy: 'NIPY. 1985031201',
+    phone: '081288990011',
+    role: 'Kepala Sekolah',
+    teacherId: 'tch-1',
+  };
+};
+
+export const getWaliKelasByGrade = (gradeClass: string, teachersList: Teacher[] = INITIAL_TEACHERS): string => {
+  return getWaliKelasDetailByGrade(gradeClass, teachersList).name;
+};
+
+export const getWaliKelasList = (teachersList: Teacher[] = INITIAL_TEACHERS): Teacher[] => {
+  return teachersList.filter((t) => {
+    const roleLower = (t.role || '').toLowerCase();
+    const rombelLower = (t.assignedRombel || '').toLowerCase();
+    return (
+      roleLower.includes('wali kelas') ||
+      rombelLower.startsWith('kelas') ||
+      rombelLower.startsWith('rombel')
+    );
+  });
+};
+
+export const isClassMatching = (targetClass: string, selectedFilter: string): boolean => {
+  if (!selectedFilter || selectedFilter === 'SEMUA' || selectedFilter === 'ALL') return true;
+  if (!targetClass) return false;
+  const t = targetClass.trim().toLowerCase();
+  const f = selectedFilter.trim().toLowerCase();
+  if (t === f) return true;
+  if (t.includes(f) || f.includes(t)) return true;
+  const numT = t.match(/\d+/)?.[0];
+  const numF = f.match(/\d+/)?.[0];
+  if (numT && numF && numT === numF) return true;
+  return false;
+};
+
 // --- INITIAL E-RAPORT DATA (Kelas 1 - Kelas 6) ---
 export const INITIAL_E_RAPORTS = [
+  // === KELAS 6 (Wali Kelas: Mega Andini Putri, S.Pd) ===
   {
     id: 'rap-1',
     studentId: 'std-1',
     studentName: 'Ahmad Rizky Pratama',
-    nisn: '20240101',
+    nisn: '2026101',
     gradeClass: 'Kelas 6',
     academicYear: '2026/2027 Semester Ganjil',
-    parentName: 'Bpk. H. Hendra Pratama',
-    teacherName: 'Hj. Fatimah Zahra, S.Pd',
+    parentName: 'Rahmat Hidayat',
+    teacherName: 'Mega Andini Putri, S.Pd',
     grades: [
       { subject: 'Tahfidz', score: 95, letterGrade: 'A' as const, notes: 'Sangat baik dalam hafalan Juz 30 dan makhraj huruf.' },
       { subject: 'MTK 6', score: 98, letterGrade: 'A' as const, notes: 'Sangat menonjol dalam penalaran pecahan, geometri, dan soal cerita.' },
@@ -571,19 +693,19 @@ export const INITIAL_E_RAPORTS = [
     id: 'rap-2',
     studentId: 'std-2',
     studentName: 'Siti Nurhaliza',
-    nisn: '20240102',
-    gradeClass: 'Kelas 5',
+    nisn: '2026102',
+    gradeClass: 'Kelas 6',
     academicYear: '2026/2027 Semester Ganjil',
-    parentName: 'Bpk. Dr. H. Faisal Rahman',
-    teacherName: 'Rina Kartika, S.Si',
+    parentName: 'Hasan Basri',
+    teacherName: 'Mega Andini Putri, S.Pd',
     grades: [
       { subject: 'Tahfidz', score: 96, letterGrade: 'A' as const, notes: 'Tartil membaca Al-Qur’an dan rajin salat Dhuha berjemaah.' },
-      { subject: 'MTK 5', score: 85, letterGrade: 'B' as const, notes: 'Cukup mahir dalam perkalian dan pembagian bersusun.' },
-      { subject: 'IPAS 5', score: 90, letterGrade: 'A' as const, notes: 'Sangat antusias saat praktikum sains laboratorium.' },
-      { subject: 'B.Indo 5', score: 91, letterGrade: 'A' as const, notes: 'Kosa kata sangat kaya dan aktif menulis puisi.' },
-      { subject: 'PPKn 5', score: 89, letterGrade: 'A' as const, notes: 'Aktif dalam diskusi kelompok dan musyawarah Rombel.' },
-      { subject: 'Seni 5', score: 94, letterGrade: 'A' as const, notes: 'Hasil karya seni kriya dan menggambar sangat estetik.' },
-      { subject: 'B.Inggris 5', score: 88, letterGrade: 'A' as const, notes: 'Mampu merespon kosa kata dasar dengan baik.' },
+      { subject: 'MTK 6', score: 88, letterGrade: 'A' as const, notes: 'Cukup mahir dalam pemecahan soal statistika dan pecahan.' },
+      { subject: 'IPAS 6', score: 90, letterGrade: 'A' as const, notes: 'Sangat antusias saat praktikum sains laboratorium.' },
+      { subject: 'B.Indo 6', score: 91, letterGrade: 'A' as const, notes: 'Kosa kata sangat kaya dan aktif menulis puisi.' },
+      { subject: 'PPKn 6', score: 89, letterGrade: 'A' as const, notes: 'Aktif dalam diskusi kelompok dan musyawarah Rombel.' },
+      { subject: 'Seni 6', score: 94, letterGrade: 'A' as const, notes: 'Hasil karya seni kriya dan menggambar sangat estetik.' },
+      { subject: 'B.Inggris 6', score: 88, letterGrade: 'A' as const, notes: 'Mampu merespon kosa kata dasar dengan baik.' },
     ],
     attendance: { present: 79, sick: 2, permitted: 0, absent: 0 },
     extracurriculars: [
@@ -594,28 +716,440 @@ export const INITIAL_E_RAPORTS = [
     issuedDate: '2026-07-20',
   },
   {
+    id: 'rap-13',
+    studentId: 'std-13',
+    studentName: 'Naufal Farisi',
+    nisn: '2026113',
+    gradeClass: 'Kelas 6',
+    academicYear: '2026/2027 Semester Ganjil',
+    parentName: 'Salman',
+    teacherName: 'Mega Andini Putri, S.Pd',
+    grades: [
+      { subject: 'Tahfidz', score: 91, letterGrade: 'A' as const, notes: 'Murojaah harian sangat tertib.' },
+      { subject: 'MTK 6', score: 89, letterGrade: 'A' as const, notes: 'Memahami bangun ruang dan statistika.' },
+      { subject: 'IPAS 6', score: 88, letterGrade: 'A' as const, notes: 'Aktif dalam simulasi tata surya.' },
+      { subject: 'B.Indo 6', score: 86, letterGrade: 'B' as const, notes: 'Lancar dalam presentasi laporan observasi.' },
+      { subject: 'PPKn 6', score: 92, letterGrade: 'A' as const, notes: 'Menjunjung tinggi toleransi dan kepemimpinan.' },
+      { subject: 'Seni 6', score: 87, letterGrade: 'A' as const, notes: 'Kreatif membuat batik jumputan.' },
+      { subject: 'B.Inggris 6', score: 85, letterGrade: 'B' as const, notes: 'Mampu menulis paragraf pendek deskriptif.' },
+    ],
+    attendance: { present: 80, sick: 0, permitted: 0, absent: 0 },
+    extracurriculars: [
+      { name: 'Pramuka & Futsal', grade: 'A', notes: 'Disiplin dan berjiwa sportivitas tinggi.' },
+    ],
+    teacherNotes: 'Naufal memiliki dedikasi belajar yang mantap dan disukai oleh teman-temannya.',
+    status: 'DITERBITKAN' as const,
+    issuedDate: '2026-07-20',
+  },
+
+  // === KELAS 5 (Wali Kelas: Nurbibiyatillah) ===
+  {
     id: 'rap-3',
     studentId: 'std-3',
-    studentName: 'Budi Santoso',
-    nisn: '20240103',
+    studentName: 'Muhammad Al-Fatih',
+    nisn: '2026103',
+    gradeClass: 'Kelas 5',
+    academicYear: '2026/2027 Semester Ganjil',
+    parentName: 'Abdullah',
+    teacherName: 'Nurbibiyatillah',
+    grades: [
+      { subject: 'Tahfidz', score: 92, letterGrade: 'A' as const, notes: 'Hafalan surah-surah pilihan sangat lancar.' },
+      { subject: 'MTK 5', score: 88, letterGrade: 'A' as const, notes: 'Sangat cepat dalam operasi perkalian dan pembagian.' },
+      { subject: 'IPAS 5', score: 86, letterGrade: 'B' as const, notes: 'Memahami materi rantai makanan dan ekosistem.' },
+      { subject: 'B.Indo 5', score: 85, letterGrade: 'B' as const, notes: 'Membaca pemahaman dan menulis ringkasan sangat baik.' },
+      { subject: 'PPKn 5', score: 88, letterGrade: 'A' as const, notes: 'Sangat disiplin dan taat aturan kelas.' },
+      { subject: 'Seni 5', score: 87, letterGrade: 'A' as const, notes: 'Kreatif dalam membuat kerajinan dari bahan bekas.' },
+      { subject: 'B.Inggris 5', score: 84, letterGrade: 'B' as const, notes: 'Paham instruksi percakapan sederhana di kelas.' },
+    ],
+    attendance: { present: 80, sick: 0, permitted: 0, absent: 0 },
+    extracurriculars: [
+      { name: 'Pramuka & Futsal', grade: 'A', notes: 'Disiplin dan aktif dalam latihan.' },
+    ],
+    teacherNotes: 'Al-Fatih memiliki jiwa kepemimpinan yang baik dan tekun dalam belajar.',
+    status: 'DITERBITKAN' as const,
+    issuedDate: '2026-07-22',
+  },
+  {
+    id: 'rap-4-std4',
+    studentId: 'std-4',
+    studentName: 'Aisyah Humaira',
+    nisn: '2026104',
+    gradeClass: 'Kelas 5',
+    academicYear: '2026/2027 Semester Ganjil',
+    parentName: 'Umar Khalid',
+    teacherName: 'Nurbibiyatillah',
+    grades: [
+      { subject: 'Tahfidz', score: 94, letterGrade: 'A' as const, notes: 'Tajwid dan tartil bacaan sangat merdu.' },
+      { subject: 'MTK 5', score: 86, letterGrade: 'B' as const, notes: 'Memahami konsep FPB dan KPK dengan baik.' },
+      { subject: 'IPAS 5', score: 89, letterGrade: 'A' as const, notes: 'Antusias dalam pengamatan siklus air dan alam.' },
+      { subject: 'B.Indo 5', score: 92, letterGrade: 'A' as const, notes: 'Keterampilan menulis puisi dan membaca indah sangat baik.' },
+      { subject: 'PPKn 5', score: 90, letterGrade: 'A' as const, notes: 'Santun, ramah, dan suka menolong teman.' },
+      { subject: 'Seni 5', score: 91, letterGrade: 'A' as const, notes: 'Gambar flora & fauna bergradasi warna sangat rapi.' },
+      { subject: 'B.Inggris 5', score: 88, letterGrade: 'A' as const, notes: 'Cakap merespons sapaan bahasa Inggris.' },
+    ],
+    attendance: { present: 79, sick: 1, permitted: 0, absent: 0 },
+    extracurriculars: [
+      { name: 'Seni Kaligrafi & Tahfizh', grade: 'A', notes: 'Goresan kaligrafi Khat Naskhi sangat bagus.' },
+    ],
+    teacherNotes: 'Aisyah siswa yang cerdas, halus budi pekerti, dan selalu bersemangat di kelas.',
+    status: 'DITERBITKAN' as const,
+    issuedDate: '2026-07-22',
+  },
+  {
+    id: 'rap-14',
+    studentId: 'std-14',
+    studentName: 'Syifa Fauziah',
+    nisn: '2026114',
+    gradeClass: 'Kelas 5',
+    academicYear: '2026/2027 Semester Ganjil',
+    parentName: 'Achmad',
+    teacherName: 'Nurbibiyatillah',
+    grades: [
+      { subject: 'Tahfidz', score: 90, letterGrade: 'A' as const, notes: 'Hafalan Surah An-Nazi’at mutqin.' },
+      { subject: 'MTK 5', score: 85, letterGrade: 'B' as const, notes: 'Cermat dalam operasi hitung pecahan.' },
+      { subject: 'IPAS 5', score: 87, letterGrade: 'A' as const, notes: 'Memahami fungsi organ pernapasan.' },
+      { subject: 'B.Indo 5', score: 88, letterGrade: 'A' as const, notes: 'Mampu menyimpulkan isi bacaan artikel.' },
+      { subject: 'PPKn 5', score: 89, letterGrade: 'A' as const, notes: 'Sangat aktif dalam piket kebersihan kelas.' },
+      { subject: 'Seni 5', score: 90, letterGrade: 'A' as const, notes: 'Menyanyikan lagu daerah dengan intonasi tepat.' },
+      { subject: 'B.Inggris 5', score: 86, letterGrade: 'B' as const, notes: 'Menguasai kosa kata waktu dan kegiatan harian.' },
+    ],
+    attendance: { present: 80, sick: 0, permitted: 0, absent: 0 },
+    extracurriculars: [
+      { name: 'Pramuka Penggalang', grade: 'A', notes: 'Disiplin dan tangkas dalam pionering.' },
+    ],
+    teacherNotes: 'Syifa menunjukkan kemandirian dan rasa tanggung jawab yang membanggakan.',
+    status: 'DITERBITKAN' as const,
+    issuedDate: '2026-07-22',
+  },
+
+  // === KELAS 4 (Wali Kelas: Iis Rohmayanti, S.Pd) ===
+  {
+    id: 'rap-4',
+    studentId: 'std-5',
+    studentName: 'Bilal Ramadan',
+    nisn: '2026105',
     gradeClass: 'Kelas 4',
     academicYear: '2026/2027 Semester Ganjil',
-    parentName: 'Bpk. Bambang Santoso',
-    teacherName: 'Eko Prasetyo, S.Kom',
+    parentName: 'Zubair',
+    teacherName: 'Iis Rohmayanti, S.Pd',
     grades: [
-      { subject: 'Tahfidz', score: 82, letterGrade: 'B' as const, notes: 'Perlu bimbingan lebih dalam kelancaran makhraj huruf.' },
-      { subject: 'MTK 4', score: 88, letterGrade: 'A' as const, notes: 'Sangat cepat dalam menjawab perkalian dasar.' },
-      { subject: 'IPAS 4', score: 84, letterGrade: 'B' as const, notes: 'Aktif bertanya mengenai fenomena alam.' },
-      { subject: 'B.Indo 4', score: 80, letterGrade: 'B' as const, notes: 'Mampu membaca dengan lancar, perlu kerapihan tulisan.' },
-      { subject: 'PPKn 4', score: 85, letterGrade: 'B' as const, notes: 'Disiplin dan menghargai teman sekelas.' },
-      { subject: 'Seni 4', score: 86, letterGrade: 'B' as const, notes: 'Kreatif membuat karya keterampilan tangan.' },
-      { subject: 'B.Inggris 4', score: 81, letterGrade: 'B' as const, notes: 'Memahami kosa kata sederhana dalam kelas.' },
+      { subject: 'Tahfidz', score: 88, letterGrade: 'A' as const, notes: 'Makhraj huruf tajwid sangat rapi dan tartil.' },
+      { subject: 'MTK 4', score: 85, letterGrade: 'B' as const, notes: 'Kuasai materi operasi hitung bilangan cacah.' },
+      { subject: 'IPAS 4', score: 87, letterGrade: 'A' as const, notes: 'Aktif bertanya dan melakukan pengamatan tanaman.' },
+      { subject: 'B.Indo 4', score: 86, letterGrade: 'B' as const, notes: 'Mampu bercerita kembali materi bacaan dengan baik.' },
+      { subject: 'PPKn 4', score: 89, letterGrade: 'A' as const, notes: 'Toleran dan bersahabat dengan semua teman.' },
+      { subject: 'Seni 4', score: 88, letterGrade: 'A' as const, notes: 'Gambar ilustrasi bernilai artistik tinggi.' },
+      { subject: 'B.Inggris 4', score: 82, letterGrade: 'B' as const, notes: 'Hafal nama-nama benda dan profesi dalam bahasa Inggris.' },
     ],
-    attendance: { present: 76, sick: 3, permitted: 2, absent: 0 },
+    attendance: { present: 78, sick: 2, permitted: 0, absent: 0 },
     extracurriculars: [
-      { name: 'Futsal Sekolah', grade: 'A', notes: 'Kapten tim futsal Rombel Kelas 4.' },
+      { name: 'Pramuka', grade: 'A', notes: 'Aktif mengikuti kegiatan perkemahan.' },
     ],
-    teacherNotes: 'Budi berbakat dalam olahraga dan matematika, tingkatkan kebiasaan merapikan alat tulis.',
+    teacherNotes: 'Bilal sangat ceria, rajin membantu teman, dan menunjukkan perkembangan belajar yang konsisten.',
+    status: 'DITERBITKAN' as const,
+    issuedDate: '2026-07-22',
+  },
+  {
+    id: 'rap-6-std6',
+    studentId: 'std-6',
+    studentName: 'Khadijah Az-Zahra',
+    nisn: '2026106',
+    gradeClass: 'Kelas 4',
+    academicYear: '2026/2027 Semester Ganjil',
+    parentName: 'Ali bin Abi',
+    teacherName: 'Iis Rohmayanti, S.Pd',
+    grades: [
+      { subject: 'Tahfidz', score: 95, letterGrade: 'A' as const, notes: 'Hafalan Juz 30 sangat lancar dan merdu.' },
+      { subject: 'MTK 4', score: 90, letterGrade: 'A' as const, notes: 'Cepat dalam perhitungan luas dan keliling bangun datar.' },
+      { subject: 'IPAS 4', score: 92, letterGrade: 'A' as const, notes: 'Memahami perubahan wujud zat melalui eksperimen.' },
+      { subject: 'B.Indo 4', score: 91, letterGrade: 'A' as const, notes: 'Menulis karangan narasi dengan struktur yang rapi.' },
+      { subject: 'PPKn 4', score: 93, letterGrade: 'A' as const, notes: 'Selalu menaati tata tertib madrasah/sekolah.' },
+      { subject: 'Seni 4', score: 89, letterGrade: 'A' as const, notes: 'Kreatif memadukan warna pada seni lukis.' },
+      { subject: 'B.Inggris 4', score: 88, letterGrade: 'A' as const, notes: 'Cakap menyusun kalimat tanya sederhana.' },
+    ],
+    attendance: { present: 80, sick: 0, permitted: 0, absent: 0 },
+    extracurriculars: [
+      { name: 'Tahfizh Cilik', grade: 'A', notes: 'Aktif memimpin doa sebelum belajar.' },
+    ],
+    teacherNotes: 'Khadijah teladan kebersihan dan ketertiban di kelas 4.',
+    status: 'DITERBITKAN' as const,
+    issuedDate: '2026-07-22',
+  },
+  {
+    id: 'rap-15',
+    studentId: 'std-15',
+    studentName: 'Tariq bin Ziyad',
+    nisn: '2026115',
+    gradeClass: 'Kelas 4',
+    academicYear: '2026/2027 Semester Ganjil',
+    parentName: 'Ziyad',
+    teacherName: 'Iis Rohmayanti, S.Pd',
+    grades: [
+      { subject: 'Tahfidz', score: 89, letterGrade: 'A' as const, notes: 'Murojaah Surah Al-Muthaffifin sangat baik.' },
+      { subject: 'MTK 4', score: 87, letterGrade: 'A' as const, notes: 'Mampu menyelesaikan soal pecahan senilai.' },
+      { subject: 'IPAS 4', score: 88, letterGrade: 'A' as const, notes: 'Aktif dalam percobaan gaya dan gerak.' },
+      { subject: 'B.Indo 4', score: 85, letterGrade: 'B' as const, notes: 'Lancar membaca nyaring teks petunjuk.' },
+      { subject: 'PPKn 4', score: 90, letterGrade: 'A' as const, notes: 'Gotong royong dan suka bekerjasama dalam tim.' },
+      { subject: 'Seni 4', score: 86, letterGrade: 'B' as const, notes: 'Membuat kolase biji-bijian yang indah.' },
+      { subject: 'B.Inggris 4', score: 84, letterGrade: 'B' as const, notes: 'Menguasai kosa kata hewan dan tumbuhan.' },
+    ],
+    attendance: { present: 80, sick: 0, permitted: 0, absent: 0 },
+    extracurriculars: [
+      { name: 'Panahan & Pramuka', grade: 'A', notes: 'Fokus dan disiplin tinggi.' },
+    ],
+    teacherNotes: 'Tariq berjiwa kesatria, pemberani, dan ramah terhadap sesama kawan.',
+    status: 'DITERBITKAN' as const,
+    issuedDate: '2026-07-22',
+  },
+
+  // === KELAS 3 (Wali Kelas: Ojah Nasiah Ulfah, S.Ag) ===
+  {
+    id: 'rap-5',
+    studentId: 'std-8',
+    studentName: 'Zaid bin Haritsah',
+    nisn: '2026108',
+    gradeClass: 'Kelas 3',
+    academicYear: '2026/2027 Semester Ganjil',
+    parentName: 'Haritsah',
+    teacherName: 'Ojah Nasiah Ulfah, S.Ag',
+    grades: [
+      { subject: 'Pendidikan Agama Islam & Budi Pekerti', score: 92, letterGrade: 'A' as const, notes: 'Hafalan doa harian dan bacaan salat sangat baik.' },
+      { subject: 'Pendidikan Pancasila', score: 88, letterGrade: 'A' as const, notes: 'Memahami simbol-simbol Pancasila dan gotong royong.' },
+      { subject: 'Bahasa Indonesia', score: 86, letterGrade: 'B' as const, notes: 'Membaca nyaring dengan intonasi yang tepat.' },
+      { subject: 'Matematika', score: 89, letterGrade: 'A' as const, notes: 'Mahir dalam penjumlahan dan pengurangan ribuan.' },
+      { subject: 'IPAS (Ilmu Pengetahuan Alam & Sosial)', score: 87, letterGrade: 'A' as const, notes: 'Memahami wujud benda dan perubahannya.' },
+      { subject: 'Seni dan Budaya', score: 85, letterGrade: 'B' as const, notes: 'Kreatif mewarnai dan menyanyikan lagu anak-anak.' },
+      { subject: 'Pendidikan Jasmani, Olahraga, dan Kesehatan (PJOK)', score: 90, letterGrade: 'A' as const, notes: 'Aktif dan lincah dalam senam kesegaran jasmani.' },
+      { subject: 'Bahasa Inggris', score: 84, letterGrade: 'B' as const, notes: 'Mengenal kosa kata keluarga dan lingkungan sekolah.' },
+      { subject: 'Muatan Lokal (Bahasa Daerah/Tahfizh)', score: 91, letterGrade: 'A' as const, notes: 'Hafal Surah An-Naba dan An-Nazi’at.' },
+    ],
+    attendance: { present: 79, sick: 1, permitted: 0, absent: 0 },
+    extracurriculars: [
+      { name: 'Klub Tahfizh Qur’an', grade: 'A', notes: 'Sangat tekun murojaah setiap pagi.' },
+    ],
+    teacherNotes: 'Zaid anak yang sholeh, rajin ibadah, dan penuh semangat saat belajar di kelas.',
+    status: 'DITERBITKAN' as const,
+    issuedDate: '2026-07-22',
+  },
+  {
+    id: 'rap-7-std7',
+    studentId: 'std-7',
+    studentName: 'Fatimah Zahra',
+    nisn: '2026107',
+    gradeClass: 'Kelas 3',
+    academicYear: '2026/2027 Semester Ganjil',
+    parentName: 'Usman',
+    teacherName: 'Ojah Nasiah Ulfah, S.Ag',
+    grades: [
+      { subject: 'Pendidikan Agama Islam & Budi Pekerti', score: 94, letterGrade: 'A' as const, notes: 'Sangat menguasai kisah para nabi dan adab berteman.' },
+      { subject: 'Pendidikan Pancasila', score: 91, letterGrade: 'A' as const, notes: 'Disiplin dan gemar berbagi dengan teman sekelas.' },
+      { subject: 'Bahasa Indonesia', score: 90, letterGrade: 'A' as const, notes: 'Mampu menyusun kalimat tegak bersambung yang rapi.' },
+      { subject: 'Matematika', score: 88, letterGrade: 'A' as const, notes: 'Kuasai perkalian dasar tabel 1 sampai 10.' },
+      { subject: 'IPAS (Ilmu Pengetahuan Alam & Sosial)', score: 89, letterGrade: 'A' as const, notes: 'Paham siklus hidup kupu-kupu dan hewan sekitar.' },
+      { subject: 'Seni dan Budaya', score: 93, letterGrade: 'A' as const, notes: 'Karya mozaik kertas origami sangat detail.' },
+      { subject: 'Pendidikan Jasmani, Olahraga, dan Kesehatan (PJOK)', score: 87, letterGrade: 'A' as const, notes: 'Lincah dan gemar senam ceria.' },
+      { subject: 'Bahasa Inggris', score: 86, letterGrade: 'B' as const, notes: 'Hafal nama warna, angka, dan benda kelas.' },
+      { subject: 'Muatan Lokal (Bahasa Daerah/Tahfizh)', score: 95, letterGrade: 'A' as const, notes: 'Hafal Juz Amma hingga Surah ‘Abasa.' },
+    ],
+    attendance: { present: 80, sick: 0, permitted: 0, absent: 0 },
+    extracurriculars: [
+      { name: 'Seni Tari Islami & Tahfizh', grade: 'A', notes: 'Penampilan tari samin sangat memukau.' },
+    ],
+    teacherNotes: 'Fatimah sangat anggun, santun, dan rajin dalam menyelesaikan lembar kerja.',
+    status: 'DITERBITKAN' as const,
+    issuedDate: '2026-07-22',
+  },
+  {
+    id: 'rap-16',
+    studentId: 'std-16',
+    studentName: 'Zahra Amalia',
+    nisn: '2026116',
+    gradeClass: 'Kelas 3',
+    academicYear: '2026/2027 Semester Ganjil',
+    parentName: 'Supriyadi',
+    teacherName: 'Ojah Nasiah Ulfah, S.Ag',
+    grades: [
+      { subject: 'Pendidikan Agama Islam & Budi Pekerti', score: 90, letterGrade: 'A' as const, notes: 'Hafal bacaan ruku dan sujud dengan tartil.' },
+      { subject: 'Pendidikan Pancasila', score: 89, letterGrade: 'A' as const, notes: 'Menghargai keragaman suku bangsa di kelas.' },
+      { subject: 'Bahasa Indonesia', score: 88, letterGrade: 'A' as const, notes: 'Keterampilan menyimak dongeng sangat baik.' },
+      { subject: 'Matematika', score: 86, letterGrade: 'B' as const, notes: 'Memahami satuan panjang meter dan centimeter.' },
+      { subject: 'IPAS (Ilmu Pengetahuan Alam & Sosial)', score: 88, letterGrade: 'A' as const, notes: 'Mengenal bagian-bagian tumbuhan dan fungsinya.' },
+      { subject: 'Seni dan Budaya', score: 91, letterGrade: 'A' as const, notes: 'Pandai menyanyikan lagu-lagu nasional.' },
+      { subject: 'Pendidikan Jasmani, Olahraga, dan Kesehatan (PJOK)', score: 88, letterGrade: 'A' as const, notes: 'Menunjukkan kelenturan tubuh dalam senam lantai.' },
+      { subject: 'Bahasa Inggris', score: 85, letterGrade: 'B' as const, notes: 'Mengenal instruksi sit down, stand up, open book.' },
+      { subject: 'Muatan Lokal (Bahasa Daerah/Tahfizh)', score: 92, letterGrade: 'A' as const, notes: 'Hafalan Surah At-Takwir lancar.' },
+    ],
+    attendance: { present: 79, sick: 1, permitted: 0, absent: 0 },
+    extracurriculars: [
+      { name: 'Dokter Kecil (UKS)', grade: 'A', notes: 'Sigap membantu kawan yang membutuhkan.' },
+    ],
+    teacherNotes: 'Zahra anak yang berempati tinggi, ceria, dan teliti saat belajar.',
+    status: 'DITERBITKAN' as const,
+    issuedDate: '2026-07-22',
+  },
+
+  // === KELAS 2 (Wali Kelas: Setia Widi Mawaddah, S.Pd) ===
+  {
+    id: 'rap-6',
+    studentId: 'std-9',
+    studentName: 'Maryam Qonita',
+    nisn: '2026109',
+    gradeClass: 'Kelas 2',
+    academicYear: '2026/2027 Semester Ganjil',
+    parentName: 'Imran',
+    teacherName: 'Setia Widi Mawaddah, S.Pd',
+    grades: [
+      { subject: 'Pendidikan Agama Islam & Budi Pekerti', score: 94, letterGrade: 'A' as const, notes: 'Hafal rukun iman, rukun Islam, dan doa harian.' },
+      { subject: 'Pendidikan Pancasila', score: 90, letterGrade: 'A' as const, notes: 'Disiplin dan menghormati guru serta teman.' },
+      { subject: 'Bahasa Indonesia', score: 92, letterGrade: 'A' as const, notes: 'Lancar membaca buku cerita bergambar dan menulis tegak bersambung.' },
+      { subject: 'Matematika', score: 88, letterGrade: 'A' as const, notes: 'Kuasai penjumlahan dan pengurangan bersusun sederhana.' },
+      { subject: 'Seni dan Budaya', score: 93, letterGrade: 'A' as const, notes: 'Gambar sangat rapi dengan paduan warna yang cerah.' },
+      { subject: 'Pendidikan Jasmani, Olahraga, dan Kesehatan (PJOK)', score: 88, letterGrade: 'A' as const, notes: 'Terampil dalam gerakan melompat dan lempar tangkap bola.' },
+      { subject: 'Bahasa Inggris', score: 87, letterGrade: 'A' as const, notes: 'Hafal angka 1-20 dan warna dalam bahasa Inggris.' },
+      { subject: 'Muatan Lokal (Bahasa Daerah/Tahfizh)', score: 95, letterGrade: 'A' as const, notes: 'Hafal Juz Amma surah Ad-Dhuha s/d An-Nas.' },
+    ],
+    attendance: { present: 80, sick: 0, permitted: 0, absent: 0 },
+    extracurriculars: [
+      { name: 'Seni Lukis & Tahfizh', grade: 'A', notes: 'Karya gambar dipajang di mading kelas.' },
+    ],
+    teacherNotes: 'Maryam sangat cerdas, rajin, santun, dan selalu menyelesaikan tugas tepat waktu.',
+    status: 'DITERBITKAN' as const,
+    issuedDate: '2026-07-22',
+  },
+  {
+    id: 'rap-10-std10',
+    studentId: 'std-10',
+    studentName: 'Yusuf Habibi',
+    nisn: '2026110',
+    gradeClass: 'Kelas 2',
+    academicYear: '2026/2027 Semester Ganjil',
+    parentName: 'Ya\'qub',
+    teacherName: 'Setia Widi Mawaddah, S.Pd',
+    grades: [
+      { subject: 'Pendidikan Agama Islam & Budi Pekerti', score: 91, letterGrade: 'A' as const, notes: 'Hafalan kalimat thoyyibah sangat lancar.' },
+      { subject: 'Pendidikan Pancasila', score: 88, letterGrade: 'A' as const, notes: 'Tertib saat berbaris dan bermain di sekolah.' },
+      { subject: 'Bahasa Indonesia', score: 87, letterGrade: 'A' as const, notes: 'Mampu menceritakan kembali pengalaman liburan.' },
+      { subject: 'Matematika', score: 85, letterGrade: 'B' as const, notes: 'Mengenal nilai mata uang rupiah dan bangun datar.' },
+      { subject: 'Seni dan Budaya', score: 90, letterGrade: 'A' as const, notes: 'Kreatif membuat kerajinan plastisin/lempung.' },
+      { subject: 'Pendidikan Jasmani, Olahraga, dan Kesehatan (PJOK)', score: 92, letterGrade: 'A' as const, notes: 'Sangat lincah dalam lari estafet.' },
+      { subject: 'Bahasa Inggris', score: 84, letterGrade: 'B' as const, notes: 'Mengenal anggota tubuh dalam bahasa Inggris.' },
+      { subject: 'Muatan Lokal (Bahasa Daerah/Tahfizh)', score: 90, letterGrade: 'A' as const, notes: 'Hafalan Surah Al-Zalzalah s/d Al-Qari’ah lancar.' },
+    ],
+    attendance: { present: 78, sick: 2, permitted: 0, absent: 0 },
+    extracurriculars: [
+      { name: 'Pramuka Siaga', grade: 'A', notes: 'Aktif mengikuti kegiatan dwisatya.' },
+    ],
+    teacherNotes: 'Yusuf anak yang periang, penuh energi, dan perlu terus didorong dalam ketelitian berhitung.',
+    status: 'DITERBITKAN' as const,
+    issuedDate: '2026-07-22',
+  },
+  {
+    id: 'rap-17',
+    studentId: 'std-17',
+    studentName: 'Hamzah Asadullah',
+    nisn: '2026117',
+    gradeClass: 'Kelas 2',
+    academicYear: '2026/2027 Semester Ganjil',
+    parentName: 'Abdul Muttalib',
+    teacherName: 'Setia Widi Mawaddah, S.Pd',
+    grades: [
+      { subject: 'Pendidikan Agama Islam & Budi Pekerti', score: 93, letterGrade: 'A' as const, notes: 'Rajin salat berjamaah dan hafalan doa masuk masjid.' },
+      { subject: 'Pendidikan Pancasila', score: 90, letterGrade: 'A' as const, notes: 'Menghargai perbedaan pendapat saat berdiskusi kelompok.' },
+      { subject: 'Bahasa Indonesia', score: 89, letterGrade: 'A' as const, notes: 'Membaca lancar teks bacaan dengan intonasi jelas.' },
+      { subject: 'Matematika', score: 88, letterGrade: 'A' as const, notes: 'Mahir membaca jam dinding analog.' },
+      { subject: 'Seni dan Budaya', score: 89, letterGrade: 'A' as const, notes: 'Pewarnaan gambar crayon sangat rapi.' },
+      { subject: 'Pendidikan Jasmani, Olahraga, dan Kesehatan (PJOK)', score: 94, letterGrade: 'A' as const, notes: 'Unggul dalam ketangkasan dan lompat tali.' },
+      { subject: 'Bahasa Inggris', score: 86, letterGrade: 'B' as const, notes: 'Mampu menyanyikan lagu ABC dengan fasih.' },
+      { subject: 'Muatan Lokal (Bahasa Daerah/Tahfizh)', score: 94, letterGrade: 'A' as const, notes: 'Hafalan Surah Al-Bayyinah sangat tartil.' },
+    ],
+    attendance: { present: 80, sick: 0, permitted: 0, absent: 0 },
+    extracurriculars: [
+      { name: 'Pencak Silat Cilik', grade: 'A', notes: 'Kuda-kuda dan gerak jurus sangat kokoh.' },
+    ],
+    teacherNotes: 'Hamzah murid yang pemberani, jujur, dan bersemangat tinggi dalam belajar.',
+    status: 'DITERBITKAN' as const,
+    issuedDate: '2026-07-22',
+  },
+
+  // === KELAS 1 (Wali Kelas: Uyat Sukriyati, S.Pd) ===
+  {
+    id: 'rap-7',
+    studentId: 'std-11',
+    studentName: 'Ibrahim Al-Khalil',
+    nisn: '2026111',
+    gradeClass: 'Kelas 1',
+    academicYear: '2026/2027 Semester Ganjil',
+    parentName: 'Azar',
+    teacherName: 'Uyat Sukriyati, S.Pd',
+    grades: [
+      { subject: 'Pendidikan Agama Islam & Budi Pekerti', score: 95, letterGrade: 'A' as const, notes: 'Mengenal huruf Hijaiyah, harakat, dan adab makan/minum.' },
+      { subject: 'Pendidikan Pancasila', score: 90, letterGrade: 'A' as const, notes: 'Mengenal aturan di rumah dan di sekolah dengan baik.' },
+      { subject: 'Bahasa Indonesia', score: 88, letterGrade: 'A' as const, notes: 'Lancar mengenal suku kata dan membaca kalimat pendek.' },
+      { subject: 'Matematika', score: 91, letterGrade: 'A' as const, notes: 'Mahir membilang benda 1-20 dan mengenal bentuk bangun datar.' },
+      { subject: 'Seni dan Budaya', score: 92, letterGrade: 'A' as const, notes: 'Senang bernyanyi lagu islami dan menempel kolase.' },
+      { subject: 'Pendidikan Jasmani, Olahraga, dan Kesehatan (PJOK)', score: 89, letterGrade: 'A' as const, notes: 'Ceria saat senam pagi dan permainan motorik.' },
+      { subject: 'Bahasa Inggris', score: 86, letterGrade: 'B' as const, notes: 'Mengenal salam dan ungkapan sederhana (Hello, Good Morning).' },
+      { subject: 'Muatan Lokal (Bahasa Daerah/Tahfizh)', score: 96, letterGrade: 'A' as const, notes: 'Hafal Surah Al-Fatihah s/d Al-Kafirun dengan fasih.' },
+    ],
+    attendance: { present: 80, sick: 0, permitted: 0, absent: 0 },
+    extracurriculars: [
+      { name: 'Tahfizh Cilik', grade: 'A', notes: 'Sangat bersemangat saat tilawah pagi.' },
+    ],
+    teacherNotes: 'Ibrahim anak yang ceria, mudah beradaptasi, dan memiliki daya ingat hafalan yang sangat kuat.',
+    status: 'DITERBITKAN' as const,
+    issuedDate: '2026-07-22',
+  },
+  {
+    id: 'rap-12-std12',
+    studentId: 'std-12',
+    studentName: 'Anisa Rahmawati',
+    nisn: '2026112',
+    gradeClass: 'Kelas 1',
+    academicYear: '2026/2027 Semester Ganjil',
+    parentName: 'Bambang',
+    teacherName: 'Uyat Sukriyati, S.Pd',
+    grades: [
+      { subject: 'Pendidikan Agama Islam & Budi Pekerti', score: 96, letterGrade: 'A' as const, notes: 'Mengenal nama-nama 25 nabi dan rukun iman.' },
+      { subject: 'Pendidikan Pancasila', score: 92, letterGrade: 'A' as const, notes: 'Sangat tertib mematuhi tata tertib kelas 1.' },
+      { subject: 'Bahasa Indonesia', score: 93, letterGrade: 'A' as const, notes: 'Membaca nyaring sangat lancar dan menulis huruf rapi.' },
+      { subject: 'Matematika', score: 90, letterGrade: 'A' as const, notes: 'Cepat dalam penjumlahan benda konkrit 1-20.' },
+      { subject: 'Seni dan Budaya', score: 94, letterGrade: 'A' as const, notes: 'Mewarnai gambar sangat rapi tanpa keluar garis.' },
+      { subject: 'Pendidikan Jasmani, Olahraga, dan Kesehatan (PJOK)', score: 88, letterGrade: 'A' as const, notes: 'Gembira saat senam irama anak.' },
+      { subject: 'Bahasa Inggris', score: 89, letterGrade: 'A' as const, notes: 'Hafal nama-nama warna (Red, Blue, Green, Yellow).' },
+      { subject: 'Muatan Lokal (Bahasa Daerah/Tahfizh)', score: 97, letterGrade: 'A' as const, notes: 'Hafalan Juz Amma Surah An-Nas s/d Al-Humazah lancar.' },
+    ],
+    attendance: { present: 80, sick: 0, permitted: 0, absent: 0 },
+    extracurriculars: [
+      { name: 'Seni Mewarnai & Tahfizh', grade: 'A', notes: 'Karya mewarnai rapi dan paduan warna serasi.' },
+    ],
+    teacherNotes: 'Anisa murid yang sangat manis, santun, cerdas, dan rajin mencatat.',
+    status: 'DITERBITKAN' as const,
+    issuedDate: '2026-07-22',
+  },
+  {
+    id: 'rap-18',
+    studentId: 'std-18',
+    studentName: 'Ruqayyah Jamilah',
+    nisn: '2026118',
+    gradeClass: 'Kelas 1',
+    academicYear: '2026/2027 Semester Ganjil',
+    parentName: 'Masykur',
+    teacherName: 'Uyat Sukriyati, S.Pd',
+    grades: [
+      { subject: 'Pendidikan Agama Islam & Budi Pekerti', score: 94, letterGrade: 'A' as const, notes: 'Mengenal rukun Islam dan praktik wudhu sederhana.' },
+      { subject: 'Pendidikan Pancasila', score: 91, letterGrade: 'A' as const, notes: 'Suka menolong teman dan menjaga kebersihan meja.' },
+      { subject: 'Bahasa Indonesia', score: 90, letterGrade: 'A' as const, notes: 'Lancar membaca kata-kata berakhiran konsonan.' },
+      { subject: 'Matematika', score: 89, letterGrade: 'A' as const, notes: 'Mampu membandingkan banyak benda lebih banyak/sedikit.' },
+      { subject: 'Seni dan Budaya', score: 93, letterGrade: 'A' as const, notes: 'Kreatif menempel kertas lipat membentuk bunga.' },
+      { subject: 'Pendidikan Jasmani, Olahraga, dan Kesehatan (PJOK)', score: 89, letterGrade: 'A' as const, notes: 'Lincah dalam jalan jinjit dan melompat.' },
+      { subject: 'Bahasa Inggris', score: 88, letterGrade: 'A' as const, notes: 'Mengenal nama-nama anggota keluarga (Father, Mother).' },
+      { subject: 'Muatan Lokal (Bahasa Daerah/Tahfizh)', score: 95, letterGrade: 'A' as const, notes: 'Hafalan Surah Al-Fil s/d Al-Quraisy sangat tartil.' },
+    ],
+    attendance: { present: 80, sick: 0, permitted: 0, absent: 0 },
+    extracurriculars: [
+      { name: 'Tahfizh Cilik', grade: 'A', notes: 'Rajin murojaah bersama ummi di rumah.' },
+    ],
+    teacherNotes: 'Ruqayyah anak yang sholehah, ramah, dan selalu bersemangat datang ke sekolah.',
     status: 'DITERBITKAN' as const,
     issuedDate: '2026-07-22',
   },
@@ -625,8 +1159,8 @@ export const INITIAL_E_RAPORTS = [
 export const INITIAL_TEACHER_JOURNALS = [
   {
     id: 'jrn-rom-1',
-    teacherId: 'tch-2',
-    teacherName: 'Hj. Fatimah Zahra, S.Pd',
+    teacherId: 'tch-3',
+    teacherName: 'Mega Andini Putri, S.Pd',
     rombonganBelajar: 'Kelas 6',
     subject: 'Matematika Rombel 6',
     date: '2026-08-01',
@@ -634,34 +1168,175 @@ export const INITIAL_TEACHER_JOURNALS = [
     competencySummary: 'Menganalisis dan memecahkan soal cerita pecahan berbasis kehidupan sehari-hari.',
     teachingMaterial: 'Modul Digital SiPLah & Lembar Kerja Siswa Interaktif',
     status: 'DISETUJUI_KEPSEK' as const,
-    principalFeedback: 'Materi sangat sesuai Kurikulum Merdeka. Lanjutkan penggunaan lab komputer.',
+    principalFeedback: 'Materi sangat sesuai Kurikulum Merdeka. Lanjutkan penguatan literasi numerasi.',
     approvedDate: '2026-08-01',
   },
   {
     id: 'jrn-rom-2',
-    teacherId: 'tch-3',
-    teacherName: 'Eko Prasetyo, S.Kom',
+    teacherId: 'tch-2',
+    teacherName: 'Iis Rohmayanti, S.Pd',
     rombonganBelajar: 'Kelas 4',
-    subject: 'Informatika & Keterampilan Digital',
+    subject: 'IPAS (Ilmu Pengetahuan Alam & Sosial)',
     date: '2026-08-02',
-    topic: 'Pengenalan Pemrograman Visual Scratch Jr & Etika Internet',
-    competencySummary: 'Membuat animasi sederhana dan memahami etika berkomunikasi online.',
-    teachingMaterial: 'Perangkat Laptop Lab Komputer Sekolah',
+    topic: 'Wujud Zat dan Perubahannya dalam Kehidupan Sehari-hari',
+    competencySummary: 'Melakukan eksperimen sederhana perubahan wujud benda padat, cair, dan gas.',
+    teachingMaterial: 'Kit Sains Laboratorium & Lembar Praktikum Siswa',
     status: 'DISETUJUI_KEPSEK' as const,
-    principalFeedback: 'Disetujui. Pastikan pengawasan penggunaan internet ketat.',
+    principalFeedback: 'Disetujui. Praktikum berbasis eksperimen sangat menarik minat belajar siswa.',
     approvedDate: '2026-08-02',
   },
   {
     id: 'jrn-rom-3',
-    teacherId: 'tch-4',
-    teacherName: 'Rina Kartika, S.Si',
+    teacherId: 'tch-7',
+    teacherName: 'Nurbibiyatillah',
     rombonganBelajar: 'Kelas 5',
-    subject: 'IPAS (Ilmu Pengetahuan Alam & Sosial)',
+    subject: 'IPAS Rombel 5',
     date: '2026-08-03',
-    topic: 'Sistem Organ Pencernaan Manusia & Makanan Sehat',
-    competencySummary: 'Mengidentifikasi organ pencernaan melalui alat peraga torso biologi.',
-    teachingMaterial: 'Alat Peraga Torso Lab Biologi & Video Pembelajaran',
+    topic: 'Sistem Organ Pencernaan Manusia & Pola Makan Sehat Halal',
+    competencySummary: 'Mengidentifikasi organ pencernaan melalui alat peraga torso biologi dan bagan interaktif.',
+    teachingMaterial: 'Alat Peraga Torso Lab Biologi & Video Pembelajaran SiPLah',
+    status: 'DISETUJUI_KEPSEK' as const,
+    principalFeedback: 'Bagus sekali. Sertakan juga tinjauan thoyyiban dalam kebiasaan makan.',
+    approvedDate: '2026-08-03',
+  },
+  {
+    id: 'jrn-rom-4',
+    teacherId: 'tch-4',
+    teacherName: 'Ojah Nasiah Ulfah, S.Ag',
+    rombonganBelajar: 'Kelas 3',
+    subject: 'Al-Qur’an & Hadits Tematik',
+    date: '2026-08-04',
+    topic: 'Kaidah Hukum Tajwid Mad Thabi’i & Idzhar Halqi',
+    competencySummary: 'Menerapkan makhraj huruf dan hukum bacaan mad dalam tilawah Surah Maryam.',
+    teachingMaterial: 'Mushaf Al-Qur’an Standar & Audio Murottal Syaikh Misyari',
+    status: 'DISETUJUI_KEPSEK' as const,
+    principalFeedback: 'Disetujui. Program penguatan tahsin agar terus dijadwalkan setiap pekan.',
+    approvedDate: '2026-08-04',
+  },
+  {
+    id: 'jrn-rom-5',
+    teacherId: 'tch-6',
+    teacherName: 'Setia Widi Mawaddah, S.Pd',
+    rombonganBelajar: 'Kelas 2',
+    subject: 'Bahasa Indonesia Tematik',
+    date: '2026-08-05',
+    topic: 'Membaca Lancar Teks Pendek & Kosakata Lingkungan Bersih',
+    competencySummary: 'Mampu menyusun kalimat runtut mengenai cara menjaga kebersihan ruang kelas.',
+    teachingMaterial: 'Kartu Baca Bergambar & Lembar Kreasi Tulis Siswa',
     status: 'DIUSULKAN_GURU' as const,
+  },
+  {
+    id: 'jrn-rom-6',
+    teacherId: 'tch-5',
+    teacherName: 'Uyat Sukriyati, S.Pd',
+    rombonganBelajar: 'Kelas 1',
+    subject: 'Pendidikan Pancasila & Budi Pekerti',
+    date: '2026-08-06',
+    topic: 'Mengenal Aturan di Rumah dan di Sekolah dengan Suka Cita',
+    competencySummary: 'Membiasakan budaya antre, salam, dan merapikan mainan bersama kawan.',
+    teachingMaterial: 'Boneka Jari Karakter & Lagu Anak Edukatif',
+    status: 'DIUSULKAN_GURU' as const,
+  },
+];
+
+// --- INITIAL CONSULTATION & PROGRESS INTERACTION MESSAGES (GURU - WALI MURID) ---
+export const INITIAL_CONSULTATION_MESSAGES = [
+  {
+    id: 'msg-1',
+    studentId: 'std-1',
+    studentName: 'Ahmad Rizky Pratama',
+    gradeClass: 'Kelas 6',
+    senderType: 'GURU_WALIKELAS' as const,
+    senderName: 'Mega Andini Putri, S.Pd (Wali Kelas 6)',
+    category: 'PRESTASI' as const,
+    title: 'Apresiasi Capaian Hafalan Juz 30 & Juara 1 Olimpiade Matematika',
+    message: 'Assalamu\'alaikum Bpk. Rahmat Hidayat. Alhamdulillah ananda Ahmad menunjukkan perkembangan luar biasa di kelas. Beliau telah menyelesaikan tasmi\' hafalan Juz 30 dengan predikat Mumtaz serta lolos seleksi OSN Matematika tingkat kota. Mohon terus didukung murojaah di rumah.',
+    timestamp: '2026-08-10 09:30',
+    status: 'DITANGGAPI' as const,
+    attachmentNote: 'Sertifikat Tasmi Juz 30 & Rekomendasi OSN',
+  },
+  {
+    id: 'msg-2',
+    studentId: 'std-1',
+    studentName: 'Ahmad Rizky Pratama',
+    gradeClass: 'Kelas 6',
+    senderType: 'WALI_MURID' as const,
+    senderName: 'Bpk. Rahmat Hidayat (Wali Murid)',
+    category: 'PRESTASI' as const,
+    title: 'Terima Kasih Bimbingan Bu Guru Mega',
+    message: 'Wa\'alaikumsalam Warahmatullahi Wabarakatuh Bu Mega. Terima kasih banyak atas bimbingan dan kesabaran Ibu mengajar Ahmad. Kami di rumah akan senantiasa mengingatkan jadwal murojaah setiap ba\'da maghrib.',
+    timestamp: '2026-08-10 11:15',
+    status: 'DIBACA' as const,
+  },
+  {
+    id: 'msg-3',
+    studentId: 'std-4',
+    studentName: 'Aisyah Humaira',
+    gradeClass: 'Kelas 5',
+    senderType: 'GURU_WALIKELAS' as const,
+    senderName: 'Nurbibiyatillah (Wali Kelas 5)',
+    category: 'KEWAJIBAN_SPP' as const,
+    title: 'Pemberitahuan Administrasi SPP & Konfirmasi Pembayaran',
+    message: 'Assalamu\'alaikum Ibu/Bpk. Umar Khalid. Mengingatkan kembali bahwa administrasi SPP bulan Agustus ananda Aisyah berstatus Menunggu Verifikasi. Mohon konfirmasi bukti pembayaran ke Bagian Keuangan/Wali Kelas agar E-Raport semesteran dapat langsung diakses pada portal wali murid.',
+    timestamp: '2026-08-11 08:45',
+    status: 'TERKIRIM' as const,
+    attachmentNote: 'Virtual Account BSI: 880202026104 a.n Aisyah Humaira',
+  },
+  {
+    id: 'msg-4',
+    studentId: 'std-10',
+    studentName: 'Yusuf Habibi',
+    gradeClass: 'Kelas 2',
+    senderType: 'GURU_WALIKELAS' as const,
+    senderName: 'Setia Widi Mawaddah, S.Pd (Wali Kelas 2)',
+    category: 'KEWAJIBAN_SPP' as const,
+    title: 'Informasi Status SPP & Akses E-Raport Digital',
+    message: 'Assalamu\'alaikum Bpk. Ya\'qub. Mohon izin menginfokan bahwa ananda Yusuf memiliki catatan tunggakan SPP. Demi ketertiban administrasi akademik, akses unduh lembar E-Raport di portal wali murid akan terbuka otomatis setelah status pembayaran diverifikasi LUNAS oleh Bendahara.',
+    timestamp: '2026-08-12 10:00',
+    status: 'TERKIRIM' as const,
+    attachmentNote: 'VA BSI: 880202026110 (Rp 250.000 / bln)',
+  },
+  {
+    id: 'msg-5',
+    studentId: 'std-11',
+    studentName: 'Ibrahim Al-Khalil',
+    gradeClass: 'Kelas 1',
+    senderType: 'GURU_WALIKELAS' as const,
+    senderName: 'Uyat Sukriyati, S.Pd (Wali Kelas 1)',
+    category: 'KONSULTASI_BELAJAR' as const,
+    title: 'Perkembangan Adaptasi & Calistung Ananda Ibrahim di Kelas 1',
+    message: 'Assalamu\'alaikum Ayah/Bunda Ibrahim. Alhamdulillah ananda sangat cepat berbaur dengan teman-temannya. Kemampuan membaca suku kata dan hafalan surah pendeknya sangat menonjol. Tetap jaga semangatnya saat di rumah ya Bunda.',
+    timestamp: '2026-08-13 13:20',
+    status: 'DITANGGAPI' as const,
+    attachmentNote: 'Catatan Observasi Karakter Awal Semester',
+  },
+  {
+    id: 'msg-6',
+    studentId: 'std-7',
+    studentName: 'Bilqis Az-Zahra',
+    gradeClass: 'Kelas 3',
+    senderType: 'GURU_WALIKELAS' as const,
+    senderName: 'Ojah Nasiah Ulfah, S.Ag (Wali Kelas 3)',
+    category: 'PRESTASI' as const,
+    title: 'Kemajuan Tajwid & Lomba Kaligrafi Santri',
+    message: 'Assalamu\'alaikum Ibu/Bpk. Sulaiman. Alhamdulillah ananda Bilqis sangat mahir dalam penerapan mad thabi\'i dan terpilih mewakili Kelas 3 dalam lomba kaligrafi tingkat kecamatan.',
+    timestamp: '2026-08-13 14:10',
+    status: 'TERKIRIM' as const,
+    attachmentNote: 'Karya Kaligrafi Hiasan Mushaf',
+  },
+  {
+    id: 'msg-7',
+    studentId: 'std-5',
+    studentName: 'Muhammad Fatih',
+    gradeClass: 'Kelas 4',
+    senderType: 'GURU_WALIKELAS' as const,
+    senderName: 'Iis Rohmayanti, S.Pd (Wali Kelas 4)',
+    category: 'KEWAJIBAN_SPP' as const,
+    title: 'Konfirmasi Rekapitulasi SPP & E-Raport Semester',
+    message: 'Assalamu\'alaikum Ayahanda Fatih. Mengingatkan jadwal pencetakan rapor akhir semester dan pengecekan kelengkapan administrasi SPP bulan berjalan. Terima kasih atas kerja samanya.',
+    timestamp: '2026-08-13 15:00',
+    status: 'DITANGGAPI' as const,
+    attachmentNote: 'No. VA BSI: 880202026105',
   },
 ];
 
@@ -751,6 +1426,86 @@ export const INITIAL_WEBSITE_LAYOUT_CONFIG: WebsiteLayoutConfig = {
   ],
 };
 
+export const getSubjectsByClass = (gradeClass: string): string[] => {
+  const normalized = gradeClass.toLowerCase();
+  if (normalized.includes('1') || normalized.includes('kelas 1')) {
+    return [
+      'Pendidikan Agama Islam & Budi Pekerti',
+      'Pendidikan Pancasila',
+      'Bahasa Indonesia (Membaca & Menulis)',
+      'Matematika Dasar & Bilangan',
+      'Seni Rupa & Prakarya',
+      'Pendidikan Jasmani, Olahraga & Kesehatan (PJOK)',
+      'Tahsin & Tahfidz Juz 30',
+    ];
+  }
+  if (normalized.includes('2') || normalized.includes('kelas 2')) {
+    return [
+      'Pendidikan Agama Islam & Budi Pekerti',
+      'Pendidikan Pancasila',
+      'Bahasa Indonesia',
+      'Matematika',
+      'Seni Budaya dan Keterampilan',
+      'PJOK',
+      'Bahasa Inggris Dasar',
+      'Tahsin & Tahfidz Al-Qur\'an',
+    ];
+  }
+  if (normalized.includes('3') || normalized.includes('kelas 3')) {
+    return [
+      'Pendidikan Agama Islam & Budi Pekerti',
+      'Pendidikan Pancasila',
+      'Bahasa Indonesia',
+      'Matematika',
+      'IPAS (Ilmu Pengetahuan Alam dan Sosial)',
+      'Seni dan Budaya',
+      'PJOK',
+      'Bahasa Arab Dasar',
+      'Tahfidz Al-Qur\'an',
+    ];
+  }
+  if (normalized.includes('4') || normalized.includes('kelas 4')) {
+    return [
+      'Pendidikan Agama Islam & Budi Pekerti',
+      'Pendidikan Pancasila',
+      'Bahasa Indonesia',
+      'Matematika Terapan',
+      'IPAS (Sains & Sosial Merdeka)',
+      'Bahasa Inggris',
+      'Seni Rupa & Musik',
+      'PJOK',
+      'Bahasa Arab & Hadits Tematik',
+      'Tahfidz Al-Qur\'an Juz 29-30',
+    ];
+  }
+  if (normalized.includes('5') || normalized.includes('kelas 5')) {
+    return [
+      'Pendidikan Agama Islam & Budi Pekerti',
+      'Pendidikan Pancasila',
+      'Bahasa Indonesia',
+      'Matematika Tingkat Lanjut',
+      'IPAS (Eksperimen & Proyek)',
+      'Bahasa Inggris',
+      'Pendidikan Seni & Prakarya',
+      'PJOK',
+      'Pendidikan Al-Qur\'an & Hadits',
+      'Tahfidz & Murojaah',
+    ];
+  }
+  return [
+    'Pendidikan Agama Islam & Budi Pekerti',
+    'Pendidikan Pancasila',
+    'Bahasa Indonesia (Literasi Lanjutan)',
+    'Matematika (Numerasi & Pemecahan Masalah)',
+    'IPAS (Sains Terpadu & Ekosistem)',
+    'Bahasa Inggris',
+    'Seni Budaya & Keterampilan Digital',
+    'PJOK',
+    'Pendidikan Al-Qur\'an Hadits & Fiqih Ibadah',
+    'Tahfidz Al-Qur\'an',
+  ];
+};
+
 export const INITIAL_PPDB_CONFIG: PPDBConfig = {
   academicYear: '2026/2027',
   contactWhatsapp: '0812-3344-5566',
@@ -767,4 +1522,6 @@ export const INITIAL_PPDB_CONFIG: PPDBConfig = {
     { id: 'sch-3', title: 'Beasiswa Yatim & Dhuafa', description: 'Subsidi pendidikan penuh dari Dana Infaq ISAK 35 Yayasan.' },
   ],
 };
+
+
 

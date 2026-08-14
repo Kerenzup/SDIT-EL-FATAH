@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { safeGetLocalStorage, safeSetLocalStorage } from './utils/safeStorage';
 import { getIDBItem } from './utils/indexedDBStorage';
 import {
@@ -179,9 +179,17 @@ export default function App() {
     safeGetLocalStorage('yayasan_achievements', INITIAL_ACHIEVEMENTS)
   );
 
-  const [eRaports, setERaports] = useState<ERaport[]>(() =>
-    safeGetLocalStorage('yayasan_e_raports', INITIAL_E_RAPORTS)
-  );
+  const [eRaports, setERaports] = useState<ERaport[]>(() => {
+    const saved = safeGetLocalStorage<ERaport[]>('yayasan_e_raports', INITIAL_E_RAPORTS);
+    if (!Array.isArray(saved) || saved.length < INITIAL_E_RAPORTS.length) {
+      const existingStudentIds = new Set((Array.isArray(saved) ? saved : []).map((r) => r.studentId));
+      const missing = INITIAL_E_RAPORTS.filter((r) => !existingStudentIds.has(r.studentId));
+      const merged = [...(Array.isArray(saved) ? saved : []), ...missing];
+      safeSetLocalStorage('yayasan_e_raports', merged);
+      return merged;
+    }
+    return saved;
+  });
 
   const [teacherJournals, setTeacherJournals] = useState<TeacherJournalRombel[]>(() =>
     safeGetLocalStorage('yayasan_teacher_journals', INITIAL_TEACHER_JOURNALS)
@@ -239,27 +247,50 @@ export default function App() {
     }
   }, []);
 
+  // Hydration state reference to prevent overwriting IndexedDB with initial state before hydration finishes
+  const isHydratedRef = useRef<boolean>(false);
+
   // Hydrate heavy media & gallery assets from permanent IndexedDB database on mount
   useEffect(() => {
-    getIDBItem<GalleryItem[]>('yayasan_gallery_items', []).then((items) => {
+    Promise.all([
+      getIDBItem<GalleryItem[]>('yayasan_gallery_items', []),
+      getIDBItem<FoundationProfile>('yayasan_profile', foundationProfile),
+      getIDBItem<WebsiteLayoutConfig>('yayasan_website_layout_config', layoutConfig),
+      getIDBItem<NewsArticle[]>('yayasan_news_articles', []),
+      getIDBItem<HeroBanner[]>('yayasan_hero_banners', []),
+      getIDBItem<StudentAchievement[]>('yayasan_achievements', []),
+      getIDBItem<ERaport[]>('yayasan_e_raports', []),
+      getIDBItem<TeacherJournalRombel[]>('yayasan_teacher_journals', []),
+    ]).then(([items, prof, cfg, news, banners, achs, raports, journals]) => {
       if (items && Array.isArray(items) && items.length > 0) {
         setGalleryItems(items);
       }
-    });
-    getIDBItem<FoundationProfile>('yayasan_profile', foundationProfile).then((prof) => {
       if (prof && prof.name) {
         setFoundationProfile(prof);
       }
-    });
-    getIDBItem<WebsiteLayoutConfig>('yayasan_website_layout_config', layoutConfig).then((cfg) => {
       if (cfg && cfg.sections) {
         setLayoutConfig(cfg);
       }
-    });
-    getIDBItem<NewsArticle[]>('yayasan_news_articles', []).then((news) => {
       if (news && Array.isArray(news) && news.length > 0) {
         setNewsArticles(news);
       }
+      if (banners && Array.isArray(banners) && banners.length > 0) {
+        setHeroBanners(banners);
+      }
+      if (achs && Array.isArray(achs) && achs.length > 0) {
+        setAchievements(achs);
+      }
+      if (raports && Array.isArray(raports) && raports.length > 0) {
+        setERaports(raports);
+      }
+      if (journals && Array.isArray(journals) && journals.length > 0) {
+        setTeacherJournals(journals);
+      }
+      // Set hydration flag so subsequent user changes are saved reliably
+      isHydratedRef.current = true;
+    }).catch((err) => {
+      console.warn('IndexedDB initial hydration warning:', err);
+      isHydratedRef.current = true;
     });
   }, []);
 
@@ -275,8 +306,9 @@ export default function App() {
     searchQuery: '',
   });
 
-  // Save to LocalStorage
+  // Save to LocalStorage & IndexedDB (Guarded by isHydratedRef)
   useEffect(() => {
+    if (!isHydratedRef.current) return;
     safeSetLocalStorage('yayasan_profile', foundationProfile);
     if (foundationProfile && foundationProfile.name) {
       document.title = `${foundationProfile.name} - Portal Resmi & ERP Keuangan ISAK 35`;
@@ -284,70 +316,87 @@ export default function App() {
   }, [foundationProfile]);
 
   useEffect(() => {
+    if (!isHydratedRef.current) return;
     safeSetLocalStorage('yayasan_accounts', accounts);
   }, [accounts]);
 
   useEffect(() => {
+    if (!isHydratedRef.current) return;
     safeSetLocalStorage('yayasan_journals', journalEntries);
   }, [journalEntries]);
 
   useEffect(() => {
+    if (!isHydratedRef.current) return;
     safeSetLocalStorage('yayasan_students', students);
   }, [students]);
 
   useEffect(() => {
+    if (!isHydratedRef.current) return;
     safeSetLocalStorage('yayasan_teachers', teachers);
   }, [teachers]);
 
   useEffect(() => {
+    if (!isHydratedRef.current) return;
     safeSetLocalStorage('yayasan_assets', fixedAssets);
   }, [fixedAssets]);
 
   useEffect(() => {
+    if (!isHydratedRef.current) return;
     safeSetLocalStorage('yayasan_board_members', boardMembers);
   }, [boardMembers]);
 
   useEffect(() => {
+    if (!isHydratedRef.current) return;
     safeSetLocalStorage('yayasan_suppliers', suppliers);
   }, [suppliers]);
 
   useEffect(() => {
+    if (!isHydratedRef.current) return;
     safeSetLocalStorage('yayasan_siplah_procurements', siplahProcurements);
   }, [siplahProcurements]);
 
   useEffect(() => {
+    if (!isHydratedRef.current) return;
     safeSetLocalStorage('yayasan_hero_banners', heroBanners);
   }, [heroBanners]);
 
   useEffect(() => {
+    if (!isHydratedRef.current) return;
     safeSetLocalStorage('yayasan_speeches', speeches);
   }, [speeches]);
 
   useEffect(() => {
+    if (!isHydratedRef.current) return;
     safeSetLocalStorage('yayasan_vision_mission', visionMission);
   }, [visionMission]);
 
   useEffect(() => {
+    if (!isHydratedRef.current) return;
     safeSetLocalStorage('yayasan_news_articles', newsArticles);
   }, [newsArticles]);
 
   useEffect(() => {
+    if (!isHydratedRef.current) return;
     safeSetLocalStorage('yayasan_gallery_items', galleryItems);
   }, [galleryItems]);
 
   useEffect(() => {
+    if (!isHydratedRef.current) return;
     safeSetLocalStorage('yayasan_achievements', achievements);
   }, [achievements]);
 
   useEffect(() => {
+    if (!isHydratedRef.current) return;
     safeSetLocalStorage('yayasan_e_raports', eRaports);
   }, [eRaports]);
 
   useEffect(() => {
+    if (!isHydratedRef.current) return;
     safeSetLocalStorage('yayasan_teacher_journals', teacherJournals);
   }, [teacherJournals]);
 
   useEffect(() => {
+    if (!isHydratedRef.current) return;
     safeSetLocalStorage('yayasan_arkas_budget', arkasBudget);
   }, [arkasBudget]);
 
@@ -644,10 +693,31 @@ export default function App() {
     setERaports((prev) => [newRap, ...prev]);
   };
 
+  const handleUpdateERaport = (raport: ERaport) => {
+    setERaports((prev) => {
+      const idx = prev.findIndex(
+        (item) =>
+          item.id === raport.id ||
+          (raport.studentId && item.studentId === raport.studentId) ||
+          (raport.nisn && (item.nisn === raport.nisn || item.studentName.toLowerCase() === raport.studentName.toLowerCase()))
+      );
+      if (idx >= 0) {
+        const updated = [...prev];
+        updated[idx] = { ...updated[idx], ...raport };
+        return updated;
+      }
+      return [raport, ...prev];
+    });
+  };
+
   const handleApproveERaport = (id: string) => {
-    setERaports((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, status: 'DITERBITKAN' } : r))
-    );
+    setERaports((prev) => {
+      const exists = prev.some((r) => r.id === id);
+      if (exists) {
+        return prev.map((r) => (r.id === id ? { ...r, status: 'DITERBITKAN' } : r));
+      }
+      return prev.map((r) => (r.id === id ? { ...r, status: 'DITERBITKAN' } : r));
+    });
   };
 
   const handleAddArkasBudgetItem = (item: Omit<ArkasBudgetItem, 'id' | 'code'>) => {
@@ -785,6 +855,14 @@ export default function App() {
   const handleAddAsset = (ast: FixedAsset) => setFixedAssets((prev) => [...prev, ast]);
   const handleUpdateAsset = (ast: FixedAsset) => setFixedAssets((prev) => prev.map((a) => (a.id === ast.id ? ast : a)));
   const handleDeleteAsset = (id: string) => setFixedAssets((prev) => prev.filter((a) => a.id !== id));
+
+  const handleUpdateStudentSppStatus = (studentId: string, newStatus: 'LUNAS' | 'MENUNGGU' | 'TUNGGAKAN') => {
+    setStudents((prev) => {
+      const next = prev.map((s) => (s.id === studentId ? { ...s, sppStatus: newStatus } : s));
+      safeSetLocalStorage('yayasan_students', next);
+      return next;
+    });
+  };
 
   // Handler Reset Data to initial dataset
   const handleResetData = () => {
@@ -1068,11 +1146,12 @@ export default function App() {
               teachers={teachers}
               currentRole={currentRole}
               forcedSubTab="raport"
-              onUpdateRaport={(r) => setERaports((prev) => prev.map((item) => (item.id === r.id ? r : item)))}
+              onUpdateRaport={handleUpdateERaport}
               onAddRaport={handleAddERaport}
               onAddJournal={handleAddJournalRombel}
               onApproveJournal={handleApproveJournalRombel}
               onApproveRaport={handleApproveERaport}
+              onUpdateStudentSppStatus={handleUpdateStudentSppStatus}
             />
           )}
 
@@ -1084,11 +1163,12 @@ export default function App() {
               teachers={teachers}
               currentRole={currentRole}
               forcedSubTab="jurnal"
-              onUpdateRaport={(r) => setERaports((prev) => prev.map((item) => (item.id === r.id ? r : item)))}
+              onUpdateRaport={handleUpdateERaport}
               onAddRaport={handleAddERaport}
               onAddJournal={handleAddJournalRombel}
               onApproveJournal={handleApproveJournalRombel}
               onApproveRaport={handleApproveERaport}
+              onUpdateStudentSppStatus={handleUpdateStudentSppStatus}
             />
           )}
 

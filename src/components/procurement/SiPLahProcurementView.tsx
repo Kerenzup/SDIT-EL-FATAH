@@ -58,7 +58,7 @@ export const SiPLahProcurementView: React.FC<SiPLahProcurementViewProps> = ({
     'PERLENGKAPAN_ATK'
   );
   const [amount, setAmount] = useState<number>(0);
-  const [proposedBy, setProposedBy] = useState('Dr. H. Bambang Widjaja, M.Pd (Kepala Sekolah)');
+  const [proposedBy, setProposedBy] = useState('Masykur Rohana, S.Sos (Kepala Sekolah)');
   const [fundingSource, setFundingSource] = useState<'DANA_BOS' | 'DANA_SPP' | 'HIBAH_YAYASAN'>('DANA_BOS');
   const [debitAccountCode, setDebitAccountCode] = useState('5112');
   const [notes, setNotes] = useState('');

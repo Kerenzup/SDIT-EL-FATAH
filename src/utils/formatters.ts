@@ -62,6 +62,18 @@ export function isYouTubeUrl(url: string): boolean {
   return lower.includes('youtube.com') || lower.includes('youtu.be');
 }
 
+export function isGoogleDriveUrl(url: string): boolean {
+  if (!url) return false;
+  const lower = url.toLowerCase();
+  return lower.includes('drive.google.com');
+}
+
+export function isVimeoUrl(url: string): boolean {
+  if (!url) return false;
+  const lower = url.toLowerCase();
+  return lower.includes('vimeo.com');
+}
+
 export function isMediaVideo(url: string): boolean {
   if (!url) return false;
   const lower = url.toLowerCase();
@@ -79,8 +91,8 @@ export function isMediaVideo(url: string): boolean {
     lower.includes('.3gp') ||
     lower.includes('.ogg') ||
     lower.includes('.flv') ||
-    lower.includes('vimeo.com') ||
-    lower.includes('drive.google.com') ||
+    isVimeoUrl(url) ||
+    isGoogleDriveUrl(url) ||
     isYouTubeUrl(url)
   );
 }
@@ -89,12 +101,42 @@ export function getYoutubeEmbedUrl(url: string): string {
   if (!url) return '';
   if (url.includes('youtube.com/embed/')) return url;
 
-  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|shorts\/)([^#\&\?]*).*/;
+  // Handle formats: watch?v=ID, youtu.be/ID, youtube.com/shorts/ID, youtube.com/live/ID
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|shorts\/|live\/)([^#\&\?]*).*/;
   const match = url.match(regExp);
 
-  if (match && match[2] && match[2].length === 11) {
-    return `https://www.youtube.com/embed/${match[2]}`;
+  if (match && match[2] && match[2].length >= 11) {
+    return `https://www.youtube.com/embed/${match[2].substring(0, 11)}`;
   }
+  return url;
+}
+
+export function getGoogleDriveEmbedUrl(url: string): string {
+  if (!url) return '';
+  if (url.includes('/preview')) return url;
+  // Convert https://drive.google.com/file/d/FILE_ID/view... to /preview
+  const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+  if (match && match[1]) {
+    return `https://drive.google.com/file/d/${match[1]}/preview`;
+  }
+  return url;
+}
+
+export function getVimeoEmbedUrl(url: string): string {
+  if (!url) return '';
+  if (url.includes('player.vimeo.com/video/')) return url;
+  const match = url.match(/vimeo\.com\/(\d+)/);
+  if (match && match[1]) {
+    return `https://player.vimeo.com/video/${match[1]}`;
+  }
+  return url;
+}
+
+export function getEmbedVideoUrl(url: string): string {
+  if (!url) return '';
+  if (isYouTubeUrl(url)) return getYoutubeEmbedUrl(url);
+  if (isGoogleDriveUrl(url)) return getGoogleDriveEmbedUrl(url);
+  if (isVimeoUrl(url)) return getVimeoEmbedUrl(url);
   return url;
 }
 

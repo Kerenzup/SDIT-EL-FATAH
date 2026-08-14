@@ -379,3 +379,19 @@ export interface ArkasBudgetItem {
   targetRombel?: string;
 }
 
+export interface ParentTeacherConsultationMessage {
+  id: string;
+  studentId: string;
+  studentName: string;
+  gradeClass: string;
+  senderType: 'GURU_WALIKELAS' | 'WALI_MURID';
+  senderName: string;
+  category: 'PRESTASI' | 'KEWAJIBAN_SPP' | 'KONSULTASI_BELAJAR' | 'AKADEMIK';
+  title: string;
+  message: string;
+  timestamp: string;
+  status: 'TERKIRIM' | 'DIBACA' | 'DITANGGAPI';
+  attachmentNote?: string;
+  sppProofUrl?: string;
+}
+

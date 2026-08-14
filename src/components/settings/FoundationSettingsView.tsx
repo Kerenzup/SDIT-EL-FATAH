@@ -742,7 +742,7 @@ export const FoundationSettingsView: React.FC<FoundationSettingsViewProps> = ({
                       value={formData.headmasterName}
                       onChange={(e) => handleChange('headmasterName', e.target.value)}
                       className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-slate-900 focus:outline-none focus:border-emerald-500"
-                      placeholder="Dr. H. Bambang Widjaja, M.Pd"
+                      placeholder="Masykur Rohana, S.Sos"
                     />
                   </div>
 

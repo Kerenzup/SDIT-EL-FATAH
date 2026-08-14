@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Account, FoundationProfile, JournalEntry, Student, Teacher } from '../../types';
 import { formatRupiah, numberToWordsID, formatDateIndonesian } from '../../utils/formatters';
+import { isClassMatching } from '../../data/initialData';
 import {
   Receipt,
   GraduationCap,
@@ -15,6 +16,10 @@ import {
   Building,
   RefreshCw,
   Trash2,
+  Search,
+  Check,
+  CreditCard,
+  School,
 } from 'lucide-react';
 import { ReceiptModal } from '../common/ReceiptModal';
 
@@ -53,10 +58,12 @@ export const TransactionManagerView: React.FC<TransactionManagerViewProps> = ({
     category: string;
   } | null>(null);
 
-  // Form State SPP
+  // Form State SPP & Uang Pangkal
   const [selectedStudentId, setSelectedStudentId] = useState<string>(students[0]?.id || '');
+  const [paymentCategory, setPaymentCategory] = useState<'SPP' | 'UANG_PANGKAL' | 'LAINNYA'>('SPP');
   const [sppMonth, setSppMonth] = useState<string>('Juli 2026');
   const [sppAmountInput, setSppAmountInput] = useState<number>(450000);
+  const [sppDepositAccountCode, setSppDepositAccountCode] = useState<string>('1101'); // 1101 Kas, 1102 Bank Syariah
   const [sppClassFilter, setSppClassFilter] = useState<string>('SEMUA');
   const [sppSearchQuery, setSppSearchQuery] = useState<string>('');
 
@@ -99,13 +106,31 @@ export const TransactionManagerView: React.FC<TransactionManagerViewProps> = ({
     setTimeout(() => setSuccessMsg(null), 4000);
   };
 
-  // Auto-sync selectedStudentId and selectedTeacherId if empty
+  // Filtered Students for POS SPP & Uang Pangkal
+  const filteredStudents = students.filter((s) => {
+    const matchesClass = isClassMatching(s.gradeClass, sppClassFilter);
+    const q = sppSearchQuery.toLowerCase().trim();
+    const matchesSearch =
+      !q ||
+      s.name.toLowerCase().includes(q) ||
+      s.nis.includes(q) ||
+      (s.nisn && s.nisn.includes(q)) ||
+      (s.parentName && s.parentName.toLowerCase().includes(q));
+    return matchesClass && matchesSearch;
+  });
+
+  // Auto-sync selectedStudentId when class filter or search changes
   useEffect(() => {
-    if ((!selectedStudentId || !students.some((s) => s.id === selectedStudentId)) && students.length > 0) {
-      setSelectedStudentId(students[0].id);
-      setSppAmountInput(students[0].sppAmount || 450000);
+    if (filteredStudents.length > 0) {
+      const isCurrentInFiltered = filteredStudents.some((s) => s.id === selectedStudentId);
+      if (!isCurrentInFiltered) {
+        setSelectedStudentId(filteredStudents[0].id);
+        if (paymentCategory === 'SPP') {
+          setSppAmountInput(filteredStudents[0].sppAmount || 350000);
+        }
+      }
     }
-  }, [students, selectedStudentId]);
+  }, [sppClassFilter, sppSearchQuery, filteredStudents, selectedStudentId, paymentCategory]);
 
   useEffect(() => {
     if ((!selectedTeacherId || !teachers.some((t) => t.id === selectedTeacherId)) && teachers.length > 0) {
@@ -113,49 +138,71 @@ export const TransactionManagerView: React.FC<TransactionManagerViewProps> = ({
     }
   }, [teachers, selectedTeacherId]);
 
-  // Submit SPP Payment
+  // Submit POS Payment (SPP / Uang Pangkal / Lainnya)
   const handlePaySpp = (e: React.FormEvent) => {
     e.preventDefault();
-    const student = students.find((s) => s.id === selectedStudentId) || students[0];
+    const student = students.find((s) => s.id === selectedStudentId) || filteredStudents[0] || students[0];
     if (!student) {
-      alert('Silakan tambahkan data siswa terlebih dahulu.');
+      alert('Silakan pilih data siswa terlebih dahulu.');
       return;
     }
 
     if (!sppAmountInput || sppAmountInput <= 0) {
-      alert('Silakan masukkan nominal pembayaran SPP yang valid (lebih dari 0).');
+      alert('Silakan masukkan nominal pembayaran yang valid (lebih dari 0).');
       return;
     }
 
-    const vNo = `KWT/SPP/${new Date().getFullYear()}/${Math.floor(1000 + Math.random() * 9000)}`;
     const today = new Date().toISOString().split('T')[0];
+    const isSpp = paymentCategory === 'SPP';
+    const isUangPangkal = paymentCategory === 'UANG_PANGKAL';
+    
+    const prefix = isSpp ? 'KWT/SPP' : isUangPangkal ? 'KWT/UP' : 'KWT/LAIN';
+    const vNo = `${prefix}/${new Date().getFullYear()}/${Math.floor(1000 + Math.random() * 9000)}`;
+
+    const debitAcc = accounts.find((a) => a.code === sppDepositAccountCode) || accounts.find((a) => a.code === '1101');
+    const creditCode = isSpp ? '4102' : isUangPangkal ? '4103' : '4104';
+    const creditName = isSpp
+      ? 'Pendapatan SPP Bulanan'
+      : isUangPangkal
+      ? 'Pendapatan Uang Pangkal'
+      : 'Pendapatan Biaya Pendidikan Lainnya';
+
+    const desc = isSpp
+      ? `Pembayaran SPP Bulan ${sppMonth} - ${student.name} (${student.gradeClass})`
+      : isUangPangkal
+      ? `Pembayaran Uang Pangkal & Biaya Pembangunan - ${student.name} (${student.gradeClass})`
+      : `Pembayaran Biaya Pendidikan Lainnya - ${student.name} (${student.gradeClass})`;
 
     onAddJournalEntry({
       date: today,
       voucherNo: vNo,
-      description: `Pembayaran SPP ${sppMonth} - ${student.name} (${student.gradeClass})`,
-      categoryTag: 'SPP',
-      debitAccountCode: '1101', // Kas Operasional
-      debitAccountName: 'Kas Operasional',
-      creditAccountCode: '4102', // Pendapatan SPP Bulanan
-      creditAccountName: 'Pendapatan SPP Bulanan',
+      description: desc,
+      categoryTag: isSpp ? 'SPP' : 'OPERASIONAL',
+      debitAccountCode: debitAcc?.code || '1101',
+      debitAccountName: debitAcc?.name || 'Kas Operasional',
+      creditAccountCode: creditCode,
+      creditAccountName: creditName,
       amount: Number(sppAmountInput),
       studentId: student.id,
-      notes: `Kuitansi Resmi SPP Siswa NIS: ${student.nis}`,
+      notes: `Kuitansi Resmi Pembayaran Siswa NIS: ${student.nis} (${student.gradeClass})`,
     });
 
-    onUpdateStudentSpp(student.id, 'LUNAS');
+    if (isSpp) {
+      onUpdateStudentSpp(student.id, 'LUNAS');
+    }
 
     setReceiptData({
       receiptNo: vNo,
-      receivedFrom: student.name,
+      receivedFrom: `${student.name} (Wali: ${student.parentName || 'Orang Tua'})`,
       amount: Number(sppAmountInput),
-      forPayment: `Pembayaran SPP Bulan ${sppMonth} (Kelas ${student.gradeClass} - NIS ${student.nis})`,
+      forPayment: desc,
       date: today,
-      category: 'SPP SISWA',
+      category: isSpp ? 'SPP SISWA' : isUangPangkal ? 'UANG PANGKAL SISWA' : 'BIAYA PENDIDIKAN',
     });
 
-    showSuccess(`Pembayaran SPP ${student.name} sebesar ${formatRupiah(Number(sppAmountInput))} berhasil dicatat & kuitansi terbit!`);
+    showSuccess(
+      `Pembayaran ${isSpp ? 'SPP' : isUangPangkal ? 'Uang Pangkal' : 'Biaya Pendidikan'} ananda ${student.name} sebesar ${formatRupiah(Number(sppAmountInput))} berhasil dicatat & kuitansi terbit!`
+    );
   };
 
   // Submit BOS Transaction
@@ -418,91 +465,220 @@ export const TransactionManagerView: React.FC<TransactionManagerViewProps> = ({
         </button>
       </div>
 
-      {/* TAB 1: POS SPP SISWA */}
+      {/* TAB 1: POS SPP SISWA & UANG PANGKAL */}
       {activeTab === 'spp' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-5">
-            <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
-              <Receipt className="w-5 h-5 text-emerald-600" />
-              <div>
-                <h3 className="font-bold text-slate-900 text-base">Kasir POS Pembayaran SPP & Uang Pangkal</h3>
-                <p className="text-xs text-slate-500">Pilih siswa, masukan nominal, dan cetak kuitansi resmi yayasan</p>
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3 flex-wrap gap-2">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 bg-emerald-100 text-emerald-700 rounded-xl">
+                  <Receipt className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-slate-900 text-base">Kasir POS Pembayaran SPP & Uang Pangkal</h3>
+                  <p className="text-xs text-slate-500">Pilih filter kelas, siswa, jenis penerimaan, dan cetak kuitansi resmi</p>
+                </div>
+              </div>
+
+              {/* Payment Category Pills */}
+              <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPaymentCategory('SPP');
+                    const std = students.find((s) => s.id === selectedStudentId);
+                    if (std) setSppAmountInput(std.sppAmount || 350000);
+                  }}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-black transition flex items-center gap-1.5 ${
+                    paymentCategory === 'SPP'
+                      ? 'bg-white text-emerald-700 shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <CreditCard className="w-3.5 h-3.5" />
+                  <span>SPP Bulanan</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPaymentCategory('UANG_PANGKAL');
+                    setSppAmountInput(6500000);
+                  }}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-black transition flex items-center gap-1.5 ${
+                    paymentCategory === 'UANG_PANGKAL'
+                      ? 'bg-white text-emerald-700 shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <School className="w-3.5 h-3.5" />
+                  <span>Uang Pangkal</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPaymentCategory('LAINNYA');
+                    setSppAmountInput(250000);
+                  }}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-black transition flex items-center gap-1.5 ${
+                    paymentCategory === 'LAINNYA'
+                      ? 'bg-white text-emerald-700 shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <Receipt className="w-3.5 h-3.5" />
+                  <span>Lainnya</span>
+                </button>
               </div>
             </div>
 
-            <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200/80 space-y-2.5">
+            {/* Filter Bar Per Rombel Kelas & Search */}
+            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200/80 space-y-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="text-xs font-black text-slate-700">Filter Per Kelas:</span>
+                <span className="text-xs font-black text-slate-700 flex items-center gap-1.5">
+                  <School className="w-4 h-4 text-emerald-600" />
+                  Filter Rombel / Kelas:
+                </span>
                 <div className="flex flex-wrap gap-1.5">
-                  {['SEMUA', 'Kelas 1', 'Kelas 2', 'Kelas 3', 'Kelas 4', 'Kelas 5', 'Kelas 6'].map((cls) => (
-                    <button
-                      type="button"
-                      key={cls}
-                      onClick={() => setSppClassFilter(cls)}
-                      className={`px-2.5 py-1 rounded-xl text-[11px] font-extrabold transition cursor-pointer ${
-                        sppClassFilter === cls
-                          ? 'bg-emerald-600 text-white shadow-xs'
-                          : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
-                      }`}
-                    >
-                      {cls}
-                    </button>
-                  ))}
+                  {['SEMUA', 'Kelas 1', 'Kelas 2', 'Kelas 3', 'Kelas 4', 'Kelas 5', 'Kelas 6'].map((cls) => {
+                    const count =
+                      cls === 'SEMUA'
+                        ? students.length
+                        : students.filter((s) => isClassMatching(s.gradeClass, cls)).length;
+                    return (
+                      <button
+                        type="button"
+                        key={cls}
+                        onClick={() => setSppClassFilter(cls)}
+                        className={`px-2.5 py-1.5 rounded-xl text-xs font-black transition cursor-pointer flex items-center gap-1.5 ${
+                          sppClassFilter === cls
+                            ? 'bg-emerald-600 text-white shadow-xs ring-2 ring-emerald-400/30'
+                            : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
+                        }`}
+                      >
+                        <span>{cls}</span>
+                        <span
+                          className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                            sppClassFilter === cls ? 'bg-emerald-800 text-emerald-100' : 'bg-slate-100 text-slate-600'
+                          }`}
+                        >
+                          {count}
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
               <div className="relative">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
                 <input
                   type="text"
-                  placeholder="Cari berdasarkan nama siswa, NIS, atau NISN..."
+                  placeholder="Cari berdasarkan nama siswa, NIS, NISN, atau nama wali murid..."
                   value={sppSearchQuery}
                   onChange={(e) => setSppSearchQuery(e.target.value)}
-                  className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none focus:border-emerald-500 shadow-2xs"
+                  className="w-full bg-white border border-slate-300 rounded-xl pl-9 pr-3 py-2 text-xs font-semibold focus:outline-none focus:border-emerald-500 shadow-2xs"
                 />
               </div>
             </div>
+
+            {/* Selected Student Preview Card */}
+            {(() => {
+              const currentStudent = students.find((s) => s.id === selectedStudentId) || filteredStudents[0];
+              if (!currentStudent) return null;
+              return (
+                <div className="bg-emerald-50/70 border border-emerald-200/80 p-3.5 rounded-xl flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-emerald-600 text-white flex items-center justify-center font-black text-sm shrink-0 shadow-xs">
+                      {currentStudent.name.charAt(0)}
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h4 className="font-extrabold text-slate-900 text-xs sm:text-sm">{currentStudent.name}</h4>
+                        <span className="px-2 py-0.5 rounded-md bg-emerald-200/80 text-emerald-900 text-[10px] font-black">
+                          {currentStudent.gradeClass}
+                        </span>
+                        <span className="text-[11px] text-slate-500 font-mono">NIS: {currentStudent.nis}</span>
+                      </div>
+                      <p className="text-[11px] text-slate-600">
+                        Wali: <span className="font-bold text-slate-700">{currentStudent.parentName || 'Orang Tua / Wali'}</span> &bull; Tarif SPP:{' '}
+                        <span className="font-bold text-emerald-800">{formatRupiah(currentStudent.sppAmount)}/bulan</span>
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`px-2.5 py-1 rounded-full text-[11px] font-black ${
+                        currentStudent.sppStatus === 'LUNAS'
+                          ? 'bg-emerald-100 text-emerald-800'
+                          : currentStudent.sppStatus === 'TUNGGAKAN'
+                          ? 'bg-rose-100 text-rose-800'
+                          : 'bg-amber-100 text-amber-800'
+                      }`}
+                    >
+                      Status SPP: {currentStudent.sppStatus}
+                    </span>
+                  </div>
+                </div>
+              );
+            })()}
 
             <form onSubmit={handlePaySpp} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Pilih Siswa ({sppClassFilter === 'SEMUA' ? 'Semua Kelas' : sppClassFilter})
+                    Pilih Siswa ({sppClassFilter === 'SEMUA' ? 'Semua Kelas' : sppClassFilter}) - {filteredStudents.length} Tersedia
                   </label>
                   <select
                     value={selectedStudentId}
                     onChange={(e) => {
                       setSelectedStudentId(e.target.value);
                       const std = students.find((s) => s.id === e.target.value);
-                      if (std) setSppAmountInput(std.sppAmount);
+                      if (std && paymentCategory === 'SPP') {
+                        setSppAmountInput(std.sppAmount || 350000);
+                      }
                     }}
                     className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold focus:outline-none focus:border-emerald-500"
+                    disabled={filteredStudents.length === 0}
                   >
-                    {students
-                      .filter((s) => {
-                        const matchesClass = sppClassFilter === 'SEMUA' || s.gradeClass.toLowerCase().includes(sppClassFilter.toLowerCase());
-                        const q = sppSearchQuery.toLowerCase().trim();
-                        const matchesSearch = !q || s.name.toLowerCase().includes(q) || s.nis.includes(q) || (s.nisn && s.nisn.includes(q));
-                        return matchesClass && matchesSearch;
-                      })
-                      .map((s) => (
+                    {filteredStudents.length === 0 ? (
+                      <option value="">-- Tidak ada siswa ditemukan pada filter ini --</option>
+                    ) : (
+                      filteredStudents.map((s) => (
                         <option key={s.id} value={s.id}>
                           {s.name} ({s.gradeClass}) - NIS: {s.nis} [{s.sppStatus}]
                         </option>
-                      ))}
+                      ))
+                    )}
                   </select>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Bulan SPP</label>
-                  <input
-                    type="text"
-                    value={sppMonth}
-                    onChange={(e) => setSppMonth(e.target.value)}
-                    placeholder="Contoh: Juli 2026"
-                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-emerald-500"
-                    required
-                  />
-                </div>
+                {paymentCategory === 'SPP' ? (
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Periode Bulan SPP</label>
+                    <input
+                      type="text"
+                      value={sppMonth}
+                      onChange={(e) => setSppMonth(e.target.value)}
+                      placeholder="Contoh: Juli 2026 / Agustus 2026"
+                      className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold focus:outline-none focus:border-emerald-500"
+                      required
+                    />
+                  </div>
+                ) : (
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Rekening Kas / Penampung</label>
+                    <select
+                      value={sppDepositAccountCode}
+                      onChange={(e) => setSppDepositAccountCode(e.target.value)}
+                      className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold focus:outline-none focus:border-emerald-500"
+                    >
+                      <option value="1101">1101 - Kas Operasional Sekolah</option>
+                      <option value="1102">1102 - Bank Syariah Yayasan</option>
+                    </select>
+                  </div>
+                )}
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -528,68 +704,120 @@ export const TransactionManagerView: React.FC<TransactionManagerViewProps> = ({
               <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl space-y-1 text-xs text-emerald-900">
                 <div className="flex justify-between font-bold">
                   <span>Posting Jurnal Otomatis:</span>
-                  <span className="font-mono">DEBIT: 1101 (Kas) | KREDIT: 4102 (Pendapatan SPP)</span>
+                  <span className="font-mono">
+                    DEBIT: {sppDepositAccountCode} ({sppDepositAccountCode === '1102' ? 'Bank Syariah' : 'Kas Operasional'}) | KREDIT:{' '}
+                    {paymentCategory === 'SPP'
+                      ? '4102 (Pendapatan SPP)'
+                      : paymentCategory === 'UANG_PANGKAL'
+                      ? '4103 (Pendapatan Uang Pangkal)'
+                      : '4104 (Pendapatan Lainnya)'}
+                  </span>
                 </div>
               </div>
 
               <button
                 type="submit"
-                className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold rounded-xl text-xs shadow-lg transition flex items-center justify-center gap-2"
+                disabled={filteredStudents.length === 0}
+                className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold rounded-xl text-xs shadow-lg transition flex items-center justify-center gap-2 cursor-pointer disabled:bg-slate-300 disabled:cursor-not-allowed"
               >
                 <Printer className="w-4 h-4" />
-                <span>Bayar & Cetak Kuitansi Resmi</span>
+                <span>
+                  {paymentCategory === 'SPP'
+                    ? 'Bayar SPP & Cetak Kuitansi Resmi'
+                    : paymentCategory === 'UANG_PANGKAL'
+                    ? 'Bayar Uang Pangkal & Cetak Kuitansi'
+                    : 'Bayar & Cetak Kuitansi Resmi'}
+                </span>
               </button>
             </form>
           </div>
 
-          {/* List Status SPP Siswa */}
+          {/* List Status SPP Siswa (Tersinkronisasi dengan Filter Kelas) */}
           <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-              <h4 className="font-bold text-slate-900 text-sm">
-                Status SPP Siswa (T.A. 2026)
-              </h4>
-              <span className="text-[10px] text-slate-400 font-medium">Klik icon printer untuk cetak</span>
+              <div>
+                <h4 className="font-bold text-slate-900 text-sm">
+                  Daftar Siswa {sppClassFilter === 'SEMUA' ? '(Semua Kelas)' : `(${sppClassFilter})`}
+                </h4>
+                <p className="text-[11px] text-slate-500 font-medium">
+                  Menampilkan {filteredStudents.length} siswa terfilter
+                </p>
+              </div>
+              <span className="text-[10px] text-slate-400 font-medium">Klik untuk memilih</span>
             </div>
 
-            <div className="space-y-3 divide-y divide-slate-100 max-h-96 overflow-y-auto pr-1">
-              {students.map((s) => (
-                <div key={s.id} className="pt-2.5 flex items-center justify-between text-xs gap-2">
-                  <div className="min-w-0 flex-1">
-                    <p className="font-bold text-slate-900 truncate">{s.name}</p>
-                    <p className="text-[11px] text-slate-500">{s.gradeClass} &bull; {formatRupiah(s.sppAmount)}/bln</p>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <span
-                      className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${
-                        s.sppStatus === 'LUNAS'
-                          ? 'bg-emerald-100 text-emerald-800'
-                          : s.sppStatus === 'TUNGGAKAN'
-                          ? 'bg-rose-100 text-rose-800'
-                          : 'bg-amber-100 text-amber-800'
+            <div className="space-y-2.5 max-h-96 overflow-y-auto pr-1">
+              {filteredStudents.length === 0 ? (
+                <div className="text-center py-8 text-slate-400 text-xs">
+                  <p className="font-bold">Tidak ada data siswa ditemukan</p>
+                  <p className="text-[11px]">Silakan pilih filter kelas lain atau reset pencarian</p>
+                </div>
+              ) : (
+                filteredStudents.map((s) => {
+                  const isSelected = s.id === selectedStudentId;
+                  return (
+                    <div
+                      key={s.id}
+                      onClick={() => {
+                        setSelectedStudentId(s.id);
+                        if (paymentCategory === 'SPP') {
+                          setSppAmountInput(s.sppAmount || 350000);
+                        }
+                      }}
+                      className={`p-3 rounded-xl border transition cursor-pointer flex items-center justify-between text-xs gap-2 ${
+                        isSelected
+                          ? 'bg-emerald-50/80 border-emerald-400 ring-2 ring-emerald-500/20'
+                          : 'bg-white border-slate-200 hover:border-emerald-300 hover:bg-slate-50/50'
                       }`}
                     >
-                      {s.sppStatus}
-                    </span>
-                    <button
-                      onClick={() => {
-                        setReceiptData({
-                          receiptNo: `KWT/SPP/2026/${Math.floor(1000 + Math.random() * 9000)}`,
-                          receivedFrom: s.name,
-                          amount: s.sppAmount,
-                          forPayment: `Pembayaran SPP Bulan Juli 2026 (Kelas ${s.gradeClass} - NIS: ${s.nis})`,
-                          date: new Date().toISOString().split('T')[0],
-                          category: 'SPP SISWA',
-                        });
-                      }}
-                      className="p-1.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-lg text-xs font-bold transition flex items-center gap-1"
-                      title={`Cetak Kuitansi SPP ${s.name}`}
-                    >
-                      <Printer className="w-3.5 h-3.5" />
-                      <span className="hidden sm:inline">Cetak</span>
-                    </button>
-                  </div>
-                </div>
-              ))}
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5">
+                          <p className="font-bold text-slate-900 truncate">{s.name}</p>
+                          {isSelected && (
+                            <span className="bg-emerald-600 text-white text-[9px] font-black px-1.5 py-0.2 rounded-md">
+                              PILIHAN
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[11px] text-slate-500">
+                          {s.gradeClass} &bull; NIS: {s.nis} &bull; {formatRupiah(s.sppAmount)}/bln
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <span
+                          className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${
+                            s.sppStatus === 'LUNAS'
+                              ? 'bg-emerald-100 text-emerald-800'
+                              : s.sppStatus === 'TUNGGAKAN'
+                              ? 'bg-rose-100 text-rose-800'
+                              : 'bg-amber-100 text-amber-800'
+                          }`}
+                        >
+                          {s.sppStatus}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setReceiptData({
+                              receiptNo: `KWT/SPP/2026/${Math.floor(1000 + Math.random() * 9000)}`,
+                              receivedFrom: `${s.name} (Wali: ${s.parentName || 'Orang Tua'})`,
+                              amount: s.sppAmount,
+                              forPayment: `Pembayaran SPP Bulan ${sppMonth} (Kelas ${s.gradeClass} - NIS: ${s.nis})`,
+                              date: new Date().toISOString().split('T')[0],
+                              category: 'SPP SISWA',
+                            });
+                          }}
+                          className="p-1.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-lg text-xs font-bold transition flex items-center gap-1"
+                          title={`Cetak Kuitansi SPP ${s.name}`}
+                        >
+                          <Printer className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
             </div>
           </div>
         </div>

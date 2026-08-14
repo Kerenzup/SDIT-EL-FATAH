@@ -48,7 +48,7 @@ import {
 } from 'lucide-react';
 import { MediaUploader } from '../common/MediaUploader';
 import { safeSetLocalStorage } from '../../utils/safeStorage';
-import { isYouTubeUrl, isMediaVideo, getYoutubeEmbedUrl } from '../../utils/formatters';
+import { isYouTubeUrl, isMediaVideo, getYoutubeEmbedUrl, isGoogleDriveUrl, getGoogleDriveEmbedUrl, isVimeoUrl, getVimeoEmbedUrl, getEmbedVideoUrl } from '../../utils/formatters';
 
 interface CmsAdminViewProps {
   userRole?: UserRole;
@@ -386,12 +386,20 @@ export const CmsAdminView: React.FC<CmsAdminViewProps> = ({
     e.preventDefault();
     if (!newGalTitle || !newGalUrl) return;
 
+    const formattedUrl = getEmbedVideoUrl(newGalUrl.trim());
+    const isVid =
+      newGalType === 'video' ||
+      isMediaVideo(formattedUrl) ||
+      isYouTubeUrl(formattedUrl) ||
+      isGoogleDriveUrl(formattedUrl) ||
+      isVimeoUrl(formattedUrl);
+
     const item: GalleryItem = {
       id: `gal-${Date.now()}`,
-      title: newGalTitle,
-      type: newGalType,
-      url: newGalUrl,
-      description: newGalDesc,
+      title: newGalTitle.trim(),
+      type: isVid ? 'video' : 'photo',
+      url: formattedUrl,
+      description: newGalDesc.trim(),
       date: new Date().toISOString().split('T')[0],
       category: newGalCategory,
     };
@@ -399,6 +407,7 @@ export const CmsAdminView: React.FC<CmsAdminViewProps> = ({
     const updated = [item, ...localGallery];
     setLocalGallery(updated);
     onUpdateGalleryItems(updated);
+    safeSetLocalStorage('yayasan_gallery_items', updated);
 
     setNewGalTitle('');
     setNewGalUrl('');
@@ -410,6 +419,8 @@ export const CmsAdminView: React.FC<CmsAdminViewProps> = ({
     const updated = localGallery.filter((g) => g.id !== id);
     setLocalGallery(updated);
     onUpdateGalleryItems(updated);
+    safeSetLocalStorage('yayasan_gallery_items', updated);
+    triggerSuccess();
   };
 
   const handleAddAchievement = (e: React.FormEvent) => {
@@ -2251,6 +2262,23 @@ export const CmsAdminView: React.FC<CmsAdminViewProps> = ({
       {/* ================= TAB 6: GALLERY EDITOR ================= */}
       {activeTab === 'gallery' && (
         <div className="space-y-6">
+          {/* Storage & Video Tips Banner */}
+          <div className="bg-emerald-950 text-white p-5 rounded-3xl border border-emerald-800 shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-emerald-800/80 border border-emerald-600 flex items-center justify-center shrink-0">
+                <Video className="w-5 h-5 text-emerald-300" />
+              </div>
+              <div className="space-y-1">
+                <h4 className="font-extrabold text-sm text-emerald-200">
+                  Penyimpanan Video & Media Galeri Permanen (IndexedDB Multi-GB)
+                </h4>
+                <p className="text-xs text-emerald-300/90 leading-relaxed max-w-3xl">
+                  Data video dan foto kini disimpan di database IndexedDB browser yang memiliki kapasitas sangat besar (ratusan Megabyte hingga Gigabyte) dan dilengkapi pelindung hidrasi otomatis sehingga <strong>video tidak akan hilang atau ter-reset lagi saat browser di-refresh</strong>. Anda juga dapat menempelkan link video langsung dari <strong>YouTube</strong>, <strong>Google Drive</strong>, atau file MP4.
+                </p>
+              </div>
+            </div>
+          </div>
+
           {/* Add Gallery Item Form */}
           <form onSubmit={handleAddGallery} className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
             <h3 className="font-extrabold text-slate-900 text-base border-b border-slate-100 pb-3 flex items-center gap-2">
@@ -2266,7 +2294,7 @@ export const CmsAdminView: React.FC<CmsAdminViewProps> = ({
                   required
                   value={newGalTitle}
                   onChange={(e) => setNewGalTitle(e.target.value)}
-                  placeholder="Contoh: Upacara Bendera & Penyerahan Hadiah..."
+                  placeholder="Contoh: Video Profil Sekolah / Wisuda Tahfidz / Upacara..."
                   className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-semibold"
                 />
               </div>
@@ -2298,7 +2326,7 @@ export const CmsAdminView: React.FC<CmsAdminViewProps> = ({
             </div>
 
             <MediaUploader
-              label="Upload Foto / Video Galeri dari Komputer / Preset"
+              label="Upload Foto / Video Galeri dari Komputer / Preset HD / Link YouTube"
               value={newGalUrl}
               onChange={(url, mType) => {
                 setNewGalUrl(url);
@@ -2319,9 +2347,14 @@ export const CmsAdminView: React.FC<CmsAdminViewProps> = ({
           {/* Existing Gallery List */}
           <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
             <div className="flex justify-between items-center border-b border-slate-100 pb-3">
-              <h3 className="font-extrabold text-slate-900 text-base">
-                Koleksi Galeri Media Aktif
-              </h3>
+              <div>
+                <h3 className="font-extrabold text-slate-900 text-base">
+                  Koleksi Galeri Media Aktif ({localGallery.length} Item)
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Foto dan video yang tampil di halaman beranda dan portal publik website.
+                </p>
+              </div>
               <button
                 type="button"
                 onClick={handleSaveGalleryList}
@@ -2333,46 +2366,77 @@ export const CmsAdminView: React.FC<CmsAdminViewProps> = ({
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {localGallery.map((item) => (
-                <div key={item.id} className="p-3 bg-slate-50 rounded-2xl border border-slate-200 space-y-2 flex flex-col justify-between">
-                  <div>
-                    {item.type === 'video' || isMediaVideo(item.url) ? (
-                      isYouTubeUrl(item.url) ? (
-                        <iframe
-                          src={getYoutubeEmbedUrl(item.url)}
-                          title={item.title}
-                          className="w-full h-40 rounded-xl border-0"
-                          allowFullScreen
-                        />
-                      ) : (
-                        <video
-                          src={item.url}
-                          controls
-                          playsInline
-                          className="w-full h-40 object-contain bg-slate-950 rounded-xl"
-                        />
-                      )
-                    ) : (
-                      <div className="w-full h-44 rounded-xl overflow-hidden relative">
-                        <img src={item.url} alt={item.title} className="w-full h-full object-cover" />
-                      </div>
-                    )}
-                    <span className="text-[10px] font-black px-2 py-0.5 bg-slate-200 text-slate-800 rounded-md mt-2 inline-block">
-                      {item.category}
-                    </span>
-                    <h4 className="font-extrabold text-slate-900 text-xs mt-1">{item.title}</h4>
-                    <p className="text-[11px] text-slate-500">{item.description}</p>
-                  </div>
+              {localGallery.map((item) => {
+                const isItemVideo =
+                  item.type === 'video' ||
+                  isMediaVideo(item.url) ||
+                  isYouTubeUrl(item.url) ||
+                  isGoogleDriveUrl(item.url) ||
+                  isVimeoUrl(item.url);
 
-                  <button
-                    onClick={() => handleDeleteGallery(item.id)}
-                    className="w-full py-1.5 bg-rose-100 text-rose-700 hover:bg-rose-200 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1 cursor-pointer"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                    <span>Hapus Item</span>
-                  </button>
-                </div>
-              ))}
+                return (
+                  <div key={item.id} className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 space-y-3 flex flex-col justify-between hover:border-emerald-300 transition">
+                    <div className="space-y-2">
+                      <div className="overflow-hidden rounded-xl bg-slate-900 min-h-[160px] flex items-center justify-center relative">
+                        {isYouTubeUrl(item.url) ? (
+                          <iframe
+                            src={getYoutubeEmbedUrl(item.url)}
+                            title={item.title}
+                            className="w-full h-44 rounded-xl border-0"
+                            allowFullScreen
+                          />
+                        ) : isGoogleDriveUrl(item.url) ? (
+                          <iframe
+                            src={getGoogleDriveEmbedUrl(item.url)}
+                            title={item.title}
+                            className="w-full h-44 rounded-xl border-0"
+                            allowFullScreen
+                          />
+                        ) : isItemVideo ? (
+                          <video
+                            src={item.url}
+                            controls
+                            playsInline
+                            className="w-full h-44 object-contain bg-slate-950 rounded-xl"
+                          />
+                        ) : (
+                          <img src={item.url} alt={item.title} className="w-full h-44 object-cover rounded-xl" />
+                        )}
+                      </div>
+
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-[10px] font-black px-2 py-0.5 bg-slate-200 text-slate-800 rounded-md">
+                          {item.category}
+                        </span>
+                        <span
+                          className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full flex items-center gap-1 ${
+                            isItemVideo
+                              ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                              : 'bg-blue-100 text-blue-800 border border-blue-300'
+                          }`}
+                        >
+                          {isItemVideo ? <Video className="w-3 h-3" /> : <ImageIcon className="w-3 h-3" />}
+                          <span>{isItemVideo ? 'VIDEO' : 'FOTO'}</span>
+                        </span>
+                      </div>
+
+                      <h4 className="font-extrabold text-slate-900 text-xs mt-1 line-clamp-2">{item.title}</h4>
+                      {item.description && (
+                        <p className="text-[11px] text-slate-500 line-clamp-2">{item.description}</p>
+                      )}
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteGallery(item.id)}
+                      className="w-full py-2 bg-rose-100 hover:bg-rose-200 text-rose-700 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1 cursor-pointer mt-2"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>Hapus Item Galeri</span>
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>

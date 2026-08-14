@@ -14,7 +14,7 @@ import {
   WebsiteLayoutConfig,
   PPDBConfig,
 } from '../../types';
-import { INITIAL_WEBSITE_LAYOUT_CONFIG, INITIAL_TEACHERS, INITIAL_PPDB_CONFIG } from '../../data/initialData';
+import { INITIAL_WEBSITE_LAYOUT_CONFIG, INITIAL_TEACHERS, INITIAL_PPDB_CONFIG, getWaliKelasByGrade, isClassMatching } from '../../data/initialData';
 import { getLocalPhotoUrl } from '../../utils/localImages';
 import {
   School,
@@ -63,9 +63,9 @@ import {
   PlayCircle,
   Play,
 } from 'lucide-react';
-import { formatRupiah, formatDateIndonesian, isMediaVideo, isYouTubeUrl, getYoutubeEmbedUrl } from '../../utils/formatters';
+import { formatRupiah, formatDateIndonesian, isMediaVideo, isYouTubeUrl, getYoutubeEmbedUrl, isGoogleDriveUrl, getGoogleDriveEmbedUrl, isVimeoUrl, getVimeoEmbedUrl } from '../../utils/formatters';
 import { printDocument } from '../../utils/printHelper';
-import { getSubjectsByClass } from '../academic/AcademicRombelView';
+import { getSubjectsByClass } from '../../data/initialData';
 
 interface PublicWebsiteViewProps {
   foundationProfile: FoundationProfile;
@@ -296,7 +296,7 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
         gradeClass: std.gradeClass,
         nisn: existingRap.nisn || std.nisn || std.nis,
         parentName: existingRap.parentName || std.parentName || `Bpk/Ibu ${std.name.split(' ')[0]}`,
-        teacherName: existingRap.teacherName || 'Hj. Fatimah Zahra, S.Pd',
+        teacherName: existingRap.teacherName || getWaliKelasByGrade(std.gradeClass, teachers),
         academicYear: existingRap.academicYear || '2026/2027 Semester Ganjil',
       };
     }
@@ -309,7 +309,7 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
       gradeClass: std.gradeClass,
       academicYear: '2026/2027 Semester Ganjil',
       parentName: std.parentName || `Bpk/Ibu ${std.name.split(' ')[0]}`,
-      teacherName: 'Hj. Fatimah Zahra, S.Pd',
+      teacherName: getWaliKelasByGrade(std.gradeClass, teachers),
       grades: stdClassSubjects.map((sub, idx) => ({
         subject: sub,
         score: idx === 0 ? 95 : 85 + (idx % 8),
@@ -343,7 +343,7 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
 
     const matchesClass = (itemClass: string) => {
       if (qClass === 'SEMUA') return true;
-      return itemClass.toLowerCase().replace(/\s+/g, '').includes(qClass.toLowerCase().replace(/\s+/g, ''));
+      return isClassMatching(itemClass, qClass);
     };
 
     const foundRap = allSynchronizedRaports.find((r) => {
@@ -472,11 +472,6 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
               </div>
             )}
             <div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-[9px] font-black px-2 py-0.5 bg-amber-400 text-slate-950 rounded uppercase tracking-widest shadow-xs">
-                  YAYASAN PENDIDIKAN
-                </span>
-              </div>
               <h1 className="font-black text-base sm:text-lg tracking-tight leading-tight text-white group-hover:text-amber-300 transition">
                 {foundationProfile.name}
               </h1>
@@ -1412,6 +1407,20 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
                                   <PlayCircle className="w-7 h-7 fill-white text-blue-600" />
                                 </div>
                                 <span className="text-[10px] font-extrabold text-amber-300 mt-1 uppercase tracking-wider">Putar YouTube</span>
+                              </div>
+                            </div>
+                          ) : isGoogleDriveUrl(item.url) ? (
+                            <div className="w-full h-52 bg-slate-900 relative overflow-hidden flex items-center justify-center group/vid">
+                              <iframe
+                                src={getGoogleDriveEmbedUrl(item.url)}
+                                title={item.title}
+                                className="w-full h-full border-0 pointer-events-none opacity-80"
+                              />
+                              <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center group-hover/vid:bg-black/20 transition">
+                                <div className="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-md group-hover/vid:scale-110 transition">
+                                  <PlayCircle className="w-7 h-7 fill-white text-blue-600" />
+                                </div>
+                                <span className="text-[10px] font-extrabold text-amber-300 mt-1 uppercase tracking-wider">Putar Google Drive</span>
                               </div>
                             </div>
                           ) : (item.type === 'video' || isMediaVideo(item.url) || (item as any).mediaType === 'video') ? (
@@ -2533,6 +2542,23 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
                           <span className="text-xs font-black text-emerald-200 mt-2 uppercase tracking-wider">Putar Video YouTube</span>
                         </div>
                       </div>
+                    ) : isGoogleDriveUrl(item.url) ? (
+                      <div
+                        className="w-full h-64 sm:h-72 bg-slate-900 rounded-t-3xl overflow-hidden relative cursor-pointer group/vid shadow-inner flex items-center justify-center"
+                        onClick={() => setSelectedGalleryItem(item)}
+                      >
+                        <iframe
+                          src={getGoogleDriveEmbedUrl(item.url)}
+                          title={item.title}
+                          className="w-full h-full border-0 pointer-events-none opacity-80"
+                        />
+                        <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center group-hover/vid:bg-black/20 transition">
+                          <div className="w-14 h-14 rounded-full bg-emerald-600 text-white flex items-center justify-center shadow-xl group-hover/vid:scale-110 transition">
+                            <PlayCircle className="w-8 h-8 fill-white text-emerald-600" />
+                          </div>
+                          <span className="text-xs font-black text-emerald-200 mt-2 uppercase tracking-wider">Putar Google Drive</span>
+                        </div>
+                      </div>
                     ) : (item.type === 'video' || isMediaVideo(item.url) || (item as any).mediaType === 'video') ? (
                       <div
                         className="w-full h-64 sm:h-72 bg-slate-900 rounded-t-3xl overflow-hidden relative group/vid shadow-inner flex items-center justify-center"
@@ -2736,7 +2762,62 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
                       {/* TAB CONTENT 1: E-RAPORT */}
                       {portalTab === 'raport' && (
                         <div id="printable-raport" className="p-6 sm:p-8 space-y-6">
-                          {searchedRaport ? (
+                          {searchedStudent && searchedStudent.sppStatus !== 'LUNAS' ? (
+                            <div className="bg-rose-50 border-2 border-rose-300 rounded-3xl p-6 sm:p-8 text-slate-900 space-y-5 shadow-md">
+                              <div className="flex items-start gap-4">
+                                <div className="p-3 bg-rose-500 text-white rounded-2xl shrink-0 shadow-md">
+                                  <Lock className="w-8 h-8" />
+                                </div>
+                                <div className="space-y-1">
+                                  <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-rose-200/80 text-rose-950 font-black text-xs rounded-full border border-rose-300 uppercase">
+                                    <AlertTriangle className="w-3.5 h-3.5 text-rose-800" /> Akses E-Raport Belum Terbuka
+                                  </div>
+                                  <h3 className="text-xl font-black text-slate-950">
+                                    Lembar E-Raport Semester Ananda Belum Dapat Dilihat
+                                  </h3>
+                                  <p className="text-xs text-slate-700 leading-relaxed font-medium">
+                                    Sesuai dengan ketentuan administrasi Yayasan Pendidikan Daarul Habibah, Lembar Hasil Belajar Siswa (E-Raport) Ananda <strong className="text-rose-900">{searchedRaport?.studentName || searchedStudent.name}</strong> belum dapat diakses secara digital maupun dicetak karena status administrasi SPP masih berstatus <span className="font-bold text-rose-700 uppercase">[{searchedStudent.sppStatus}]</span>.
+                                  </p>
+                                </div>
+                              </div>
+
+                              <div className="bg-white p-4.5 rounded-2xl border border-rose-200 shadow-xs space-y-3">
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-rose-100 pb-3">
+                                  <div>
+                                    <p className="text-[11px] text-slate-500 font-bold uppercase">Nama Siswa / NIS</p>
+                                    <p className="font-black text-slate-900 text-sm">{searchedStudent.name} (NIS: {searchedStudent.nis})</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-[11px] text-slate-500 font-bold uppercase">Status Pembayaran SPP</p>
+                                    <span className="px-3 py-1 bg-rose-100 text-rose-800 font-black text-xs rounded-full border border-rose-300 uppercase">
+                                      {searchedStudent.sppStatus}
+                                    </span>
+                                  </div>
+                                </div>
+
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                                  <div>
+                                    <p className="text-slate-600 font-medium">Nomor Rekening / Virtual Account Resmi:</p>
+                                    <p className="font-mono font-black text-blue-900 text-sm">BSI 8802020{searchedStudent.nis || '26001'}</p>
+                                    <p className="text-[11px] text-slate-500">a.n SPP Yayasan Pendidikan Daarul Habibah</p>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => setPortalTab('spp')}
+                                    className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs rounded-xl shadow-md transition flex items-center justify-center gap-2 cursor-pointer shrink-0"
+                                  >
+                                    <ShieldCheck className="w-4 h-4" />
+                                    <span>Lihat Rincian Tagihan & Status SPP</span>
+                                  </button>
+                                </div>
+                              </div>
+
+                              <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-900 flex items-center gap-2">
+                                <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                                <span>Setelah melakukan pelunasan dan diverifikasi Bendahara/Wali Kelas, lembar E-Raport digital dan cetak PDF akan langsung terbuka secara otomatis.</span>
+                              </div>
+                            </div>
+                          ) : searchedRaport ? (
                             <>
                               {/* Kop Surat E-Raport */}
                               <div className="flex items-center justify-between border-b-2 border-slate-900 pb-4">
@@ -3316,6 +3397,22 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
               {isYouTubeUrl(selectedGalleryItem.url) ? (
                 <iframe
                   src={getYoutubeEmbedUrl(selectedGalleryItem.url)}
+                  title={selectedGalleryItem.title}
+                  className="w-full h-80 sm:h-[480px] rounded-2xl border-0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              ) : isGoogleDriveUrl(selectedGalleryItem.url) ? (
+                <iframe
+                  src={getGoogleDriveEmbedUrl(selectedGalleryItem.url)}
+                  title={selectedGalleryItem.title}
+                  className="w-full h-80 sm:h-[480px] rounded-2xl border-0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              ) : isVimeoUrl(selectedGalleryItem.url) ? (
+                <iframe
+                  src={getVimeoEmbedUrl(selectedGalleryItem.url)}
                   title={selectedGalleryItem.title}
                   className="w-full h-80 sm:h-[480px] rounded-2xl border-0"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"

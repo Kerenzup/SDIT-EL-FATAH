@@ -635,10 +635,10 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
   const [tchRole, setTchRole] = useState<string>('Guru');
   const [tchSubject, setTchSubject] = useState<string>('');
   const [tchBaseSalary, setTchBaseSalary] = useState<number>(3500000);
-  const [tchAllowance, setTchAllowance] = useState<number>(1000000);
+  const [tchAllowance, setTchAllowance] = useState<number>(0);
   const [tchCommitteeHonor, setTchCommitteeHonor] = useState<number>(0);
-  const [tchPph21, setTchPph21] = useState<number>(150000);
-  const [tchBpjs, setTchBpjs] = useState<number>(100000);
+  const [tchPph21, setTchPph21] = useState<number>(0);
+  const [tchBpjs, setTchBpjs] = useState<number>(0);
   const [tchNotes, setTchNotes] = useState<string>('');
 
   const openTeacherModal = (teacher?: Teacher) => {
@@ -654,10 +654,10 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
       setTchRole(teacher.role || 'Guru');
       setTchSubject(teacher.subjectTaught || '');
       setTchBaseSalary(teacher.baseSalary || 3500000);
-      setTchAllowance(teacher.allowance || 1000000);
-      setTchCommitteeHonor(teacher.committeeHonor || 0);
-      setTchPph21(teacher.pph21 || 0);
-      setTchBpjs(teacher.bpjs || 0);
+      setTchAllowance(teacher.allowance ?? 0);
+      setTchCommitteeHonor(teacher.committeeHonor ?? 0);
+      setTchPph21(teacher.pph21 ?? 0);
+      setTchBpjs(teacher.bpjs ?? 0);
       setTchNotes(teacher.notes || '');
     } else {
       setEditingTeacher(null);
@@ -671,10 +671,10 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
       setTchRole('Guru');
       setTchSubject('');
       setTchBaseSalary(3500000);
-      setTchAllowance(1000000);
+      setTchAllowance(0);
       setTchCommitteeHonor(0);
-      setTchPph21(150000);
-      setTchBpjs(100000);
+      setTchPph21(0);
+      setTchBpjs(0);
       setTchNotes('');
     }
     setShowTchModal(true);
