@@ -171,7 +171,7 @@ export const RoleAccessManagementView: React.FC<RoleAccessManagementViewProps> =
           </div>
           <ul className="text-[11px] text-blue-100 space-y-1 list-disc pl-4">
             <li><strong className="text-white">Orang Tua:</strong> E-Raport & Status SPP</li>
-            <li><strong className="text-white">Guru:</strong> E-Raport, Jurnal Rombel, Data Siswa & SPP Kelas</li>
+            <li><strong className="text-white">Guru Kelas:</strong> E-Raport, Jurnal Mengajar, Data Siswa Rombel (Tanpa Master Guru, Pengurus, & Supplier)</li>
           </ul>
         </div>
 

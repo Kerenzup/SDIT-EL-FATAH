@@ -26,6 +26,7 @@ import {
   ChevronRight,
   PanelLeftClose,
   PanelLeftOpen,
+  Archive,
 } from 'lucide-react';
 import { UserRole } from '../types';
 import { RoleAuthConfig, isTabAllowed } from '../utils/roleAuth';
@@ -35,6 +36,7 @@ export type TabType =
   | 'dashboard'
   | 'siswa'
   | 'e_raport'
+  | 'arsip'
   | 'jurnal'
   | 'payroll'
   | 'siplah'
@@ -116,6 +118,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
       label: 'E-Raport Rombel & Nilai',
       icon: GraduationCap,
       badge: 'Raport',
+    },
+    {
+      id: 'arsip' as TabType,
+      label: 'Arsip Kehidupan & Dokumen',
+      icon: Archive,
+      badge: 'Arsip',
     },
     {
       id: 'jurnal' as TabType,

@@ -14,8 +14,11 @@ import {
   PPDBFeeItem,
   PPDBScholarshipItem,
   UserRole,
+  SchoolUniformItem,
+  UniformScheduleDay,
 } from '../../types';
-import { INITIAL_PPDB_CONFIG } from '../../data/initialData';
+import { INITIAL_PPDB_CONFIG, INITIAL_UNIFORMS, INITIAL_UNIFORM_SCHEDULE } from '../../data/initialData';
+import { UniformCmsEditor } from './UniformCmsEditor';
 import {
   Settings,
   Image as ImageIcon,
@@ -45,6 +48,7 @@ import {
   Pencil,
   X,
   UserPlus,
+  Shirt,
 } from 'lucide-react';
 import { MediaUploader } from '../common/MediaUploader';
 import { safeSetLocalStorage } from '../../utils/safeStorage';
@@ -62,6 +66,10 @@ interface CmsAdminViewProps {
   foundationProfile: FoundationProfile;
   teachers?: Teacher[];
   ppdbConfig?: PPDBConfig;
+  uniforms?: SchoolUniformItem[];
+  uniformSchedules?: UniformScheduleDay[];
+  onUpdateUniforms?: (uniforms: SchoolUniformItem[]) => void;
+  onUpdateUniformSchedules?: (schedules: UniformScheduleDay[]) => void;
   onUpdatePpdbConfig?: (config: PPDBConfig) => void;
   onUpdateHeroBanners: (banners: HeroBanner[]) => void;
   onUpdateSpeeches: (speeches: SpeechesCMS) => void;
@@ -88,6 +96,10 @@ export const CmsAdminView: React.FC<CmsAdminViewProps> = ({
   foundationProfile,
   teachers = [],
   ppdbConfig,
+  uniforms,
+  uniformSchedules,
+  onUpdateUniforms,
+  onUpdateUniformSchedules,
   onUpdatePpdbConfig,
   onUpdateHeroBanners,
   onUpdateSpeeches,
@@ -102,7 +114,7 @@ export const CmsAdminView: React.FC<CmsAdminViewProps> = ({
   onAddTeacher,
 }) => {
   const [activeTab, setActiveTab] = useState<
-    'layout' | 'branding_photos' | 'about_page' | 'org_structure' | 'banners' | 'speeches' | 'news' | 'gallery' | 'achievements' | 'ppdb'
+    'layout' | 'branding_photos' | 'about_page' | 'org_structure' | 'banners' | 'speeches' | 'news' | 'gallery' | 'achievements' | 'seragam' | 'ppdb'
   >('layout');
   const [saveSuccess, setSaveSuccess] = useState(false);
 
@@ -523,6 +535,14 @@ export const CmsAdminView: React.FC<CmsAdminViewProps> = ({
             <Award className="w-3.5 h-3.5" />
             <span>Input Prestasi</span>
           </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('seragam')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${activeTab === 'seragam' ? 'bg-emerald-400 text-slate-950 shadow' : 'bg-slate-800 text-slate-200 hover:bg-slate-700'}`}
+          >
+            <Shirt className="w-3.5 h-3.5" />
+            <span>Katalog & Jadwal Seragam</span>
+          </button>
         </div>
       </div>
 
@@ -538,6 +558,7 @@ export const CmsAdminView: React.FC<CmsAdminViewProps> = ({
           { id: 'news', label: 'Foto & Berita Sekolah', icon: Layers },
           { id: 'gallery', label: 'Upload Galeri Foto/Video', icon: Video },
           { id: 'achievements', label: 'Foto Prestasi Siswa', icon: Award },
+          { id: 'seragam', label: 'Katalog & Jadwal Seragam', icon: Shirt },
           { id: 'ppdb', label: 'Pengaturan PPDB & Biaya', icon: GraduationCap },
         ].map((tab) => {
           const Icon = tab.icon;
@@ -2863,6 +2884,17 @@ export const CmsAdminView: React.FC<CmsAdminViewProps> = ({
             </div>
           </div>
         </div>
+      )}
+
+      {/* ================= TAB: PENGATURAN SERAGAM SEKOLAH ================= */}
+      {activeTab === 'seragam' && (
+        <UniformCmsEditor
+          uniforms={uniforms || INITIAL_UNIFORMS}
+          schedules={uniformSchedules || INITIAL_UNIFORM_SCHEDULE}
+          onUpdateUniforms={onUpdateUniforms || (() => {})}
+          onUpdateSchedules={onUpdateUniformSchedules || (() => {})}
+          foundationPhone={foundationProfile?.phone}
+        />
       )}
     </div>
   );

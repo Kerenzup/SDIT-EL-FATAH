@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   FoundationProfile,
   HeroBanner,
@@ -13,8 +13,11 @@ import {
   UserRole,
   WebsiteLayoutConfig,
   PPDBConfig,
+  SchoolUniformItem,
+  UniformScheduleDay,
 } from '../../types';
-import { INITIAL_WEBSITE_LAYOUT_CONFIG, INITIAL_TEACHERS, INITIAL_PPDB_CONFIG, getWaliKelasByGrade, isClassMatching } from '../../data/initialData';
+import { INITIAL_WEBSITE_LAYOUT_CONFIG, INITIAL_TEACHERS, INITIAL_PPDB_CONFIG, INITIAL_UNIFORMS, INITIAL_UNIFORM_SCHEDULE, getWaliKelasByGrade, isClassMatching } from '../../data/initialData';
+import { UniformSectionView } from './UniformSectionView';
 import { getLocalPhotoUrl } from '../../utils/localImages';
 import {
   School,
@@ -30,6 +33,7 @@ import {
   User,
   ShieldCheck,
   ChevronRight,
+  ChevronLeft,
   Video,
   Printer,
   Calendar,
@@ -62,6 +66,9 @@ import {
   Quote,
   PlayCircle,
   Play,
+  Pause,
+  Shirt,
+  ShoppingBag,
 } from 'lucide-react';
 import { formatRupiah, formatDateIndonesian, isMediaVideo, isYouTubeUrl, getYoutubeEmbedUrl, isGoogleDriveUrl, getGoogleDriveEmbedUrl, isVimeoUrl, getVimeoEmbedUrl } from '../../utils/formatters';
 import { printDocument } from '../../utils/printHelper';
@@ -80,6 +87,8 @@ interface PublicWebsiteViewProps {
   teachers?: Teacher[];
   layoutConfig?: WebsiteLayoutConfig;
   ppdbConfig?: PPDBConfig;
+  uniforms?: SchoolUniformItem[];
+  uniformSchedules?: UniformScheduleDay[];
   onUpdateLayoutConfig?: (config: WebsiteLayoutConfig) => void;
   onOpenInternalPortal: (role: UserRole) => void;
   onOpenRoleLoginModal?: (role?: UserRole) => void;
@@ -98,13 +107,25 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
   teachers = [],
   layoutConfig,
   ppdbConfig,
+  uniforms,
+  uniformSchedules,
   onUpdateLayoutConfig,
   onOpenInternalPortal,
   onOpenRoleLoginModal,
 }) => {
   const activePpdbConfig = ppdbConfig || INITIAL_PPDB_CONFIG;
-  const [activeTab, setActiveTab] = useState<'home' | 'tentang' | 'ppdb' | 'prestasi' | 'galeri' | 'berita' | 'kontak'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'tentang' | 'seragam' | 'ppdb' | 'prestasi' | 'galeri' | 'berita' | 'kontak'>('home');
   const [activeBannerIdx, setActiveBannerIdx] = useState<number>(0);
+  const [isAutoSlide, setIsAutoSlide] = useState<boolean>(true);
+
+  // Auto-run Hero Banner Slide interval
+  useEffect(() => {
+    if (!isAutoSlide || !heroBanners || heroBanners.length <= 1) return;
+    const timer = setInterval(() => {
+      setActiveBannerIdx((prev) => (prev + 1) % heroBanners.length);
+    }, 4500);
+    return () => clearInterval(timer);
+  }, [isAutoSlide, heroBanners]);
 
   // Prestasi States
   const [achievementFilterLevel, setAchievementFilterLevel] = useState<string>('SEMUA');
@@ -486,6 +507,7 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
             {[
               { id: 'home', label: 'Home', icon: School },
               { id: 'tentang', label: 'Tentang Kami', icon: Building },
+              { id: 'seragam', label: 'Seragam Sekolah', icon: Shirt },
               { id: 'ppdb', label: 'PPDB 2026', icon: FileText },
               { id: 'prestasi', label: 'Prestasi Sekolah', icon: Award },
               { id: 'galeri', label: 'Galeri & Aktivitas', icon: ImageIcon },
@@ -536,28 +558,38 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
         {activeTab === 'home' && (
           <div className="space-y-12 pb-12">
             {activeSections.map((sec, secIdx) => {
-              // 1. HERO SLIDER SECTION
+              // 1. HERO SLIDER SECTION (Reduced height by 4 cm, transparent green overlay, and auto-running carousel)
               if (sec.id === 'hero') {
+                const currentBanner = heroBanners[activeBannerIdx] || heroBanners[0];
+                const currentUrl = currentBanner?.imageUrl || '';
+
                 return renderDraggableSection(
                   sec,
                   secIdx,
-                  <div key={sec.id} className="relative bg-[#4169E1] text-white overflow-hidden min-h-[480px] flex items-center rounded-3xl border border-blue-300/50 shadow-md">
+                  <div
+                    key={sec.id}
+                    id="hero-banner-section"
+                    onMouseEnter={() => setIsAutoSlide(false)}
+                    onMouseLeave={() => setIsAutoSlide(true)}
+                    className="relative bg-emerald-950/80 text-white overflow-hidden min-h-[260px] md:min-h-[280px] flex items-center rounded-3xl border border-emerald-500/40 shadow-xl backdrop-blur-xs group"
+                  >
+                    {/* Background Media with High Visibility and Translucent Green Overlay */}
                     {heroBanners.length > 0 && (
-                      <div className="absolute inset-0 z-0 opacity-30">
+                      <div className="absolute inset-0 z-0 opacity-90 overflow-hidden">
                         {(() => {
-                          const currentUrl = heroBanners[activeBannerIdx]?.imageUrl || heroBanners[0]?.imageUrl || '';
                           if (currentUrl.includes('youtube.com') || currentUrl.includes('youtu.be')) {
                             return (
                               <iframe
                                 src={getYoutubeEmbedUrl(currentUrl)}
                                 title="Banner Video"
-                                className="w-full h-full border-0 pointer-events-none scale-125"
+                                className="w-full h-full border-0 pointer-events-none scale-125 object-cover"
                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                               />
                             );
                           } else if (isMediaVideo(currentUrl)) {
                             return (
                               <video
+                                key={currentUrl}
                                 src={currentUrl}
                                 autoPlay
                                 loop
@@ -569,58 +601,150 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
                           } else {
                             return (
                               <img
+                                key={currentUrl}
                                 src={currentUrl}
-                                alt="Hero Banner"
-                                className="w-full h-full object-cover transition-all duration-700"
+                                alt={currentBanner?.title || 'Hero Banner'}
+                                className="w-full h-full object-cover transition-all duration-700 ease-out transform group-hover:scale-105"
                               />
                             );
                           }
                         })()}
-                        <div className="absolute inset-0 bg-gradient-to-r from-[#4169E1] via-[#4169E1]/90 to-transparent" />
+
+                        {/* Transparent Green Overlay Gradients allowing photos to remain vivid */}
+                        <div className="absolute inset-0 bg-gradient-to-r from-emerald-950/90 via-emerald-900/50 to-emerald-950/20 pointer-events-none" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-emerald-950/70 via-transparent to-emerald-900/20 pointer-events-none" />
                       </div>
                     )}
 
-                    <div className="relative z-10 max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8 py-16 grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
-                      <div className="md:col-span-8 space-y-5">
-                        <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-300 text-slate-950 text-xs font-black rounded-full backdrop-blur-md uppercase tracking-wider shadow-sm">
-                          <Sparkles className="w-4 h-4 text-slate-950" /> INTERNATIONAL STANDARD FOUNDATION • AKREDITASI A (UNGGUL)
+                    {/* Navigation Arrow Left */}
+                    {heroBanners.length > 1 && (
+                      <button
+                        type="button"
+                        id="hero-prev-slide-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveBannerIdx((prev) => (prev - 1 + heroBanners.length) % heroBanners.length);
+                        }}
+                        className="absolute left-3 sm:left-5 z-20 p-2 sm:p-2.5 rounded-full bg-emerald-950/70 hover:bg-emerald-700/90 text-white border border-emerald-400/40 hover:border-amber-300 shadow-lg backdrop-blur-md transition-all hover:scale-110 cursor-pointer"
+                        title="Slide Sebelumnya"
+                      >
+                        <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                      </button>
+                    )}
+
+                    {/* Navigation Arrow Right */}
+                    {heroBanners.length > 1 && (
+                      <button
+                        type="button"
+                        id="hero-next-slide-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveBannerIdx((prev) => (prev + 1) % heroBanners.length);
+                        }}
+                        className="absolute right-3 sm:right-5 z-20 p-2 sm:p-2.5 rounded-full bg-emerald-950/70 hover:bg-emerald-700/90 text-white border border-emerald-400/40 hover:border-amber-300 shadow-lg backdrop-blur-md transition-all hover:scale-110 cursor-pointer"
+                        title="Slide Selanjutnya"
+                      >
+                        <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                      </button>
+                    )}
+
+                    {/* Banner Content (Compact height with elegant spacing) */}
+                    <div className="relative z-10 w-full max-w-[1536px] mx-auto px-6 sm:px-10 lg:px-14 py-5 sm:py-6 md:py-7 grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+                      <div className="md:col-span-8 space-y-3.5">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-300 text-slate-950 text-[11px] font-black rounded-full backdrop-blur-md uppercase tracking-wider shadow-sm">
+                            <Sparkles className="w-3.5 h-3.5 text-slate-950" /> AKREDITASI A UNGGUL • STANDAR GLOBAL
+                          </div>
+
+                          {/* Auto-Slide Status Toggle Badge */}
+                          {heroBanners.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => setIsAutoSlide(!isAutoSlide)}
+                              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-900/70 text-emerald-200 border border-emerald-400/40 hover:bg-emerald-800/80 backdrop-blur-md transition cursor-pointer"
+                              title={isAutoSlide ? 'Klik untuk jeda slide' : 'Klik untuk putar slide otomatis'}
+                            >
+                              {isAutoSlide ? (
+                                <>
+                                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                                  <Pause className="w-3 h-3 text-emerald-300" />
+                                  <span>Slide Run Aktif</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Play className="w-3 h-3 text-amber-300" />
+                                  <span>Slide Dijeda</span>
+                                </>
+                              )}
+                            </button>
+                          )}
                         </div>
-                        <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white leading-tight">
-                          {heroBanners[activeBannerIdx]?.title || 'Pendidikan Berkarakter & Transparan World-Class'}
+
+                        <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-white leading-tight drop-shadow-md">
+                          {currentBanner?.title || 'Pendidikan Berkarakter & Transparan World-Class'}
                         </h2>
-                        <p className="text-blue-100 text-sm sm:text-base max-w-2xl leading-relaxed font-normal">
-                          {heroBanners[activeBannerIdx]?.subtitle ||
+
+                        <p className="text-emerald-100/95 text-xs sm:text-sm md:text-base max-w-2xl leading-relaxed font-normal drop-shadow-xs line-clamp-2 sm:line-clamp-3">
+                          {currentBanner?.subtitle ||
                             'Membentuk generasi pembelajar Rombel Kelas 1 - 6 yang unggul berstandar global, berakhlak mulia, serta didukung transparansi anggaran berbasis ISAK 35.'}
                         </p>
-                        <div className="pt-3 flex flex-wrap gap-3">
+
+                        <div className="pt-1 flex flex-wrap gap-2.5">
                           <button
+                            id="hero-explore-btn"
                             onClick={() => setActiveTab('tentang')}
-                            className="px-6 py-3 bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 hover:brightness-105 text-slate-950 font-black text-xs rounded-xl shadow-md transition flex items-center gap-2 cursor-pointer hover:scale-105"
+                            className="px-5 py-2.5 bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 hover:brightness-105 text-slate-950 font-black text-xs rounded-xl shadow-md transition flex items-center gap-1.5 cursor-pointer hover:scale-105"
                           >
-                            <span>Jelajahi Profil Yayasan Internasional</span>
-                            <ArrowRight className="w-4 h-4" />
+                            <span>{currentBanner?.ctaText || 'Jelajahi Profil Sekolah'}</span>
+                            <ArrowRight className="w-3.5 h-3.5" />
                           </button>
                           <button
-                            onClick={() => setActiveTab('berita')}
-                            className="px-6 py-3 bg-blue-900/80 hover:bg-blue-900 text-amber-300 font-bold text-xs rounded-xl border border-blue-300/50 transition flex items-center gap-2 cursor-pointer backdrop-blur-md"
+                            id="hero-uniform-btn"
+                            onClick={() => setActiveTab('seragam')}
+                            className="px-4 py-2.5 bg-emerald-700/90 hover:bg-emerald-600 text-white font-bold text-xs rounded-xl border border-emerald-400/50 transition flex items-center gap-1.5 cursor-pointer backdrop-blur-md shadow-md hover:border-amber-300"
                           >
-                            <Search className="w-4 h-4 text-amber-300" />
-                            <span>Cek E-Raport / Status SPP Online</span>
+                            <Shirt className="w-3.5 h-3.5 text-amber-300" />
+                            <span>Katalog & Jadwal Seragam</span>
+                          </button>
+                          <button
+                            id="hero-raport-spp-btn"
+                            onClick={() => setActiveTab('berita')}
+                            className="px-4 py-2.5 bg-emerald-900/80 hover:bg-emerald-800 text-amber-300 font-bold text-xs rounded-xl border border-emerald-400/40 transition flex items-center gap-1.5 cursor-pointer backdrop-blur-md hover:border-amber-300"
+                          >
+                            <Search className="w-3.5 h-3.5 text-amber-300" />
+                            <span>Cek E-Raport / Status SPP</span>
                           </button>
                         </div>
                       </div>
 
-                      {/* Banner Selector Dots */}
-                      <div className="md:col-span-4 flex md:justify-end gap-2">
-                        {heroBanners.map((_, idx) => (
-                          <button
-                            key={idx}
-                            onClick={() => setActiveBannerIdx(idx)}
-                            className={`h-3 rounded-full transition-all cursor-pointer ${
-                              activeBannerIdx === idx ? 'w-8 bg-amber-400 shadow-sm' : 'w-3 bg-white/40 hover:bg-white/60'
-                            }`}
-                          />
-                        ))}
+                      {/* Banner Indicator Dots and Slide Run Counter */}
+                      <div className="md:col-span-4 flex flex-col md:items-end gap-2">
+                        {heroBanners.length > 1 && (
+                          <div className="flex items-center gap-2 bg-black/40 px-3 py-1.5 rounded-full border border-emerald-400/30 backdrop-blur-md">
+                            <span className="text-[11px] font-mono font-bold text-emerald-300">
+                              0{activeBannerIdx + 1} / 0{heroBanners.length}
+                            </span>
+                            <div className="h-3 w-[1px] bg-white/20" />
+                            <div className="flex items-center gap-1.5">
+                              {heroBanners.map((_, idx) => (
+                                <button
+                                  key={idx}
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setActiveBannerIdx(idx);
+                                  }}
+                                  aria-label={`Slide ${idx + 1}`}
+                                  className={`h-2.5 rounded-full transition-all duration-300 cursor-pointer ${
+                                    activeBannerIdx === idx
+                                      ? 'w-7 bg-amber-400 shadow-md ring-1 ring-amber-300/50'
+                                      : 'w-2.5 bg-white/40 hover:bg-white/70'
+                                  }`}
+                                />
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -2228,6 +2352,16 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
           </div>
         )}
 
+        {/* ==================== SERAGAM SEKOLAH PAGE ==================== */}
+        {activeTab === 'seragam' && (
+          <UniformSectionView
+            foundationProfile={foundationProfile}
+            uniforms={uniforms || INITIAL_UNIFORMS}
+            schedules={uniformSchedules || INITIAL_UNIFORM_SCHEDULE}
+            onOpenPPDB={() => setActiveTab('ppdb')}
+          />
+        )}
+
         {/* ==================== PRESTASI PAGE ==================== */}
         {activeTab === 'prestasi' && (
           <div className="space-y-12 pb-16">
@@ -3527,6 +3661,16 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
               <li>
                 <button onClick={() => setActiveTab('tentang')} className="hover:text-amber-300 text-sky-100 transition cursor-pointer flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-amber-300"></span> Profil & Jajaran Pengurus
+                </button>
+              </li>
+              <li>
+                <button onClick={() => setActiveTab('seragam')} className="hover:text-amber-300 text-sky-100 transition cursor-pointer flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-300"></span> Katalog & Jadwal Seragam Siswa
+                </button>
+              </li>
+              <li>
+                <button onClick={() => setActiveTab('ppdb')} className="hover:text-amber-300 text-sky-100 transition cursor-pointer flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-300"></span> PPDB & Pendaftaran Online
                 </button>
               </li>
               <li>

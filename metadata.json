@@ -1,6 +1,6 @@
 {
   "name": "Sistem Keuangan Yayasan Pendidikan",
-  "description": "Aplikasi Pengelolaan Keuangan & ERP Yayasan Pendidikan Berstandar ISAK 35 (Laporan Posisi Keuangan, Laporan Aktivitas, Arus Kas, Perubahan Aset Neto, COA, Transaksi Jurnal, SPP & BOS, Gaji, dan Manajemen Aset)",
+  "description": "Aplikasi Pengelolaan Keuangan, E-Raport Kurikulum Merdeka, Jurnal Guru, & Sistem Arsip Permanen Yayasan Berstandar ISAK 35 dengan rekapitulasi riwayat multi-tahun siswa dan yayasan.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

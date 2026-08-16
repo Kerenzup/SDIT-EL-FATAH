@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   ERaport,
   TeacherJournalRombel,
@@ -48,6 +48,7 @@ import {
 } from 'lucide-react';
 import { printDocument } from '../../utils/printHelper';
 import {
+  getAvailableSubjectsForClass,
   getSubjectsByClass,
   getWaliKelasByGrade,
   getWaliKelasDetailByGrade,
@@ -63,6 +64,16 @@ const calcLetterGrade = (score: number): 'A' | 'B' | 'C' | 'D' => {
   return 'D';
 };
 
+export const normalizeToStandardGrade = (grade: string | undefined | null): string => {
+  if (!grade) return 'Kelas 1';
+  const g = grade.trim().toLowerCase();
+  const digit = g.match(/\d+/)?.[0];
+  if (digit && Number(digit) >= 1 && Number(digit) <= 6) {
+    return `Kelas ${digit}`;
+  }
+  return grade.startsWith('Kelas ') ? grade : `Kelas ${grade}`;
+};
+
 interface AcademicRombelViewProps {
   eRaports: ERaport[];
   teacherJournals: TeacherJournalRombel[];
@@ -74,6 +85,7 @@ interface AcademicRombelViewProps {
   onAddRaport: (raport: Omit<ERaport, 'id'>) => void;
   onAddJournal: (journal: Omit<TeacherJournalRombel, 'id' | 'status'>) => void;
   onApproveJournal: (id: string, feedback?: string) => void;
+  onRejectJournal?: (id: string, reason?: string) => void;
   onApproveRaport: (id: string) => void;
   onUpdateStudentSppStatus?: (studentId: string, newStatus: 'LUNAS' | 'MENUNGGU' | 'TUNGGAKAN') => void;
 }
@@ -89,6 +101,7 @@ export const AcademicRombelView: React.FC<AcademicRombelViewProps> = ({
   onAddRaport,
   onAddJournal,
   onApproveJournal,
+  onRejectJournal,
   onApproveRaport,
   onUpdateStudentSppStatus,
 }) => {
@@ -147,11 +160,69 @@ export const AcademicRombelView: React.FC<AcademicRombelViewProps> = ({
   // Form State for Journal Rombel
   const [showJournalModal, setShowJournalModal] = useState(false);
   const [jurnalRombelClass, setJurnalRombelClass] = useState('Kelas 1');
-  const [jurnalSubject, setJurnalSubject] = useState('Matematika');
+  const [jurnalSubject, setJurnalSubject] = useState(() => {
+    const initialSubs = getAvailableSubjectsForClass('Kelas 1', teachers);
+    return initialSubs[0] || 'Pendidikan Agama Islam & Budi Pekerti';
+  });
   const [jurnalTopic, setJurnalTopic] = useState('');
   const [jurnalCompetency, setJurnalCompetency] = useState('');
   const [jurnalMaterial, setJurnalMaterial] = useState('');
   const [teacherNameInput, setTeacherNameInput] = useState(() => getWaliKelasByGrade('Kelas 1', teachers));
+
+  const availableJurnalSubjects = getAvailableSubjectsForClass(jurnalRombelClass, teachers);
+
+  const handleJurnalRombelClassChange = (newClass: string) => {
+    setJurnalRombelClass(newClass);
+    setTeacherNameInput(getWaliKelasByGrade(newClass, teachers));
+    const newSubjects = getAvailableSubjectsForClass(newClass, teachers);
+    if (newSubjects.length > 0 && !newSubjects.includes(jurnalSubject)) {
+      setJurnalSubject(newSubjects[0]);
+    }
+  };
+
+  // State for Kepala Sekolah Review / Action Modal (Setujui / Tolak)
+  const [journalStatusFilter, setJournalStatusFilter] = useState<'ALL' | 'DIUSULKAN_GURU' | 'DISETUJUI_KEPSEK' | 'DITOLAK'>('ALL');
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [reviewAction, setReviewAction] = useState<'APPROVE' | 'REJECT'>('APPROVE');
+  const [selectedJournalToReview, setSelectedJournalToReview] = useState<TeacherJournalRombel | null>(null);
+  const [reviewFeedback, setReviewFeedback] = useState('');
+
+  const handleOpenReviewModal = (journal: TeacherJournalRombel, action: 'APPROVE' | 'REJECT') => {
+    setSelectedJournalToReview(journal);
+    setReviewAction(action);
+    if (action === 'APPROVE') {
+      setReviewFeedback(
+        journal.principalFeedback && journal.status === 'DISETUJUI_KEPSEK'
+          ? journal.principalFeedback
+          : 'Materi ajar dan ketercapaian kompetensi telah diverifikasi & disetujui untuk diimplementasikan pada Rombongan Belajar.'
+      );
+    } else {
+      setReviewFeedback(
+        journal.principalFeedback && journal.status === 'DITOLAK'
+          ? journal.principalFeedback
+          : 'Mohon lakukan perbaikan dan lengkapi rincian kompetensi serta alat peraga agar selaras dengan Kurikulum Merdeka.'
+      );
+    }
+    setShowReviewModal(true);
+  };
+
+  const handleSubmitReview = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedJournalToReview) return;
+
+    if (reviewAction === 'APPROVE') {
+      onApproveJournal(selectedJournalToReview.id, reviewFeedback);
+    } else if (reviewAction === 'REJECT') {
+      if (onRejectJournal) {
+        onRejectJournal(selectedJournalToReview.id, reviewFeedback);
+      } else {
+        onApproveJournal(selectedJournalToReview.id, reviewFeedback);
+      }
+    }
+
+    setShowReviewModal(false);
+    setSelectedJournalToReview(null);
+  };
 
   // Form State for Input/Edit E-Raport Modal
   const [showRaportModal, setShowRaportModal] = useState(false);
@@ -168,51 +239,108 @@ export const AcademicRombelView: React.FC<AcademicRombelViewProps> = ({
   const [formTeacherNotes, setFormTeacherNotes] = useState('Siswa aktif, santun, dan berprestasi tinggi.');
   const [selectedStudentPreset, setSelectedStudentPreset] = useState<string>('');
 
-  // Sync all master data students to ensure complete E-Raport integration
-  const integratedRaports: ERaport[] = students.map((std) => {
-    const existingRap = eRaports.find(
-      (r) =>
-        r.studentId === std.id ||
-        r.nisn === std.nis ||
-        r.nisn === std.nisn ||
-        r.studentName.toLowerCase() === std.name.toLowerCase()
-    );
+  // Interactive Print Preview States
+  const [previewRaport, setPreviewRaport] = useState<ERaport | null>(null);
+  const [showLegerPreviewModal, setShowLegerPreviewModal] = useState<boolean>(false);
+  const [showBatchRaportPreviewModal, setShowBatchRaportPreviewModal] = useState<boolean>(false);
 
-    const stdClassSubjects = getSubjectsByClass(std.gradeClass);
+  // Sync all master data students to ensure complete E-Raport integration with unified consistent IDs
+  const integratedRaports: ERaport[] = useMemo(() => {
+    return students.map((std, idx) => {
+      const existingRap = eRaports.find(
+        (r) =>
+          r.studentId === std.id ||
+          r.id === std.id ||
+          r.nisn === std.nis ||
+          r.nisn === std.nisn ||
+          r.studentName.toLowerCase() === std.name.toLowerCase()
+      );
 
-    if (existingRap) {
+      const stdClass = normalizeToStandardGrade(std.gradeClass);
+      const stdClassSubjects = getSubjectsByClass(stdClass);
+      const wali = getWaliKelasDetailByGrade(stdClass, teachers);
+
+      if (existingRap) {
+        return {
+          ...existingRap,
+          id: existingRap.id || `rap-std-${std.id}`,
+          studentId: std.id,
+          studentName: std.name,
+          gradeClass: stdClass,
+          nisn: existingRap.nisn || std.nis || std.nisn || '20240101',
+          parentName: existingRap.parentName || std.parentName || `Bpk/Ibu ${std.name.split(' ')[0]}`,
+          teacherName: existingRap.teacherName || wali.name,
+          grades:
+            existingRap.grades && existingRap.grades.length > 0
+              ? existingRap.grades
+              : stdClassSubjects.map((sub, sIdx) => ({
+                  subject: sub,
+                  score: 85 + (sIdx % 10),
+                  letterGrade: calcLetterGrade(85 + (sIdx % 10)),
+                  notes: `Menguasai materi ${sub} dengan sangat baik sesuai Kurikulum Merdeka.`,
+                })),
+        };
+      }
+
+      const defaultGrades: SubjectGrade[] = stdClassSubjects.map((sub, sIdx) => {
+        const baseScore = 84 + ((idx * 3 + sIdx * 2) % 13);
+        const score = Math.min(baseScore, 98);
+        return {
+          subject: sub,
+          score: score,
+          letterGrade: calcLetterGrade(score),
+          notes: `Capaian pembelajaran mata pelajaran ${sub} sangat baik dan memenuhi standar kompetensi Kurikulum Merdeka.`,
+        };
+      });
+
       return {
-        ...existingRap,
+        id: `rap-std-${std.id}`,
+        studentId: std.id,
         studentName: std.name,
-        gradeClass: std.gradeClass,
-        nisn: existingRap.nisn || std.nisn || std.nis,
-        parentName: existingRap.parentName || std.parentName || `Bpk/Ibu ${std.name.split(' ')[0]}`,
-        teacherName: getWaliKelasByGrade(std.gradeClass, teachers),
+        nisn: std.nis || std.nisn || '20240101',
+        gradeClass: stdClass,
+        academicYear: '2026/2027 Semester Ganjil',
+        parentName: std.parentName || `Bpk/Ibu ${std.name.split(' ')[0]}`,
+        teacherName: wali.name,
+        grades: defaultGrades,
+        attendance: { present: 80, sick: 1, permitted: 0, absent: 0 },
+        extracurriculars: [
+          { name: 'Pramuka Penggalang', grade: 'A', notes: 'Sangat aktif dan disiplin dalam kepramukaan' },
+          { name: 'Tahfidz Al-Qur\'an', grade: 'A', notes: 'Hafalan juz 30 lancar dengan tajwid baik' },
+        ],
+        teacherNotes: `Ananda ${std.name} menunjukkan perkembangan karakter yang positif, santun, dan rajin berprestasi.`,
+        status: 'DITERBITKAN',
+        issuedDate: '2026-12-20',
       };
-    }
+    });
+  }, [students, eRaports, teachers]);
 
-    return {
-      id: `rap-integrated-${std.id}`,
-      studentId: std.id,
-      studentName: std.name,
-      nisn: std.nis || std.nisn || '20240101',
-      gradeClass: std.gradeClass,
-      academicYear: '2026/2027 Semester Ganjil',
-      parentName: std.parentName || `Bpk/Ibu ${std.name.split(' ')[0]}`,
-      teacherName: getWaliKelasByGrade(std.gradeClass, teachers),
-      grades: stdClassSubjects.map((sub, idx) => ({
-        subject: sub,
-        score: idx === 0 ? 95 : 85 + (idx % 8),
-        letterGrade: idx === 0 ? 'A' : 'B',
-        notes: `Menguasai materi ${sub} dengan sangat baik.`,
-      })),
-      attendance: { present: 80, sick: 1, permitted: 0, absent: 0 },
-      extracurriculars: [{ name: 'Pramuka & Tahfidz', grade: 'A', notes: 'Sangat aktif.' }],
-      teacherNotes: `Ananda ${std.name} menunjukkan perkembangan karakter yang positif dan rajin belajar.`,
-      status: 'DITERBITKAN',
-      issuedDate: new Date().toISOString().split('T')[0],
-    };
-  });
+  const allPrintableRaports = integratedRaports;
+
+  // Print Action Handlers
+  const handlePrintSingleRaport = (raport: ERaport) => {
+    setPreviewRaport(raport);
+    const elementId = `raport-card-${raport.id}`;
+    printDocument(elementId, `E-Raport_${raport.studentName.replace(/\s+/g, '_')}`, {
+      orientation: 'portrait',
+    });
+  };
+
+  const handlePrintLegerRombel = () => {
+    setShowLegerPreviewModal(true);
+    const targetRombel = selectedRombel === 'SEMUA' ? 'Kelas 1' : normalizeToStandardGrade(selectedRombel);
+    printDocument('leger-table-print', `Leger_Nilai_${targetRombel.replace(/\s+/g, '_')}`, {
+      orientation: 'landscape',
+    });
+  };
+
+  const handlePrintBatchRaports = () => {
+    setShowBatchRaportPreviewModal(true);
+    const targetRombel = selectedRombel === 'SEMUA' ? 'Kelas 1' : normalizeToStandardGrade(selectedRombel);
+    printDocument('rombel-all-raports-print', `Kumpulan_E-Raport_${targetRombel.replace(/\s+/g, '_')}`, {
+      orientation: 'portrait',
+    });
+  };
 
   // Filter Raports using isClassMatching for robust multi-format matching
   const filteredRaports = integratedRaports.filter((r) => {
@@ -240,8 +368,14 @@ export const AcademicRombelView: React.FC<AcademicRombelViewProps> = ({
     return matchesRombel && matchesSearch;
   });
 
+  const totalJournalsCount = teacherJournals.length;
+  const pendingJournalsCount = teacherJournals.filter((j) => j.status === 'DIUSULKAN_GURU').length;
+  const approvedJournalsCount = teacherJournals.filter((j) => j.status === 'DISETUJUI_KEPSEK').length;
+  const rejectedJournalsCount = teacherJournals.filter((j) => j.status === 'DITOLAK').length;
+
   const filteredJournals = teacherJournals.filter((j) => {
     const matchesRombel = selectedRombel === 'SEMUA' || isClassMatching(j.rombonganBelajar, selectedRombel);
+    const matchesStatus = journalStatusFilter === 'ALL' || j.status === journalStatusFilter;
     const q = searchQuery.toLowerCase().trim();
     const matchesSearch =
       !q ||
@@ -250,7 +384,7 @@ export const AcademicRombelView: React.FC<AcademicRombelViewProps> = ({
       j.subject.toLowerCase().includes(q) ||
       j.competencySummary.toLowerCase().includes(q) ||
       j.rombonganBelajar.toLowerCase().includes(q);
-    return matchesRombel && matchesSearch;
+    return matchesRombel && matchesStatus && matchesSearch;
   });
 
   const filteredConsultationMessages = consultationMessages.filter((msg) => {
@@ -290,18 +424,27 @@ export const AcademicRombelView: React.FC<AcademicRombelViewProps> = ({
   // Initialize/Reset Raport Modal Form
   const openNewRaportModal = () => {
     setEditingRaportId(null);
-    const firstStd = selectedRombel !== 'SEMUA'
-      ? students.find((s) => isClassMatching(s.gradeClass, selectedRombel)) || students[0]
-      : students[0];
-    const initialClass = selectedRombel !== 'SEMUA' ? selectedRombel : firstStd?.gradeClass || 'Kelas 1';
+    // If selectedRombel is a specific class (e.g. Kelas 2..6), respect that class
+    const targetClass = selectedRombel !== 'SEMUA' ? normalizeToStandardGrade(selectedRombel) : 'Kelas 1';
+    const studentsInClass = students.filter((s) => isClassMatching(s.gradeClass, targetClass));
+    const firstStd = studentsInClass.length > 0 ? studentsInClass[0] : students[0];
+    const initialClass = targetClass;
     const initialSubjects = getSubjectsByClass(initialClass);
 
-    setSelectedStudentPreset(firstStd?.id || '');
-    setFormNis(firstStd?.nis || firstStd?.nisn || '20240101');
+    if (firstStd && isClassMatching(firstStd.gradeClass, initialClass)) {
+      setSelectedStudentPreset(firstStd.id);
+      setFormNis(firstStd.nis || firstStd.nisn || '20240101');
+      setFormStudentName(firstStd.name);
+      setFormParentName(firstStd.parentName || `Bpk/Ibu ${firstStd.name.split(' ')[0]}`);
+    } else {
+      setSelectedStudentPreset('');
+      setFormNis('');
+      setFormStudentName('');
+      setFormParentName('');
+    }
+
     setFormAcademicYear('2026/2027 Semester Ganjil');
-    setFormStudentName(firstStd?.name || 'Nama Siswa Baru');
     setFormGradeClass(initialClass);
-    setFormParentName(firstStd?.parentName || 'Bpk. / Ibu Wali Murid');
     setFormTeacherName(getWaliKelasByGrade(initialClass, teachers));
     setFormGrades(
       initialSubjects.map((s) => ({
@@ -323,13 +466,14 @@ export const AcademicRombelView: React.FC<AcademicRombelViewProps> = ({
     setFormNis(rap.nisn);
     setFormAcademicYear(rap.academicYear);
     setFormStudentName(rap.studentName);
-    setFormGradeClass(rap.gradeClass);
+    const normalizedClass = normalizeToStandardGrade(rap.gradeClass);
+    setFormGradeClass(normalizedClass);
     setFormParentName(rap.parentName || 'Bpk. / Ibu Wali Murid');
-    setFormTeacherName(getWaliKelasByGrade(rap.gradeClass, teachers));
+    setFormTeacherName(rap.teacherName || getWaliKelasByGrade(normalizedClass, teachers));
     setFormGrades(
       rap.grades && rap.grades.length > 0
         ? rap.grades
-        : getSubjectsByClass(rap.gradeClass).map((s) => ({
+        : getSubjectsByClass(normalizedClass).map((s) => ({
             subject: s,
             score: 85,
             letterGrade: 'B',
@@ -344,17 +488,19 @@ export const AcademicRombelView: React.FC<AcademicRombelViewProps> = ({
   // Student preset picker handler inside Modal
   const handleSelectStudentPreset = (stdId: string) => {
     setSelectedStudentPreset(stdId);
+    if (!stdId) return;
     const std = students.find((s) => s.id === stdId);
     if (!std) return;
 
+    const normClass = normalizeToStandardGrade(std.gradeClass);
     setFormNis(std.nis || std.nisn || '20240101');
     setFormStudentName(std.name);
-    setFormGradeClass(std.gradeClass);
+    setFormGradeClass(normClass);
     setFormParentName(std.parentName || `Bpk/Ibu ${std.name.split(' ')[0]}`);
-    setFormTeacherName(getWaliKelasByGrade(std.gradeClass, teachers));
+    setFormTeacherName(getWaliKelasByGrade(normClass, teachers));
 
     // Update subjects to match student's grade class
-    const subs = getSubjectsByClass(std.gradeClass);
+    const subs = getSubjectsByClass(normClass);
     setFormGrades(
       subs.map((s) => ({
         subject: s,
@@ -367,9 +513,26 @@ export const AcademicRombelView: React.FC<AcademicRombelViewProps> = ({
 
   // Grade Class selector handler inside Modal
   const handleGradeClassChange = (newClass: string) => {
-    setFormGradeClass(newClass);
-    setFormTeacherName(getWaliKelasByGrade(newClass, teachers));
-    const newSubs = getSubjectsByClass(newClass);
+    const normClass = normalizeToStandardGrade(newClass);
+    setFormGradeClass(normClass);
+    setFormTeacherName(getWaliKelasByGrade(normClass, teachers));
+
+    // Automatically sync student options for the newly selected class
+    const studentsInClass = students.filter((s) => isClassMatching(s.gradeClass, normClass));
+    if (studentsInClass.length > 0) {
+      const firstStd = studentsInClass[0];
+      setSelectedStudentPreset(firstStd.id);
+      setFormNis(firstStd.nis || firstStd.nisn || '20240101');
+      setFormStudentName(firstStd.name);
+      setFormParentName(firstStd.parentName || `Bpk/Ibu ${firstStd.name.split(' ')[0]}`);
+    } else {
+      setSelectedStudentPreset('');
+      setFormNis('');
+      setFormStudentName('');
+      setFormParentName('');
+    }
+
+    const newSubs = getSubjectsByClass(normClass);
     setFormGrades(
       newSubs.map((s) => ({
         subject: s,
@@ -1289,90 +1452,17 @@ export const AcademicRombelView: React.FC<AcademicRombelViewProps> = ({
               })}
             </div>
           )}
-
-          {/* Hidden Print Container for Printable E-Raports */}
-          <div className="hidden">
-            {filteredRaports.map((rap) => (
-              <div key={`print-${rap.id}`} id={`raport-card-${rap.id}`} className="p-8 space-y-4">
-                <div className="text-center border-b-2 border-slate-900 pb-3">
-                  <h2 className="text-xl font-black">LEMBAR E-RAPORT DIGITAL PESERTA DIDIK</h2>
-                  <p className="text-xs font-bold">YAYASAN PENDIDIKAN DAARUL HABIBAH</p>
-                  <p className="text-xs text-slate-600">{rap.academicYear}</p>
-                </div>
-
-                <div className="grid grid-cols-2 text-xs font-bold gap-2 bg-slate-100 p-3 rounded">
-                  <p>Nama Siswa: {rap.studentName}</p>
-                  <p>NIS / NISN: {rap.nisn}</p>
-                  <p>Rombel / Kelas: {rap.gradeClass}</p>
-                  <p>Wali Murid: {rap.parentName || 'Orang Tua / Wali'}</p>
-                  <p>Wali Kelas: {rap.teacherName}</p>
-                  <p>Tahun Ajaran: {rap.academicYear}</p>
-                </div>
-
-                <table className="w-full text-left text-xs border-collapse border border-slate-300">
-                  <thead>
-                    <tr className="bg-slate-200">
-                      <th className="border border-slate-300 p-2">Mata Pelajaran</th>
-                      <th className="border border-slate-300 p-2 text-center">Nilai (0-100)</th>
-                      <th className="border border-slate-300 p-2 text-center">Predikat</th>
-                      <th className="border border-slate-300 p-2">Capaian Kompetensi</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {rap.grades.map((g, idx) => (
-                      <tr key={idx}>
-                        <td className="border border-slate-300 p-2 font-bold">{g.subject}</td>
-                        <td className="border border-slate-300 p-2 text-center font-mono font-bold">{g.score}</td>
-                        <td className="border border-slate-300 p-2 text-center font-bold">{g.letterGrade}</td>
-                        <td className="border border-slate-300 p-2">{g.notes}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-
-                <div className="grid grid-cols-2 gap-3 text-xs border border-slate-300 p-3 rounded">
-                  <div>
-                    <p className="font-bold mb-1">Ketidakhadiran:</p>
-                    <p>Hadir: {rap.attendance?.present || 80} hari</p>
-                    <p>Sakit: {rap.attendance?.sick || 0} hari &bull; Izin: {rap.attendance?.permitted || 0} hari &bull; Alpa: {rap.attendance?.absent || 0} hari</p>
-                  </div>
-                  <div>
-                    <p className="font-bold mb-1">Catatan Wali Kelas:</p>
-                    <p className="italic">"{rap.teacherNotes}"</p>
-                  </div>
-                </div>
-
-                {/* 3-Column Formal Signature Block */}
-                <div className="grid grid-cols-3 gap-4 pt-6 text-center text-xs">
-                  <div>
-                    <p className="text-slate-600">Orang Tua / Wali Murid</p>
-                    <div className="h-16"></div>
-                    <p className="font-bold underline">{rap.parentName || '....................................'}</p>
-                  </div>
-                  <div>
-                    <p className="text-slate-600">Wali Kelas {rap.gradeClass}</p>
-                    <div className="h-16"></div>
-                    <p className="font-bold underline">{rap.teacherName}</p>
-                    <p className="text-[10px] text-slate-500 font-mono">NIPY Terdaftar</p>
-                  </div>
-                  <div>
-                    <p className="text-slate-600">Kepala Sekolah SDIT EL-FATAH</p>
-                    <div className="h-16"></div>
-                    <p className="font-bold underline">Masykur Rohana, S.Sos</p>
-                    <p className="text-[10px] text-slate-500 font-mono">NIPY: 1985031201</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
       )}
 
       {/* ================= 2. BUKU LEGER NILAI & REKAP ROMBEL VIEW (DKN) ================= */}
       {activeSubTab === 'leger' && (() => {
-        const targetRombel = selectedRombel === 'SEMUA' ? 'Kelas 1' : selectedRombel;
+        const targetRombel = selectedRombel === 'SEMUA' ? 'Kelas 1' : normalizeToStandardGrade(selectedRombel);
         const targetWali = getWaliKelasDetailByGrade(targetRombel, teachers);
-        const rombelRaports = filteredRaports.filter((r) => isClassMatching(r.gradeClass, targetRombel));
+        const standardSubjects = getSubjectsByClass(targetRombel);
+
+        // Filter printable raports belonging to this rombel
+        const rombelRaports = allPrintableRaports.filter((r) => isClassMatching(r.gradeClass, targetRombel));
         
         // Calculate rankings based on total scores
         const scoredRaports = rombelRaports.map((r) => {
@@ -1385,7 +1475,6 @@ export const AcademicRombelView: React.FC<AcademicRombelViewProps> = ({
           };
         }).sort((a, b) => b.totalScore - a.totalScore);
 
-        const standardSubjects = getSubjectsByClass(targetRombel);
         const classAvgTotal = scoredRaports.length > 0
           ? (scoredRaports.reduce((sum, r) => sum + r.avgScore, 0) / scoredRaports.length).toFixed(1)
           : '0.0';
@@ -1413,23 +1502,26 @@ export const AcademicRombelView: React.FC<AcademicRombelViewProps> = ({
 
               <div className="flex flex-wrap items-center gap-3">
                 <button
-                  onClick={() => printDocument('leger-table-print', `Leger_Nilai_${targetRombel.replace(/\s+/g, '_')}`)}
+                  onClick={() =>
+                    printDocument('leger-table-print', `Leger_Nilai_${targetRombel.replace(/\s+/g, '_')}`, {
+                      orientation: 'landscape',
+                    })
+                  }
                   className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl text-xs font-black shadow-md flex items-center gap-2 cursor-pointer transition hover:scale-102"
+                  title="Cetak Leger / Matriks Nilai Landscape"
                 >
                   <Printer className="w-4 h-4 text-emerald-400" />
                   <span>Cetak Leger Rombel (PDF)</span>
                 </button>
                 <button
                   onClick={() => {
-                    const firstRap = scoredRaports[0];
-                    if (firstRap) {
-                      printDocument(`raport-card-${firstRap.id}`, `E-Raport_${firstRap.studentName}`);
-                    }
+                    printDocument('rombel-all-raports-print', `Kumpulan_E-Raport_${targetRombel.replace(/\s+/g, '_')}`);
                   }}
                   className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl text-xs font-black shadow-md flex items-center gap-2 cursor-pointer transition"
+                  title="Cetak Seluruh Lembar E-Raport Siswa Rombel Ini"
                 >
                   <FileCheck2 className="w-4 h-4 text-white" />
-                  <span>Cetak Raport Rombel</span>
+                  <span>Cetak Raport Rombel (Semua Siswa)</span>
                 </button>
               </div>
             </div>
@@ -1495,7 +1587,6 @@ export const AcademicRombelView: React.FC<AcademicRombelViewProps> = ({
                   <tbody className="divide-y divide-slate-100">
                     {scoredRaports.map((r, rankIdx) => {
                       const studentObj = students.find((s) => s.id === r.studentId || s.nis === r.nisn);
-                      const isSppLunas = studentObj?.sppStatus === 'LUNAS';
 
                       return (
                         <tr key={r.id} className="hover:bg-slate-50 transition">
@@ -1546,9 +1637,11 @@ export const AcademicRombelView: React.FC<AcademicRombelViewProps> = ({
                           </td>
                           <td className="p-3 text-center">
                             <button
-                              onClick={() => printDocument(`raport-card-${r.id}`, `E-Raport_${r.studentName}`)}
+                              onClick={() =>
+                                printDocument(`raport-card-${r.id}`, `E-Raport_${r.studentName.replace(/\s+/g, '_')}`)
+                              }
                               className="p-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg transition cursor-pointer"
-                              title="Cetak E-Raport Siswa"
+                              title={`Cetak E-Raport ${r.studentName}`}
                             >
                               <Printer className="w-3.5 h-3.5 text-emerald-400" />
                             </button>
@@ -1614,86 +1707,6 @@ export const AcademicRombelView: React.FC<AcademicRombelViewProps> = ({
                   </div>
                   <p className="font-black text-slate-950 underline">{targetWali.name}</p>
                   <p className="text-[11px] text-slate-500 font-mono">NIPY: {targetWali.nipy}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Hidden Printable Leger Nilai Container */}
-            <div className="hidden">
-              <div id="leger-table-print" className="p-8 space-y-6">
-                <div className="text-center border-b-2 border-slate-900 pb-3">
-                  <h2 className="text-xl font-black">BUKU LEGER NILAI & DAFTAR KUMPULAN NILAI (DKN)</h2>
-                  <p className="text-sm font-extrabold">SDIT EL-FATAH &bull; YAYASAN PENDIDIKAN DAARUL HABIBAH</p>
-                  <p className="text-xs text-slate-600">
-                    Rombongan Belajar: {targetRombel} &bull; Tahun Ajaran 2026/2027 Semester Ganjil
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-2 text-xs font-bold bg-slate-100 p-3 rounded">
-                  <p>Rombongan Belajar: {targetRombel}</p>
-                  <p>Wali Kelas: {targetWali.name} (NIPY: {targetWali.nipy})</p>
-                  <p>Jumlah Siswa: {scoredRaports.length} Peserta Didik</p>
-                  <p>Rata-Rata Nilai Rombel: {classAvgTotal}</p>
-                </div>
-
-                <table className="w-full text-left text-xs border-collapse border border-slate-400">
-                  <thead>
-                    <tr className="bg-slate-200 font-black">
-                      <th className="border border-slate-400 p-2 text-center">Rank</th>
-                      <th className="border border-slate-400 p-2">NISN</th>
-                      <th className="border border-slate-400 p-2">Nama Siswa</th>
-                      <th className="border border-slate-400 p-2 text-center">JK</th>
-                      {standardSubjects.map((sub, idx) => (
-                        <th key={idx} className="border border-slate-400 p-2 text-center">{sub}</th>
-                      ))}
-                      <th className="border border-slate-400 p-2 text-center">Total</th>
-                      <th className="border border-slate-400 p-2 text-center">Rerata</th>
-                      <th className="border border-slate-400 p-2 text-center">Ketuntasan</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {scoredRaports.map((r, rIdx) => {
-                      const studentObj = students.find((s) => s.id === r.studentId || s.nis === r.nisn);
-                      return (
-                        <tr key={r.id}>
-                          <td className="border border-slate-400 p-2 text-center font-bold">{rIdx + 1}</td>
-                          <td className="border border-slate-400 p-2 font-mono">{r.nisn}</td>
-                          <td className="border border-slate-400 p-2 font-bold">{r.studentName}</td>
-                          <td className="border border-slate-400 p-2 text-center">{studentObj?.gender || 'L'}</td>
-                          {standardSubjects.map((sub, sIdx) => {
-                            const foundGrade = r.grades.find(
-                              (g) => g.subject.toLowerCase() === sub.toLowerCase()
-                            );
-                            return (
-                              <td key={sIdx} className="border border-slate-400 p-2 text-center font-mono">
-                                {foundGrade ? foundGrade.score : 85}
-                              </td>
-                            );
-                          })}
-                          <td className="border border-slate-400 p-2 text-center font-mono font-bold">{r.totalScore}</td>
-                          <td className="border border-slate-400 p-2 text-center font-mono font-bold">{r.avgScore}</td>
-                          <td className="border border-slate-400 p-2 text-center font-bold">TUNTAS</td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-
-                <div className="grid grid-cols-2 gap-8 pt-8 text-center text-xs">
-                  <div>
-                    <p>Mengetahui,</p>
-                    <p className="font-bold">Kepala Sekolah SDIT EL-FATAH</p>
-                    <div className="h-16"></div>
-                    <p className="font-bold underline">Masykur Rohana, S.Sos</p>
-                    <p className="text-[10px] font-mono">NIPY: 1985031201</p>
-                  </div>
-                  <div>
-                    <p>Kab. Tangerang, {new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
-                    <p className="font-bold">Wali Kelas {targetRombel}</p>
-                    <div className="h-16"></div>
-                    <p className="font-bold underline">{targetWali.name}</p>
-                    <p className="text-[10px] font-mono">NIPY: {targetWali.nipy}</p>
-                  </div>
                 </div>
               </div>
             </div>
@@ -2217,18 +2230,23 @@ export const AcademicRombelView: React.FC<AcademicRombelViewProps> = ({
       {activeSubTab === 'jurnal' && (
         <div className="space-y-6">
           {/* Journal Rombel Header & Class Switcher */}
-          <div className="bg-gradient-to-r from-emerald-950 via-slate-900 to-emerald-950 text-white p-5 rounded-3xl border border-emerald-900/50 shadow-md space-y-3">
+          <div className="bg-gradient-to-r from-emerald-950 via-slate-900 to-emerald-950 text-white p-5 rounded-3xl border border-emerald-900/50 shadow-md space-y-4">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-2xl bg-emerald-600/30 border border-emerald-400/40 flex items-center justify-center text-emerald-400 shrink-0">
                   <BookOpen className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-black text-white">
-                    Jurnal Mengajar & Usulan Rombongan Belajar
+                  <h3 className="text-base font-black text-white flex items-center gap-2">
+                    <span>Jurnal Mengajar & Usulan Rombongan Belajar</span>
+                    {(currentRole === 'KEPALA_SEKOLAH' || currentRole === 'SUPERADMIN') && (
+                      <span className="px-2 py-0.5 bg-amber-400/20 text-amber-300 border border-amber-400/40 text-[10px] font-black rounded-lg uppercase tracking-wider">
+                        Portal Review Kepsek
+                      </span>
+                    )}
                   </h3>
                   <p className="text-xs text-emerald-200/90 mt-0.5 leading-relaxed">
-                    Dokumentasi ketercapaian materi ajar harian, alat peraga SiPLah, dan persetujuan Kepala Sekolah per kelas.
+                    Dokumentasi materi ajar harian, alat peraga SiPLah, serta verifikasi persetujuan / penolakan Kepala Sekolah.
                   </p>
                 </div>
               </div>
@@ -2242,9 +2260,68 @@ export const AcademicRombelView: React.FC<AcademicRombelViewProps> = ({
                 </div>
               ) : (
                 <div className="p-2.5 bg-emerald-900/40 rounded-2xl border border-emerald-500/30 text-xs text-emerald-200 shrink-0">
-                  <span className="font-bold text-amber-300">Menampilkan Seluruh Jurnal Kelas</span>
+                  <span className="font-bold text-amber-300">Menampilkan Seluruh Jurnal Rombel (1 - 6)</span>
                 </div>
               )}
+            </div>
+
+            {/* Quick KPI Stat Counters for Journals */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-2 border-t border-emerald-900/60">
+              <div className="bg-emerald-900/30 border border-emerald-800/60 rounded-2xl p-2.5 flex items-center justify-between">
+                <div>
+                  <p className="text-[10px] text-emerald-300 font-bold uppercase">Total Diajukan</p>
+                  <p className="text-base font-black text-white">{totalJournalsCount}</p>
+                </div>
+                <Layers className="w-5 h-5 text-emerald-400/60" />
+              </div>
+
+              <div
+                onClick={() => setJournalStatusFilter('DIUSULKAN_GURU')}
+                className={`border rounded-2xl p-2.5 flex items-center justify-between cursor-pointer transition ${
+                  journalStatusFilter === 'DIUSULKAN_GURU'
+                    ? 'bg-amber-500/20 border-amber-400 ring-1 ring-amber-400'
+                    : 'bg-amber-950/30 border-amber-800/60 hover:bg-amber-900/40'
+                }`}
+              >
+                <div>
+                  <p className="text-[10px] text-amber-300 font-bold uppercase flex items-center gap-1">
+                    Menunggu Kepsek
+                    {pendingJournalsCount > 0 && <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />}
+                  </p>
+                  <p className="text-base font-black text-amber-300">{pendingJournalsCount}</p>
+                </div>
+                <Clock className="w-5 h-5 text-amber-400/80" />
+              </div>
+
+              <div
+                onClick={() => setJournalStatusFilter('DISETUJUI_KEPSEK')}
+                className={`border rounded-2xl p-2.5 flex items-center justify-between cursor-pointer transition ${
+                  journalStatusFilter === 'DISETUJUI_KEPSEK'
+                    ? 'bg-emerald-500/20 border-emerald-400 ring-1 ring-emerald-400'
+                    : 'bg-emerald-950/30 border-emerald-800/60 hover:bg-emerald-900/40'
+                }`}
+              >
+                <div>
+                  <p className="text-[10px] text-emerald-300 font-bold uppercase">Disetujui</p>
+                  <p className="text-base font-black text-emerald-300">{approvedJournalsCount}</p>
+                </div>
+                <CheckCircle2 className="w-5 h-5 text-emerald-400/80" />
+              </div>
+
+              <div
+                onClick={() => setJournalStatusFilter('DITOLAK')}
+                className={`border rounded-2xl p-2.5 flex items-center justify-between cursor-pointer transition ${
+                  journalStatusFilter === 'DITOLAK'
+                    ? 'bg-rose-500/20 border-rose-400 ring-1 ring-rose-400'
+                    : 'bg-rose-950/30 border-rose-800/60 hover:bg-rose-900/40'
+                }`}
+              >
+                <div>
+                  <p className="text-[10px] text-rose-300 font-bold uppercase">Ditolak / Revisi</p>
+                  <p className="text-base font-black text-rose-300">{rejectedJournalsCount}</p>
+                </div>
+                <XCircle className="w-5 h-5 text-rose-400/80" />
+              </div>
             </div>
 
             {/* Class Switcher Pill Bar for Journals */}
@@ -2279,6 +2356,84 @@ export const AcademicRombelView: React.FC<AcademicRombelViewProps> = ({
             )}
           </div>
 
+          {/* Status Filter Pill Bar & Search Controls */}
+          <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs space-y-3">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+              {/* Status Filter Pills */}
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-xs font-black text-slate-700 mr-1 flex items-center gap-1">
+                  <Filter className="w-3.5 h-3.5 text-emerald-600" />
+                  Status Verifikasi:
+                </span>
+                {[
+                  { key: 'ALL', label: 'Semua Status', count: totalJournalsCount, color: 'emerald' },
+                  { key: 'DIUSULKAN_GURU', label: 'Menunggu Kepsek', count: pendingJournalsCount, color: 'amber' },
+                  { key: 'DISETUJUI_KEPSEK', label: 'Disetujui', count: approvedJournalsCount, color: 'emerald' },
+                  { key: 'DITOLAK', label: 'Ditolak / Revisi', count: rejectedJournalsCount, color: 'rose' },
+                ].map((st) => {
+                  const isSel = journalStatusFilter === st.key;
+                  return (
+                    <button
+                      key={st.key}
+                      onClick={() => setJournalStatusFilter(st.key as any)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                        isSel
+                          ? st.key === 'DIUSULKAN_GURU'
+                            ? 'bg-amber-600 text-white shadow-xs'
+                            : st.key === 'DITOLAK'
+                            ? 'bg-rose-600 text-white shadow-xs'
+                            : 'bg-emerald-700 text-white shadow-xs'
+                          : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200'
+                      }`}
+                    >
+                      <span>{st.label}</span>
+                      <span
+                        className={`px-1.5 py-0.2 text-[10px] rounded-full font-black ${
+                          isSel ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-800'
+                        }`}
+                      >
+                        {st.count}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Action: Create Journal Button */}
+              {currentRole !== 'ORANG_TUA' && (
+                <button
+                  onClick={() => {
+                    const targetClass = selectedRombel !== 'SEMUA' ? selectedRombel : 'Kelas 1';
+                    setJurnalRombelClass(targetClass);
+                    setTeacherNameInput(getWaliKelasByGrade(targetClass, teachers));
+                    const classSubs = getAvailableSubjectsForClass(targetClass, teachers);
+                    setJurnalSubject(classSubs[0] || 'Pendidikan Agama Islam & Budi Pekerti');
+                    setShowJournalModal(true);
+                  }}
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs rounded-xl shadow-xs flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
+                >
+                  <PlusCircle className="w-4 h-4" />
+                  <span>Buat Jurnal Mengajar Rombel</span>
+                </button>
+              )}
+            </div>
+
+            {/* Kepsek Notice Banner if in Kepala Sekolah Role */}
+            {(currentRole === 'KEPALA_SEKOLAH' || currentRole === 'SUPERADMIN') && (
+              <div className="p-3 bg-amber-50/90 border border-amber-200 rounded-xl flex items-start gap-2.5 text-xs text-amber-900">
+                <ShieldCheck className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
+                <div className="space-y-0.5">
+                  <p className="font-extrabold text-amber-950">
+                    Otoritas Akun Kepala Sekolah: Menyetujui & Menolak Jurnal Mengajar Guru
+                  </p>
+                  <p className="text-amber-800 leading-relaxed">
+                    Sebagai Kepala Sekolah, Anda dapat langsung menekan tombol <strong className="text-emerald-700 font-bold">"Setujui Jurnal (Kepsek)"</strong> untuk mengesahkan pelaksanaan materi, atau tombol <strong className="text-rose-700 font-bold">"Tolak / Minta Revisi"</strong> dengan menyertakan catatan instruksi perbaikan kepada guru pengampu.
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <h4 className="font-black text-slate-900 text-base flex items-center gap-2">
               <BookOpen className="w-5 h-5 text-emerald-700" />
@@ -2286,20 +2441,6 @@ export const AcademicRombelView: React.FC<AcademicRombelViewProps> = ({
                 Daftar Jurnal Mengajar {selectedRombel !== 'SEMUA' ? selectedRombel : 'Semua Kelas'} ({filteredJournals.length} Catatan)
               </span>
             </h4>
-
-            {currentRole !== 'ORANG_TUA' && (
-              <button
-                onClick={() => {
-                  setJurnalRombelClass(selectedRombel !== 'SEMUA' ? selectedRombel : 'Kelas 1');
-                  setTeacherNameInput(getWaliKelasByGrade(selectedRombel !== 'SEMUA' ? selectedRombel : 'Kelas 1', teachers));
-                  setShowJournalModal(true);
-                }}
-                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow flex items-center gap-1.5 cursor-pointer"
-              >
-                <PlusCircle className="w-4 h-4" />
-                <span>Buat Jurnal Mengajar Rombel</span>
-              </button>
-            )}
           </div>
 
           {filteredJournals.length === 0 ? (
@@ -2308,81 +2449,191 @@ export const AcademicRombelView: React.FC<AcademicRombelViewProps> = ({
                 <BookOpen className="w-7 h-7" />
               </div>
               <h4 className="font-black text-slate-800 text-base">
-                Belum Ada Catatan Jurnal Mengajar untuk {selectedRombel !== 'SEMUA' ? selectedRombel : 'Rombel Ini'}
+                Tidak Ada Jurnal Mengajar Yang Sesuai Filter
               </h4>
               <p className="text-xs text-slate-500 max-w-md mx-auto">
-                Silakan buat catatan materi pembelajaran, ketercapaian kompetensi, dan usulan alat peraga SiPLah untuk diajukan ke Kepala Sekolah.
+                Silakan ubah filter rombel atau filter status di atas untuk melihat jurnal mengajar lainnya, atau buat catatan jurnal baru.
               </p>
+              {journalStatusFilter !== 'ALL' && (
+                <button
+                  onClick={() => setJournalStatusFilter('ALL')}
+                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl"
+                >
+                  Tampilkan Semua Status
+                </button>
+              )}
             </div>
           ) : (
             filteredJournals.map((jrn) => (
-              <div key={jrn.id} className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-3">
+              <div
+                key={jrn.id}
+                className={`bg-white p-6 rounded-3xl border shadow-sm space-y-4 transition ${
+                  jrn.status === 'DIUSULKAN_GURU'
+                    ? 'border-amber-200 ring-1 ring-amber-200/50'
+                    : jrn.status === 'DITOLAK'
+                    ? 'border-rose-200'
+                    : 'border-slate-200'
+                }`}
+              >
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-slate-100 pb-3">
                   <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-black px-2.5 py-0.5 bg-emerald-100 text-emerald-800 rounded-md">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-xs font-black px-2.5 py-0.5 bg-emerald-100 text-emerald-800 rounded-md border border-emerald-200">
                         {jrn.rombonganBelajar}
                       </span>
-                      <span className="text-xs font-bold text-slate-500">&bull; {jrn.subject}</span>
+                      <span className="text-xs font-bold text-slate-600">&bull; {jrn.subject}</span>
+                      <span className="text-xs text-slate-400">&bull; Tanggal: <strong className="text-slate-700 font-mono">{jrn.date}</strong></span>
                     </div>
-                    <h3 className="font-extrabold text-slate-900 text-base mt-1">{jrn.topic}</h3>
+                    <h3 className="font-black text-slate-900 text-base mt-1.5">{jrn.topic}</h3>
                   </div>
 
                   <div>
                     {jrn.status === 'DISETUJUI_KEPSEK' ? (
-                      <span className="inline-flex items-center gap-1 px-3 py-1 bg-emerald-100 text-emerald-800 font-extrabold text-xs rounded-full border border-emerald-200">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-100 text-emerald-800 font-extrabold text-xs rounded-full border border-emerald-300 shadow-xs">
                         <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                         Disetujui Kepala Sekolah
                       </span>
+                    ) : jrn.status === 'DITOLAK' ? (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-rose-100 text-rose-800 font-extrabold text-xs rounded-full border border-rose-300 shadow-xs">
+                        <XCircle className="w-4 h-4 text-rose-600" />
+                        Ditolak / Perlu Revisi
+                      </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 px-3 py-1 bg-amber-100 text-amber-800 font-extrabold text-xs rounded-full border border-amber-200">
-                        <Clock className="w-4 h-4 text-amber-600" />
-                        Pengusulan Guru (Menunggu Approve Kepsek)
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-100 text-amber-900 font-extrabold text-xs rounded-full border border-amber-300 shadow-xs">
+                        <Clock className="w-4 h-4 text-amber-600 animate-pulse" />
+                        Menunggu Persetujuan Kepsek
                       </span>
                     )}
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                  <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100 space-y-1">
-                    <p className="font-extrabold text-slate-700">Rangkuman Kompetensi Pembelajaran:</p>
-                    <p className="text-slate-600 leading-relaxed">{jrn.competencySummary}</p>
+                  <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-100 space-y-1">
+                    <p className="font-extrabold text-slate-800 flex items-center gap-1.5">
+                      <Award className="w-4 h-4 text-emerald-600" />
+                      Rangkuman Kompetensi Pembelajaran:
+                    </p>
+                    <p className="text-slate-600 leading-relaxed pl-5">{jrn.competencySummary}</p>
                   </div>
 
-                  <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100 space-y-1">
-                    <p className="font-extrabold text-slate-700">Materi & Alat Peraga SiPLah:</p>
-                    <p className="text-slate-600 leading-relaxed">{jrn.teachingMaterial}</p>
+                  <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-100 space-y-1">
+                    <p className="font-extrabold text-slate-800 flex items-center gap-1.5">
+                      <Layers className="w-4 h-4 text-blue-600" />
+                      Materi & Alat Peraga SiPLah:
+                    </p>
+                    <p className="text-slate-600 leading-relaxed pl-5">{jrn.teachingMaterial}</p>
                   </div>
                 </div>
 
-                {jrn.principalFeedback && (
-                  <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-2xl text-xs space-y-0.5">
-                    <p className="font-extrabold text-emerald-900">Catatan Persetujuan Kepala Sekolah:</p>
-                    <p className="text-slate-700 italic">"{jrn.principalFeedback}"</p>
+                {/* Feedback Boxes */}
+                {jrn.status === 'DISETUJUI_KEPSEK' && jrn.principalFeedback && (
+                  <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-2xl text-xs space-y-1">
+                    <div className="flex items-center justify-between">
+                      <p className="font-extrabold text-emerald-950 flex items-center gap-1.5">
+                        <CheckCircle className="w-4 h-4 text-emerald-600" />
+                        Catatan Persetujuan Kepala Sekolah:
+                      </p>
+                      {jrn.approvedDate && (
+                        <span className="text-[11px] text-emerald-800 font-mono">Tgl: {jrn.approvedDate}</span>
+                      )}
+                    </div>
+                    <p className="text-emerald-900 italic font-medium pl-5">"{jrn.principalFeedback}"</p>
                   </div>
                 )}
 
-                <div className="flex items-center justify-between text-xs pt-2">
+                {jrn.status === 'DITOLAK' && jrn.principalFeedback && (
+                  <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-2xl text-xs space-y-1">
+                    <div className="flex items-center justify-between">
+                      <p className="font-extrabold text-rose-950 flex items-center gap-1.5">
+                        <AlertTriangle className="w-4 h-4 text-rose-600" />
+                        Alasan Penolakan / Catatan Revisi dari Kepala Sekolah:
+                      </p>
+                      {jrn.approvedDate && (
+                        <span className="text-[11px] text-rose-800 font-mono">Tgl: {jrn.approvedDate}</span>
+                      )}
+                    </div>
+                    <p className="text-rose-900 font-semibold italic pl-5">"{jrn.principalFeedback}"</p>
+                  </div>
+                )}
+
+                {/* Bottom Bar: Teacher Info + Kepsek Approval/Rejection Actions */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs pt-3 border-t border-slate-100">
                   <p className="text-slate-500">
-                    Guru Pengampu / Wali: <span className="font-bold text-slate-900">{jrn.teacherName}</span> &bull; Tanggal:{' '}
-                    <span className="font-mono">{jrn.date}</span>
+                    Guru Pengampu / Wali: <span className="font-bold text-slate-900">{jrn.teacherName}</span>
                   </p>
 
-                  {jrn.status === 'DIUSULKAN_GURU' &&
-                    (currentRole === 'SUPERADMIN' || currentRole === 'KEPALA_SEKOLAH') && (
-                      <button
-                        onClick={() =>
-                          onApproveJournal(
-                            jrn.id,
-                            'Materi telah diverifikasi dan dapat diimplementasikan langsung ke Rombel.'
-                          )
-                        }
-                        className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow flex items-center gap-1.5 cursor-pointer"
-                      >
-                        <UserCheck className="w-4 h-4" />
-                        <span>Setujui Implementasi Rombel (Kepsek)</span>
-                      </button>
-                    )}
+                  {/* KEPSEK / SUPERADMIN ACTION BUTTONS */}
+                  {(currentRole === 'SUPERADMIN' || currentRole === 'KEPALA_SEKOLAH') && (
+                    <div className="flex flex-wrap items-center gap-2">
+                      {jrn.status === 'DIUSULKAN_GURU' ? (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => handleOpenReviewModal(jrn, 'APPROVE')}
+                            className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs rounded-xl shadow-xs transition flex items-center gap-1.5 cursor-pointer"
+                            title="Setujui Jurnal Mengajar Ini"
+                          >
+                            <UserCheck className="w-4 h-4" />
+                            <span>Setujui Jurnal (Kepsek)</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleOpenReviewModal(jrn, 'REJECT')}
+                            className="px-3.5 py-2 bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-xs rounded-xl shadow-xs transition flex items-center gap-1.5 cursor-pointer"
+                            title="Tolak atau Minta Revisi Jurnal Mengajar"
+                          >
+                            <XCircle className="w-4 h-4" />
+                            <span>Tolak / Minta Revisi</span>
+                          </button>
+                        </>
+                      ) : jrn.status === 'DISETUJUI_KEPSEK' ? (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => handleOpenReviewModal(jrn, 'APPROVE')}
+                            className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold text-xs rounded-xl border border-emerald-200 transition flex items-center gap-1 cursor-pointer"
+                            title="Edit catatan persetujuan"
+                          >
+                            <Edit className="w-3.5 h-3.5 text-emerald-600" />
+                            <span>Ubah Catatan Kepsek</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleOpenReviewModal(jrn, 'REJECT')}
+                            className="px-3 py-1.5 bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-700 font-bold text-xs rounded-xl border border-slate-200 hover:border-rose-300 transition flex items-center gap-1 cursor-pointer"
+                            title="Ubah keputusan menjadi tolak/minta revisi"
+                          >
+                            <XCircle className="w-3.5 h-3.5 text-rose-500" />
+                            <span>Ubah ke Ditolak/Revisi</span>
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => handleOpenReviewModal(jrn, 'APPROVE')}
+                            className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs rounded-xl shadow-xs transition flex items-center gap-1.5 cursor-pointer"
+                            title="Setujui jurnal yang sebelumnya ditolak"
+                          >
+                            <CheckCircle2 className="w-4 h-4" />
+                            <span>Setujui Ulang (Revisi Diterima)</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleOpenReviewModal(jrn, 'REJECT')}
+                            className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-800 font-bold text-xs rounded-xl border border-rose-200 transition flex items-center gap-1 cursor-pointer"
+                            title="Edit alasan penolakan"
+                          >
+                            <Edit className="w-3.5 h-3.5 text-rose-600" />
+                            <span>Edit Alasan Penolakan</span>
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             ))
@@ -2521,25 +2772,23 @@ export const AcademicRombelView: React.FC<AcademicRombelViewProps> = ({
                   />
                 </div>
 
-                {editingRaportId && (
-                  <div>
-                    <label className="block text-xs font-extrabold text-slate-800 mb-1">
-                      4. Kelas / Rombel <span className="text-rose-500">*</span>
-                    </label>
-                    <select
-                      value={formGradeClass}
-                      onChange={(e) => handleGradeClassChange(e.target.value)}
-                      className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-extrabold text-slate-900"
-                    >
-                      <option value="Kelas 1">Kelas 1</option>
-                      <option value="Kelas 2">Kelas 2</option>
-                      <option value="Kelas 3">Kelas 3</option>
-                      <option value="Kelas 4">Kelas 4</option>
-                      <option value="Kelas 5">Kelas 5</option>
-                      <option value="Kelas 6">Kelas 6</option>
-                    </select>
-                  </div>
-                )}
+                <div>
+                  <label className="block text-xs font-extrabold text-slate-800 mb-1">
+                    4. Kelas / Rombel <span className="text-rose-500">*</span>
+                  </label>
+                  <select
+                    value={formGradeClass}
+                    onChange={(e) => handleGradeClassChange(e.target.value)}
+                    className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-extrabold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  >
+                    <option value="Kelas 1">Kelas 1</option>
+                    <option value="Kelas 2">Kelas 2</option>
+                    <option value="Kelas 3">Kelas 3</option>
+                    <option value="Kelas 4">Kelas 4</option>
+                    <option value="Kelas 5">Kelas 5</option>
+                    <option value="Kelas 6">Kelas 6</option>
+                  </select>
+                </div>
 
                 <div>
                   <label className="block text-xs font-extrabold text-slate-800 mb-1">
@@ -2773,16 +3022,15 @@ export const AcademicRombelView: React.FC<AcademicRombelViewProps> = ({
             </div>
 
             <form onSubmit={handleCreateJournal} className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Rombongan Belajar</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Rombongan Belajar <span className="text-rose-500">*</span>
+                  </label>
                   <select
                     value={jurnalRombelClass}
-                    onChange={(e) => {
-                      setJurnalRombelClass(e.target.value);
-                      setTeacherNameInput(getWaliKelasByGrade(e.target.value, teachers));
-                    }}
-                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-semibold"
+                    onChange={(e) => handleJurnalRombelClassChange(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-emerald-500 focus:outline-none"
                   >
                     <option value="Kelas 1">Kelas 1</option>
                     <option value="Kelas 2">Kelas 2</option>
@@ -2794,14 +3042,21 @@ export const AcademicRombelView: React.FC<AcademicRombelViewProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Mata Pelajaran</label>
-                  <input
-                    type="text"
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Mata Pelajaran ({jurnalRombelClass}) <span className="text-rose-500">*</span>
+                  </label>
+                  <select
                     value={jurnalSubject}
                     onChange={(e) => setJurnalSubject(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-semibold"
+                    className="w-full bg-white border border-emerald-400 rounded-xl px-3 py-2 text-xs font-extrabold text-emerald-950 shadow-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none"
                     required
-                  />
+                  >
+                    {availableJurnalSubjects.map((sub, idx) => (
+                      <option key={idx} value={sub}>
+                        {sub}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
@@ -2875,6 +3130,490 @@ export const AcademicRombelView: React.FC<AcademicRombelViewProps> = ({
           </div>
         </div>
       )}
+
+      {/* ================= MODAL KEPALA SEKOLAH: SETUJUI / TOLAK JURNAL MENGAJAR ================= */}
+      {showReviewModal && selectedJournalToReview && (
+        <div className="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4 animate-in fade-in zoom-in-95 duration-150">
+            {/* Modal Header */}
+            <div className="flex justify-between items-start border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-3">
+                <div
+                  className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 ${
+                    reviewAction === 'APPROVE'
+                      ? 'bg-emerald-100 text-emerald-700 border border-emerald-300'
+                      : 'bg-rose-100 text-rose-700 border border-rose-300'
+                  }`}
+                >
+                  {reviewAction === 'APPROVE' ? (
+                    <CheckCircle2 className="w-5 h-5" />
+                  ) : (
+                    <XCircle className="w-5 h-5" />
+                  )}
+                </div>
+                <div>
+                  <h3 className="font-black text-slate-900 text-base">
+                    {reviewAction === 'APPROVE'
+                      ? 'Setujui Jurnal Mengajar Guru'
+                      : 'Tolak / Minta Revisi Jurnal Mengajar'}
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    {reviewAction === 'APPROVE'
+                      ? 'Pengesahan pelaksanaan pembelajaran oleh Kepala Sekolah.'
+                      : 'Kirim instruksi perbaikan materi/alat peraga ke Guru Pengampu.'}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setShowReviewModal(false);
+                  setSelectedJournalToReview(null);
+                }}
+                className="text-slate-400 hover:text-slate-600 text-xs font-bold p-1"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Target Journal Brief Info Card */}
+            <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 text-xs space-y-1.5">
+              <div className="flex items-center justify-between">
+                <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 font-extrabold rounded-md text-[11px]">
+                  {selectedJournalToReview.rombonganBelajar}
+                </span>
+                <span className="text-slate-500 font-mono text-[11px]">
+                  Tgl: {selectedJournalToReview.date}
+                </span>
+              </div>
+              <p className="font-bold text-slate-900 text-xs">
+                Mata Pelajaran: <span className="font-normal text-slate-700">{selectedJournalToReview.subject}</span>
+              </p>
+              <p className="font-bold text-slate-900 text-xs">
+                Topik: <span className="font-normal text-slate-700">{selectedJournalToReview.topic}</span>
+              </p>
+              <p className="font-bold text-slate-900 text-xs">
+                Guru Pengampu: <span className="font-extrabold text-emerald-900">{selectedJournalToReview.teacherName}</span>
+              </p>
+            </div>
+
+            {/* Form Feedback */}
+            <form onSubmit={handleSubmitReview} className="space-y-3.5">
+              <div>
+                <label className="block text-xs font-extrabold text-slate-800 mb-1.5">
+                  {reviewAction === 'APPROVE'
+                    ? 'Catatan Persetujuan & Arahan Kepala Sekolah:'
+                    : 'Alasan Penolakan / Arahan Revisi Wajib untuk Guru:'}
+                </label>
+                <textarea
+                  rows={4}
+                  value={reviewFeedback}
+                  onChange={(e) => setReviewFeedback(e.target.value)}
+                  placeholder={
+                    reviewAction === 'APPROVE'
+                      ? 'Tuliskan catatan verifikasi atau apresiasi pembelajaran...'
+                      : 'Jelaskan poin-poin yang harus diperbaiki guru pengampu...'
+                  }
+                  className="w-full bg-white border border-slate-300 rounded-2xl p-3 text-xs text-slate-900 font-medium focus:ring-2 focus:ring-emerald-500 outline-none leading-relaxed"
+                  required
+                />
+              </div>
+
+              {/* Quick Preset Buttons */}
+              <div className="space-y-1">
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                  Template Catatan Cepat:
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {reviewAction === 'APPROVE' ? (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setReviewFeedback(
+                            'Materi ajar dan ketercapaian kompetensi telah diverifikasi & disetujui untuk diimplementasikan pada Rombongan Belajar.'
+                          )
+                        }
+                        className="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-[11px] font-semibold rounded-lg border border-emerald-200 transition cursor-pointer"
+                      >
+                        Sangat Sesuai Standar
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setReviewFeedback(
+                            'Disetujui. Penggunaan alat peraga dan media digital SiPLah dinilai tepat sasaran & interaktif.'
+                          )
+                        }
+                        className="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-[11px] font-semibold rounded-lg border border-emerald-200 transition cursor-pointer"
+                      >
+                        Media SiPLah Bagus
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setReviewFeedback(
+                            'Mohon lakukan perbaikan rincian capaian kompetensi siswa dan sesuaikan dengan fase Kurikulum Merdeka.'
+                          )
+                        }
+                        className="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-800 text-[11px] font-semibold rounded-lg border border-rose-200 transition cursor-pointer"
+                      >
+                        Revisi Capaian Kompetensi
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setReviewFeedback(
+                            'Mohon lengkapi usulan pengadaan/alat peraga berbasis modul SiPLah atau media konkret pendukung.'
+                          )
+                        }
+                        className="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-800 text-[11px] font-semibold rounded-lg border border-rose-200 transition cursor-pointer"
+                      >
+                        Lengkapi Alat Peraga SiPLah
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="pt-3 flex items-center justify-end gap-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowReviewModal(false);
+                    setSelectedJournalToReview(null);
+                  }}
+                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className={`px-5 py-2 text-white text-xs font-extrabold rounded-xl shadow-md transition flex items-center gap-1.5 cursor-pointer ${
+                    reviewAction === 'APPROVE'
+                      ? 'bg-emerald-600 hover:bg-emerald-500'
+                      : 'bg-rose-600 hover:bg-rose-500'
+                  }`}
+                >
+                  {reviewAction === 'APPROVE' ? (
+                    <>
+                      <CheckCircle2 className="w-4 h-4" />
+                      <span>Konfirmasi Setujui Jurnal</span>
+                    </>
+                  ) : (
+                    <>
+                      <XCircle className="w-4 h-4" />
+                      <span>Konfirmasi Tolak / Kirim Revisi</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ================= PERSISTENT PRINTABLE CONTAINERS ================= */}
+      <div className="hidden" aria-hidden="true">
+        {/* 1. Official Leger Matriks Table Print (Landscape A4) */}
+        {(() => {
+          const targetRombel = selectedRombel === 'SEMUA' ? 'Kelas 1' : normalizeToStandardGrade(selectedRombel);
+          const targetWali = getWaliKelasDetailByGrade(targetRombel, teachers);
+          const standardSubjects = getSubjectsByClass(targetRombel);
+          const rombelRaports = allPrintableRaports
+            .filter((r) => isClassMatching(r.gradeClass, targetRombel))
+            .map((r) => {
+              const totalScore = r.grades.reduce((sum, g) => sum + (Number(g.score) || 0), 0);
+              const avgScore = r.grades.length > 0 ? (totalScore / r.grades.length).toFixed(1) : '0.0';
+              return {
+                ...r,
+                totalScore,
+                avgScore: parseFloat(avgScore),
+              };
+            })
+            .sort((a, b) => b.totalScore - a.totalScore);
+
+          const classAvgTotal =
+            rombelRaports.length > 0
+              ? (rombelRaports.reduce((sum, r) => sum + r.avgScore, 0) / rombelRaports.length).toFixed(1)
+              : '0.0';
+
+          return (
+            <div id="leger-table-print" className="p-6 space-y-5 bg-white text-slate-900 font-sans">
+              <div className="text-center border-b-2 border-slate-900 pb-3">
+                <h2 className="text-xl font-black tracking-wide">BUKU LEGER NILAI & DAFTAR KUMPULAN NILAI (DKN)</h2>
+                <p className="text-sm font-extrabold">SDIT EL-FATAH &bull; YAYASAN PENDIDIKAN DAARUL HABIBAH</p>
+                <p className="text-xs text-slate-600">
+                  Rombongan Belajar: {targetRombel} &bull; Tahun Ajaran 2026/2027 Semester Ganjil &bull; Kurikulum Merdeka
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 text-xs font-bold bg-slate-100 p-3 rounded">
+                <p>Rombongan Belajar: {targetRombel}</p>
+                <p>Wali Kelas: {targetWali.name} (NIPY: {targetWali.nipy})</p>
+                <p>Jumlah Peserta Didik: {rombelRaports.length} Siswa</p>
+                <p>Rerata Nilai Rombel: {classAvgTotal} &bull; Status Ketuntasan: 100% Tuntas</p>
+              </div>
+
+              <table className="w-full text-left text-xs border-collapse border border-slate-400">
+                <thead>
+                  <tr className="bg-slate-200 font-black">
+                    <th className="border border-slate-400 p-2 text-center w-8">Rank</th>
+                    <th className="border border-slate-400 p-2">NISN</th>
+                    <th className="border border-slate-400 p-2">Nama Peserta Didik</th>
+                    <th className="border border-slate-400 p-2 text-center">JK</th>
+                    {standardSubjects.map((sub, idx) => (
+                      <th key={idx} className="border border-slate-400 p-2 text-center whitespace-nowrap">
+                        {sub}
+                      </th>
+                    ))}
+                    <th className="border border-slate-400 p-2 text-center">Total</th>
+                    <th className="border border-slate-400 p-2 text-center">Rerata</th>
+                    <th className="border border-slate-400 p-2 text-center">Ketuntasan</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rombelRaports.map((r, rIdx) => {
+                    const studentObj = students.find((s) => s.id === r.studentId || s.nis === r.nisn);
+                    return (
+                      <tr key={`leger-row-${r.id}`}>
+                        <td className="border border-slate-400 p-2 text-center font-bold">{rIdx + 1}</td>
+                        <td className="border border-slate-400 p-2 font-mono">{r.nisn}</td>
+                        <td className="border border-slate-400 p-2 font-bold">{r.studentName}</td>
+                        <td className="border border-slate-400 p-2 text-center">{studentObj?.gender || 'L'}</td>
+                        {standardSubjects.map((sub, sIdx) => {
+                          const foundGrade = r.grades.find((g) => g.subject.toLowerCase() === sub.toLowerCase());
+                          return (
+                            <td key={sIdx} className="border border-slate-400 p-2 text-center font-mono">
+                              {foundGrade ? foundGrade.score : 85}
+                            </td>
+                          );
+                        })}
+                        <td className="border border-slate-400 p-2 text-center font-mono font-bold">{r.totalScore}</td>
+                        <td className="border border-slate-400 p-2 text-center font-mono font-bold">{r.avgScore}</td>
+                        <td className="border border-slate-400 p-2 text-center font-bold">TUNTAS</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+                <tfoot>
+                  <tr className="bg-slate-100 font-extrabold text-slate-900 border-t-2 border-slate-400">
+                    <td colSpan={4} className="border border-slate-400 p-2 text-right uppercase text-[11px]">
+                      Rata-Rata Rombel:
+                    </td>
+                    {standardSubjects.map((sub, sIdx) => {
+                      const totalSubScore = rombelRaports.reduce((acc, r) => {
+                        const g = r.grades.find((gr) => gr.subject.toLowerCase() === sub.toLowerCase());
+                        return acc + (g ? Number(g.score) : 85);
+                      }, 0);
+                      const avgSubScore =
+                        rombelRaports.length > 0 ? (totalSubScore / rombelRaports.length).toFixed(1) : '85.0';
+                      return (
+                        <td key={sIdx} className="border border-slate-400 p-2 text-center font-mono font-black">
+                          {avgSubScore}
+                        </td>
+                      );
+                    })}
+                    <td className="border border-slate-400 p-2 text-center font-mono font-black">
+                      {rombelRaports.length > 0
+                        ? (rombelRaports.reduce((sum, r) => sum + r.totalScore, 0) / rombelRaports.length).toFixed(0)
+                        : '0'}
+                    </td>
+                    <td className="border border-slate-400 p-2 text-center font-mono font-black">{classAvgTotal}</td>
+                    <td className="border border-slate-400 p-2 text-center font-bold text-[10px]">Sah & Resmi</td>
+                  </tr>
+                </tfoot>
+              </table>
+
+              <div className="grid grid-cols-2 gap-8 pt-8 text-center text-xs">
+                <div>
+                  <p>Mengetahui,</p>
+                  <p className="font-bold">Kepala Sekolah SDIT EL-FATAH</p>
+                  <div className="h-16"></div>
+                  <p className="font-bold underline">Masykur Rohana, S.Sos</p>
+                  <p className="text-[10px] font-mono">NIPY: 1985031201</p>
+                </div>
+                <div>
+                  <p>
+                    Kabupaten Tangerang,{' '}
+                    {new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                  </p>
+                  <p className="font-bold">Wali Kelas {targetRombel}</p>
+                  <div className="h-16"></div>
+                  <p className="font-bold underline">{targetWali.name}</p>
+                  <p className="text-[10px] font-mono">NIPY: {targetWali.nipy}</p>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* 2. All Rombel Raports Batch Print */}
+        <div id="rombel-all-raports-print">
+          {(() => {
+            const targetRombel = selectedRombel === 'SEMUA' ? 'Kelas 1' : normalizeToStandardGrade(selectedRombel);
+            const rombelRaports = allPrintableRaports.filter((r) => isClassMatching(r.gradeClass, targetRombel));
+
+            return rombelRaports.map((rap, rapIdx) => (
+              <div
+                key={`batch-rap-${rap.id}`}
+                className="p-8 space-y-4"
+                style={{ pageBreakAfter: rapIdx === rombelRaports.length - 1 ? 'auto' : 'always' }}
+              >
+                <div className="text-center border-b-2 border-slate-900 pb-3">
+                  <h2 className="text-xl font-black">LEMBAR E-RAPORT DIGITAL PESERTA DIDIK</h2>
+                  <p className="text-xs font-bold">SDIT EL-FATAH &bull; YAYASAN PENDIDIKAN DAARUL HABIBAH</p>
+                  <p className="text-xs text-slate-600">{rap.academicYear}</p>
+                </div>
+
+                <div className="grid grid-cols-2 text-xs font-bold gap-2 bg-slate-100 p-3 rounded">
+                  <p>Nama Siswa: {rap.studentName}</p>
+                  <p>NIS / NISN: {rap.nisn}</p>
+                  <p>Rombel / Kelas: {rap.gradeClass}</p>
+                  <p>Wali Murid: {rap.parentName || 'Orang Tua / Wali'}</p>
+                  <p>Wali Kelas: {rap.teacherName}</p>
+                  <p>Tahun Ajaran: {rap.academicYear}</p>
+                </div>
+
+                <table className="w-full text-left text-xs border-collapse border border-slate-300">
+                  <thead>
+                    <tr className="bg-slate-200">
+                      <th className="border border-slate-300 p-2">Mata Pelajaran</th>
+                      <th className="border border-slate-300 p-2 text-center">Nilai (0-100)</th>
+                      <th className="border border-slate-300 p-2 text-center">Predikat</th>
+                      <th className="border border-slate-300 p-2">Capaian Kompetensi</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rap.grades.map((g, idx) => (
+                      <tr key={idx}>
+                        <td className="border border-slate-300 p-2 font-bold">{g.subject}</td>
+                        <td className="border border-slate-300 p-2 text-center font-mono font-bold">{g.score}</td>
+                        <td className="border border-slate-300 p-2 text-center font-bold">{g.letterGrade}</td>
+                        <td className="border border-slate-300 p-2">{g.notes}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+
+                <div className="grid grid-cols-2 gap-3 text-xs border border-slate-300 p-3 rounded">
+                  <div>
+                    <p className="font-bold mb-1">Ketidakhadiran:</p>
+                    <p>Hadir: {rap.attendance?.present || 80} hari</p>
+                    <p>
+                      Sakit: {rap.attendance?.sick || 0} hari &bull; Izin: {rap.attendance?.permitted || 0} hari &bull; Alpa:{' '}
+                      {rap.attendance?.absent || 0} hari
+                    </p>
+                  </div>
+                  <div>
+                    <p className="font-bold mb-1">Catatan Wali Kelas:</p>
+                    <p className="italic">"{rap.teacherNotes}"</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-4 pt-6 text-center text-xs">
+                  <div>
+                    <p className="text-slate-600">Orang Tua / Wali Murid</p>
+                    <div className="h-16"></div>
+                    <p className="font-bold underline">{rap.parentName || '....................................'}</p>
+                  </div>
+                  <div>
+                    <p className="text-slate-600">Wali Kelas {rap.gradeClass}</p>
+                    <div className="h-16"></div>
+                    <p className="font-bold underline">{rap.teacherName}</p>
+                    <p className="text-[10px] text-slate-500 font-mono">NIPY Terdaftar</p>
+                  </div>
+                  <div>
+                    <p className="text-slate-600">Kepala Sekolah SDIT EL-FATAH</p>
+                    <div className="h-16"></div>
+                    <p className="font-bold underline">Masykur Rohana, S.Sos</p>
+                    <p className="text-[10px] text-slate-500 font-mono">NIPY: 1985031201</p>
+                  </div>
+                </div>
+              </div>
+            ));
+          })()}
+        </div>
+
+        {/* 3. Individual Raport Cards for all students & eRaports in system */}
+        {allPrintableRaports.map((rap) => (
+          <div key={`single-print-${rap.id}`} id={`raport-card-${rap.id}`} className="p-8 space-y-4">
+            <div className="text-center border-b-2 border-slate-900 pb-3">
+              <h2 className="text-xl font-black">LEMBAR E-RAPORT DIGITAL PESERTA DIDIK</h2>
+              <p className="text-xs font-bold">SDIT EL-FATAH &bull; YAYASAN PENDIDIKAN DAARUL HABIBAH</p>
+              <p className="text-xs text-slate-600">{rap.academicYear}</p>
+            </div>
+
+            <div className="grid grid-cols-2 text-xs font-bold gap-2 bg-slate-100 p-3 rounded">
+              <p>Nama Siswa: {rap.studentName}</p>
+              <p>NIS / NISN: {rap.nisn}</p>
+              <p>Rombel / Kelas: {rap.gradeClass}</p>
+              <p>Wali Murid: {rap.parentName || 'Orang Tua / Wali'}</p>
+              <p>Wali Kelas: {rap.teacherName}</p>
+              <p>Tahun Ajaran: {rap.academicYear}</p>
+            </div>
+
+            <table className="w-full text-left text-xs border-collapse border border-slate-300">
+              <thead>
+                <tr className="bg-slate-200">
+                  <th className="border border-slate-300 p-2">Mata Pelajaran</th>
+                  <th className="border border-slate-300 p-2 text-center">Nilai (0-100)</th>
+                  <th className="border border-slate-300 p-2 text-center">Predikat</th>
+                  <th className="border border-slate-300 p-2">Capaian Kompetensi</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rap.grades.map((g, idx) => (
+                  <tr key={idx}>
+                    <td className="border border-slate-300 p-2 font-bold">{g.subject}</td>
+                    <td className="border border-slate-300 p-2 text-center font-mono font-bold">{g.score}</td>
+                    <td className="border border-slate-300 p-2 text-center font-bold">{g.letterGrade}</td>
+                    <td className="border border-slate-300 p-2">{g.notes}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            <div className="grid grid-cols-2 gap-3 text-xs border border-slate-300 p-3 rounded">
+              <div>
+                <p className="font-bold mb-1">Ketidakhadiran:</p>
+                <p>Hadir: {rap.attendance?.present || 80} hari</p>
+                <p>
+                  Sakit: {rap.attendance?.sick || 0} hari &bull; Izin: {rap.attendance?.permitted || 0} hari &bull; Alpa:{' '}
+                  {rap.attendance?.absent || 0} hari
+                </p>
+              </div>
+              <div>
+                <p className="font-bold mb-1">Catatan Wali Kelas:</p>
+                <p className="italic">"{rap.teacherNotes}"</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4 pt-6 text-center text-xs">
+              <div>
+                <p className="text-slate-600">Orang Tua / Wali Murid</p>
+                <div className="h-16"></div>
+                <p className="font-bold underline">{rap.parentName || '....................................'}</p>
+              </div>
+              <div>
+                <p className="text-slate-600">Wali Kelas {rap.gradeClass}</p>
+                <div className="h-16"></div>
+                <p className="font-bold underline">{rap.teacherName}</p>
+                <p className="text-[10px] text-slate-500 font-mono">NIPY Terdaftar</p>
+              </div>
+              <div>
+                <p className="text-slate-600">Kepala Sekolah SDIT EL-FATAH</p>
+                <div className="h-16"></div>
+                <p className="font-bold underline">Masykur Rohana, S.Sos</p>
+                <p className="text-[10px] text-slate-500 font-mono">NIPY: 1985031201</p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };

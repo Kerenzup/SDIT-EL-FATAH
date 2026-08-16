@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import * as XLSX from 'xlsx';
-import { FoundationBoard, FoundationProfile, Student, Supplier, Teacher } from '../../types';
+import { FoundationBoard, FoundationProfile, Student, Supplier, Teacher, UserRole } from '../../types';
 import { formatRupiah } from '../../utils/formatters';
 import { printDocument } from '../../utils/printHelper';
 import { MediaUploader } from '../common/MediaUploader';
@@ -27,6 +27,7 @@ import {
 
 interface MasterDataViewProps {
   initialTab?: 'siswa' | 'guru' | 'pengurus' | 'supplier';
+  currentRole?: UserRole;
   students: Student[];
   teachers: Teacher[];
   boardMembers: FoundationBoard[];
@@ -120,6 +121,7 @@ const getRowVal = (row: Record<string, any>, possibleKeys: string[]): any => {
 
 export const MasterDataView: React.FC<MasterDataViewProps> = ({
   initialTab,
+  currentRole,
   students,
   teachers,
   boardMembers,
@@ -145,7 +147,11 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
   onDeleteSupplier,
   onUpdateFoundationProfile,
 }) => {
-  const [activeTab, setActiveTab] = useState<'siswa' | 'guru' | 'pengurus' | 'supplier'>(initialTab || 'siswa');
+  const isGuruRole = currentRole === 'GURU';
+  const [activeTab, setActiveTab] = useState<'siswa' | 'guru' | 'pengurus' | 'supplier'>(
+    isGuruRole ? 'siswa' : initialTab || 'siswa'
+  );
+  const effectiveTab = isGuruRole ? 'siswa' : activeTab;
   const [syncToast, setSyncToast] = useState(false);
   const [importSuccessMsg, setImportSuccessMsg] = useState<string>('');
   const [showLogoModal, setShowLogoModal] = useState<boolean>(false);
@@ -897,16 +903,18 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setShowLogoModal(true)}
-            className="px-4 py-2 bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold text-xs rounded-xl shadow-md transition flex items-center gap-2 cursor-pointer"
-          >
-            <Image className="w-4 h-4" />
-            <span>Upload Logo Yayasan</span>
-          </button>
-        </div>
+        {!isGuruRole && (
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setShowLogoModal(true)}
+              className="px-4 py-2 bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold text-xs rounded-xl shadow-md transition flex items-center gap-2 cursor-pointer"
+            >
+              <Image className="w-4 h-4" />
+              <span>Upload Logo Yayasan</span>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Sub-tabs Navigation Header */}
@@ -915,50 +923,54 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
           <button
             onClick={() => setActiveTab('siswa')}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition ${
-              activeTab === 'siswa' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-100'
+              effectiveTab === 'siswa' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-100'
             }`}
           >
             <GraduationCap className="w-4 h-4" />
             <span>Master Siswa ({students.length})</span>
           </button>
 
-          <button
-            onClick={() => setActiveTab('guru')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition ${
-              activeTab === 'guru' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-100'
-            }`}
-          >
-            <Users className="w-4 h-4" />
-            <span>Master Guru & Kepsek ({teachers.length})</span>
-          </button>
+          {!isGuruRole && (
+            <>
+              <button
+                onClick={() => setActiveTab('guru')}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition ${
+                  effectiveTab === 'guru' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-100'
+                }`}
+              >
+                <Users className="w-4 h-4" />
+                <span>Master Guru & Kepsek ({teachers.length})</span>
+              </button>
 
-          <button
-            onClick={() => setActiveTab('pengurus')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition ${
-              activeTab === 'pengurus' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-100'
-            }`}
-          >
-            <Building2 className="w-4 h-4" />
-            <span>Pengurus Yayasan ({boardMembers.length})</span>
-          </button>
+              <button
+                onClick={() => setActiveTab('pengurus')}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition ${
+                  effectiveTab === 'pengurus' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-100'
+                }`}
+              >
+                <Building2 className="w-4 h-4" />
+                <span>Pengurus Yayasan ({boardMembers.length})</span>
+              </button>
 
-          <button
-            onClick={() => setActiveTab('supplier')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition ${
-              activeTab === 'supplier' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-100'
-            }`}
-          >
-            <Store className="w-4 h-4" />
-            <span>Supplier & Partner ({suppliers.length})</span>
-          </button>
+              <button
+                onClick={() => setActiveTab('supplier')}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition ${
+                  effectiveTab === 'supplier' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-100'
+                }`}
+              >
+                <Store className="w-4 h-4" />
+                <span>Supplier & Partner ({suppliers.length})</span>
+              </button>
+            </>
+          )}
         </div>
 
         <button
-          onClick={() => printDocument('printable-report', 'Master Data Yayasan Daarul Habibah')}
+          onClick={() => printDocument('printable-report', 'Master Data Yayasan')}
           className="flex items-center gap-1.5 px-3.5 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold shadow hover:bg-slate-800 transition"
         >
           <Printer className="w-4 h-4 text-emerald-400" />
-          <span>Cetak Master Data</span>
+          <span>{isGuruRole ? 'Cetak Data Siswa' : 'Cetak Master Data'}</span>
         </button>
       </div>
 
@@ -971,43 +983,45 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
             {foundationProfile?.name?.toUpperCase() || 'YAYASAN PENDIDIKAN WIDYA NUSANTARA'}
           </h2>
           <p className="text-xs text-slate-600 uppercase font-semibold">
-            Daftar Data Master Entitas & Sumber Daya Manusia Sekolah
+            {isGuruRole ? 'Daftar Data Siswa & Status Administrasi Rombel' : 'Daftar Data Master Entitas & Sumber Daya Manusia Sekolah'}
           </p>
           <h3 className="text-sm font-bold text-emerald-700 uppercase mt-1">
-            {activeTab === 'siswa' && '1. DATA MASTER SISWA & TARIF SPP'}
-            {activeTab === 'guru' && '2. DATA MASTER GURU, TENAGA PENDIDIK & STRUKTUR GAJI'}
-            {activeTab === 'pengurus' && '3. DATA MASTER PEMBINA & PENGURUS YAYASAN'}
-            {activeTab === 'supplier' && '4. DATA MASTER SUPPLIER & MITRA KERJA SAMA'}
+            {effectiveTab === 'siswa' && '1. DATA MASTER SISWA & TARIF SPP'}
+            {!isGuruRole && effectiveTab === 'guru' && '2. DATA MASTER GURU, TENAGA PENDIDIK & STRUKTUR GAJI'}
+            {!isGuruRole && effectiveTab === 'pengurus' && '3. DATA MASTER PEMBINA & PENGURUS YAYASAN'}
+            {!isGuruRole && effectiveTab === 'supplier' && '4. DATA MASTER SUPPLIER & MITRA KERJA SAMA'}
           </h3>
         </div>
 
         {/* 1. SISWA TAB */}
-        {activeTab === 'siswa' && (
+        {effectiveTab === 'siswa' && (
           <div className="space-y-4">
             {/* Info Banner Redirect to Payroll */}
-            <div className="p-4 bg-indigo-50 border border-indigo-200 rounded-2xl flex flex-wrap items-center justify-between gap-3 text-xs print:hidden">
-              <div className="flex items-center gap-3">
-                <Coins className="w-5 h-5 text-indigo-600 shrink-0" />
-                <div>
-                  <p className="font-extrabold text-indigo-950">
-                    Data Guru, Pengurus Yayasan & Supplier dialihkan ke Halaman Payroll & SDM
-                  </p>
-                  <p className="text-indigo-800 text-[11px]">
-                    Pengelolaan struktur gaji guru, pengurus, vendor supplier, serta posting jurnal & cetak slip gaji terpusat di menu Payroll.
-                  </p>
+            {!isGuruRole && (
+              <div className="p-4 bg-indigo-50 border border-indigo-200 rounded-2xl flex flex-wrap items-center justify-between gap-3 text-xs print:hidden">
+                <div className="flex items-center gap-3">
+                  <Coins className="w-5 h-5 text-indigo-600 shrink-0" />
+                  <div>
+                    <p className="font-extrabold text-indigo-950">
+                      Data Guru, Pengurus Yayasan & Supplier dialihkan ke Halaman Payroll & SDM
+                    </p>
+                    <p className="text-indigo-800 text-[11px]">
+                      Pengelolaan struktur gaji guru, pengurus, vendor supplier, serta posting jurnal & cetak slip gaji terpusat di menu Payroll.
+                    </p>
+                  </div>
                 </div>
+                {onNavigatePayroll && (
+                  <button
+                    type="button"
+                    onClick={onNavigatePayroll}
+                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs rounded-xl shadow transition flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <DollarSign className="w-4 h-4" />
+                    <span>Buka Payroll & SDM Yayasan</span>
+                  </button>
+                )}
               </div>
-              {onNavigatePayroll && (
-                <button
-                  type="button"
-                  onClick={onNavigatePayroll}
-                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs rounded-xl shadow transition flex items-center gap-1.5 cursor-pointer"
-                >
-                  <DollarSign className="w-4 h-4" />
-                  <span>Buka Payroll & SDM Yayasan</span>
-                </button>
-              )}
-            </div>
+            )}
 
             <div className="space-y-3 border-b border-slate-100 pb-4">
               <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
@@ -1024,44 +1038,48 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2 print:hidden">
-                  {/* Hidden File Input Siswa */}
-                  <input
-                    type="file"
-                    ref={studentFileInputRef}
-                    onChange={handleStudentFileUpload}
-                    accept=".xlsx,.xls,.csv"
-                    className="hidden"
-                  />
+                  {!isGuruRole && (
+                    <>
+                      {/* Hidden File Input Siswa */}
+                      <input
+                        type="file"
+                        ref={studentFileInputRef}
+                        onChange={handleStudentFileUpload}
+                        accept=".xlsx,.xls,.csv"
+                        className="hidden"
+                      />
 
-                  <button
-                    type="button"
-                    onClick={() => studentFileInputRef.current?.click()}
-                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-black shadow-md transition flex items-center gap-2 cursor-pointer"
-                    title="Unggah File Excel/CSV Data Siswa dari Komputer"
-                  >
-                    <Upload className="w-4 h-4" />
-                    <span>Upload Excel Siswa</span>
-                  </button>
+                      <button
+                        type="button"
+                        onClick={() => studentFileInputRef.current?.click()}
+                        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-black shadow-md transition flex items-center gap-2 cursor-pointer"
+                        title="Unggah File Excel/CSV Data Siswa dari Komputer"
+                      >
+                        <Upload className="w-4 h-4" />
+                        <span>Upload Excel Siswa</span>
+                      </button>
 
-                  <button
-                    type="button"
-                    onClick={handleExportStudents}
-                    className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold shadow transition flex items-center gap-1.5 cursor-pointer"
-                    title="Unduh Seluruh Data Siswa ke File Excel"
-                  >
-                    <Download className="w-4 h-4 text-emerald-400" />
-                    <span>Download Excel</span>
-                  </button>
+                      <button
+                        type="button"
+                        onClick={handleExportStudents}
+                        className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold shadow transition flex items-center gap-1.5 cursor-pointer"
+                        title="Unduh Seluruh Data Siswa ke File Excel"
+                      >
+                        <Download className="w-4 h-4 text-emerald-400" />
+                        <span>Download Excel</span>
+                      </button>
 
-                  <button
-                    type="button"
-                    onClick={handleDownloadStudentTemplate}
-                    className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 rounded-xl text-xs font-semibold shadow-sm transition flex items-center gap-1.5 cursor-pointer"
-                    title="Unduh Format Template Excel Import"
-                  >
-                    <FileSpreadsheet className="w-4 h-4 text-indigo-600" />
-                    <span>Template</span>
-                  </button>
+                      <button
+                        type="button"
+                        onClick={handleDownloadStudentTemplate}
+                        className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 rounded-xl text-xs font-semibold shadow-sm transition flex items-center gap-1.5 cursor-pointer"
+                        title="Unduh Format Template Excel Import"
+                      >
+                        <FileSpreadsheet className="w-4 h-4 text-indigo-600" />
+                        <span>Template</span>
+                      </button>
+                    </>
+                  )}
 
                   <button
                     type="button"
@@ -1072,7 +1090,7 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
                     <span>+ Tambah Siswa</span>
                   </button>
 
-                  {onRestoreDefaultStudents && (
+                  {!isGuruRole && onRestoreDefaultStudents && (
                     <button
                       type="button"
                       onClick={() => {
@@ -1089,7 +1107,7 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
                     </button>
                   )}
 
-                  {onDeleteAllStudents && students.length > 0 && (
+                  {!isGuruRole && onDeleteAllStudents && students.length > 0 && (
                     <button
                       type="button"
                       onClick={() => setDeleteConfirm({ type: 'semua_siswa', id: 'ALL', name: `SELURUH DATA SISWA (${students.length} Siswa)` })}
@@ -1252,7 +1270,7 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
         )}
 
         {/* 2. GURU TAB */}
-        {activeTab === 'guru' && (
+        {!isGuruRole && effectiveTab === 'guru' && (
           <div className="space-y-4">
             {syncToast && (
               <div className="p-4 bg-emerald-600 text-white rounded-2xl shadow-lg flex items-center justify-between gap-3 animate-fade-in print:hidden">
@@ -1460,7 +1478,7 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
         )}
 
         {/* 3. PENGURUS TAB */}
-        {activeTab === 'pengurus' && (
+        {!isGuruRole && effectiveTab === 'pengurus' && (
           <div className="space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
@@ -1543,7 +1561,7 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
         )}
 
         {/* 4. SUPPLIER TAB */}
-        {activeTab === 'supplier' && (
+        {!isGuruRole && effectiveTab === 'supplier' && (
           <div className="space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>

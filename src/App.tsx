@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { safeGetLocalStorage, safeSetLocalStorage } from './utils/safeStorage';
-import { getIDBItem } from './utils/indexedDBStorage';
+import { getIDBItem, setIDBItem } from './utils/indexedDBStorage';
 import {
   Account,
   FixedAsset,
@@ -24,6 +24,9 @@ import {
   UserRole,
   WebsiteLayoutConfig,
   PPDBConfig,
+  SchoolUniformItem,
+  UniformScheduleDay,
+  FoundationArchiveDocument,
 } from './types';
 import { printDocument } from './utils/printHelper';
 import {
@@ -47,6 +50,9 @@ import {
   INITIAL_ARKAS_BUDGET,
   INITIAL_WEBSITE_LAYOUT_CONFIG,
   INITIAL_PPDB_CONFIG,
+  INITIAL_UNIFORMS,
+  INITIAL_UNIFORM_SCHEDULE,
+  INITIAL_FOUNDATION_ARCHIVES,
 } from './data/initialData';
 import { Navbar } from './components/Navbar';
 import { Sidebar, TabType } from './components/Sidebar';
@@ -68,6 +74,7 @@ import { AcademicRombelView } from './components/academic/AcademicRombelView';
 import { ArkasBudgetView } from './components/arkas/ArkasBudgetView';
 import { RoleLoginModal } from './components/auth/RoleLoginModal';
 import { RoleAccessManagementView } from './components/settings/RoleAccessManagementView';
+import { FoundationArchiveView } from './components/archive/FoundationArchiveView';
 import { getRoleAuthConfigs, RoleAuthConfig, isTabAllowed } from './utils/roleAuth';
 import { parseProfileFromUrl } from './utils/shareUrl';
 
@@ -207,6 +214,31 @@ export default function App() {
     safeSetLocalStorage('yayasan_ppdb_config', ppdbConfig);
   }, [ppdbConfig]);
 
+  const [uniforms, setUniforms] = useState<SchoolUniformItem[]>(() =>
+    safeGetLocalStorage('yayasan_school_uniforms', INITIAL_UNIFORMS)
+  );
+
+  useEffect(() => {
+    safeSetLocalStorage('yayasan_school_uniforms', uniforms);
+  }, [uniforms]);
+
+  const [uniformSchedules, setUniformSchedules] = useState<UniformScheduleDay[]>(() =>
+    safeGetLocalStorage('yayasan_uniform_schedules', INITIAL_UNIFORM_SCHEDULE)
+  );
+
+  useEffect(() => {
+    safeSetLocalStorage('yayasan_uniform_schedules', uniformSchedules);
+  }, [uniformSchedules]);
+
+  const [foundationArchives, setFoundationArchives] = useState<FoundationArchiveDocument[]>(() => {
+    const saved = safeGetLocalStorage<FoundationArchiveDocument[]>('yayasan_foundation_archives', INITIAL_FOUNDATION_ARCHIVES);
+    if (!Array.isArray(saved) || saved.length === 0) {
+      safeSetLocalStorage('yayasan_foundation_archives', INITIAL_FOUNDATION_ARCHIVES);
+      return INITIAL_FOUNDATION_ARCHIVES;
+    }
+    return saved;
+  });
+
   const [layoutConfig, setLayoutConfig] = useState<WebsiteLayoutConfig>(() => {
     const saved = safeGetLocalStorage<WebsiteLayoutConfig>('yayasan_website_layout_config', INITIAL_WEBSITE_LAYOUT_CONFIG);
     if (!saved || !saved.sections) return INITIAL_WEBSITE_LAYOUT_CONFIG;
@@ -261,7 +293,8 @@ export default function App() {
       getIDBItem<StudentAchievement[]>('yayasan_achievements', []),
       getIDBItem<ERaport[]>('yayasan_e_raports', []),
       getIDBItem<TeacherJournalRombel[]>('yayasan_teacher_journals', []),
-    ]).then(([items, prof, cfg, news, banners, achs, raports, journals]) => {
+      getIDBItem<FoundationArchiveDocument[]>('yayasan_foundation_archives', []),
+    ]).then(([items, prof, cfg, news, banners, achs, raports, journals, archives]) => {
       if (items && Array.isArray(items) && items.length > 0) {
         setGalleryItems(items);
       }
@@ -285,6 +318,9 @@ export default function App() {
       }
       if (journals && Array.isArray(journals) && journals.length > 0) {
         setTeacherJournals(journals);
+      }
+      if (archives && Array.isArray(archives) && archives.length > 0) {
+        setFoundationArchives(archives);
       }
       // Set hydration flag so subsequent user changes are saved reliably
       isHydratedRef.current = true;
@@ -399,6 +435,12 @@ export default function App() {
     if (!isHydratedRef.current) return;
     safeSetLocalStorage('yayasan_arkas_budget', arkasBudget);
   }, [arkasBudget]);
+
+  useEffect(() => {
+    if (!isHydratedRef.current) return;
+    safeSetLocalStorage('yayasan_foundation_archives', foundationArchives);
+    setIDBItem('yayasan_foundation_archives', foundationArchives);
+  }, [foundationArchives]);
 
   // Fixed Asset & Depreciation Sync to COA Accounts
   const handleSyncFixedAssetsToAccounts = (currentAssets: FixedAsset[] = fixedAssets) => {
@@ -677,7 +719,22 @@ export default function App() {
           ? {
               ...j,
               status: 'DISETUJUI_KEPSEK',
-              principalFeedback: feedback || 'Disetujui Kepala Sekolah untuk Rombel.',
+              principalFeedback: feedback || 'Materi dan ketercapaian kompetensi telah diverifikasi & disetujui Kepala Sekolah.',
+              approvedDate: new Date().toISOString().split('T')[0],
+            }
+          : j
+      )
+    );
+  };
+
+  const handleRejectJournalRombel = (id: string, reason?: string) => {
+    setTeacherJournals((prev) =>
+      prev.map((j) =>
+        j.id === id
+          ? {
+              ...j,
+              status: 'DITOLAK',
+              principalFeedback: reason || 'Perlu perbaikan dan revisi materi/kompetensi pembelajaran.',
               approvedDate: new Date().toISOString().split('T')[0],
             }
           : j
@@ -864,6 +921,44 @@ export default function App() {
     });
   };
 
+  const handleAddArchive = (doc: Omit<FoundationArchiveDocument, 'id' | 'archivedAt'>) => {
+    const newDoc: FoundationArchiveDocument = {
+      ...doc,
+      id: `arc-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+      archivedAt: new Date().toISOString(),
+    };
+    setFoundationArchives((prev) => {
+      const next = [newDoc, ...prev];
+      safeSetLocalStorage('yayasan_foundation_archives', next);
+      setIDBItem('yayasan_foundation_archives', next);
+      return next;
+    });
+  };
+
+  const handleUpdateArchive = (doc: FoundationArchiveDocument) => {
+    setFoundationArchives((prev) => {
+      const next = prev.map((a) => (a.id === doc.id ? doc : a));
+      safeSetLocalStorage('yayasan_foundation_archives', next);
+      setIDBItem('yayasan_foundation_archives', next);
+      return next;
+    });
+  };
+
+  const handleDeleteArchive = (id: string) => {
+    setFoundationArchives((prev) => {
+      const next = prev.filter((a) => a.id !== id);
+      safeSetLocalStorage('yayasan_foundation_archives', next);
+      setIDBItem('yayasan_foundation_archives', next);
+      return next;
+    });
+  };
+
+  const handleRestoreArchives = (imported: FoundationArchiveDocument[]) => {
+    setFoundationArchives(imported);
+    safeSetLocalStorage('yayasan_foundation_archives', imported);
+    setIDBItem('yayasan_foundation_archives', imported);
+  };
+
   // Handler Reset Data to initial dataset
   const handleResetData = () => {
     localStorage.clear();
@@ -887,6 +982,7 @@ export default function App() {
     setArkasBudget(INITIAL_ARKAS_BUDGET);
     setPpdbConfig(INITIAL_PPDB_CONFIG);
     setLayoutConfig(INITIAL_WEBSITE_LAYOUT_CONFIG);
+    setFoundationArchives(INITIAL_FOUNDATION_ARCHIVES);
 
     safeSetLocalStorage('yayasan_profile', INITIAL_FOUNDATION_PROFILE);
     safeSetLocalStorage('yayasan_accounts', INITIAL_ACCOUNTS);
@@ -908,6 +1004,8 @@ export default function App() {
     safeSetLocalStorage('yayasan_arkas_budget', INITIAL_ARKAS_BUDGET);
     safeSetLocalStorage('yayasan_ppdb_config', INITIAL_PPDB_CONFIG);
     safeSetLocalStorage('yayasan_website_layout_config', INITIAL_WEBSITE_LAYOUT_CONFIG);
+    safeSetLocalStorage('yayasan_foundation_archives', INITIAL_FOUNDATION_ARCHIVES);
+    setIDBItem('yayasan_foundation_archives', INITIAL_FOUNDATION_ARCHIVES);
   };
 
   const handleExportFullBackup = () => {
@@ -932,6 +1030,7 @@ export default function App() {
       yayasan_arkas_budget: arkasBudget,
       yayasan_ppdb_config: ppdbConfig,
       yayasan_website_layout_config: layoutConfig,
+      yayasan_foundation_archives: foundationArchives,
       exportedAt: new Date().toISOString(),
     };
 
@@ -966,6 +1065,10 @@ export default function App() {
     if (importedData.yayasan_arkas_budget) setArkasBudget(importedData.yayasan_arkas_budget);
     if (importedData.yayasan_ppdb_config) setPpdbConfig(importedData.yayasan_ppdb_config);
     if (importedData.yayasan_website_layout_config) setLayoutConfig(importedData.yayasan_website_layout_config);
+    if (importedData.yayasan_foundation_archives) {
+      setFoundationArchives(importedData.yayasan_foundation_archives);
+      setIDBItem('yayasan_foundation_archives', importedData.yayasan_foundation_archives);
+    }
 
     Object.keys(importedData).forEach((key) => {
       if (key.startsWith('yayasan_')) {
@@ -1007,6 +1110,8 @@ export default function App() {
           teachers={teachers}
           layoutConfig={layoutConfig}
           ppdbConfig={ppdbConfig}
+          uniforms={uniforms}
+          uniformSchedules={uniformSchedules}
           onUpdateLayoutConfig={setLayoutConfig}
           onOpenInternalPortal={(role) => {
             handleOpenRoleLoginModal(role);
@@ -1065,6 +1170,7 @@ export default function App() {
           {activeTab === 'siswa' && (
             <MasterDataView
               initialTab="siswa"
+              currentRole={currentRole}
               students={students}
               teachers={teachers}
               boardMembers={boardMembers}
@@ -1150,6 +1256,7 @@ export default function App() {
               onAddRaport={handleAddERaport}
               onAddJournal={handleAddJournalRombel}
               onApproveJournal={handleApproveJournalRombel}
+              onRejectJournal={handleRejectJournalRombel}
               onApproveRaport={handleApproveERaport}
               onUpdateStudentSppStatus={handleUpdateStudentSppStatus}
             />
@@ -1167,6 +1274,7 @@ export default function App() {
               onAddRaport={handleAddERaport}
               onAddJournal={handleAddJournalRombel}
               onApproveJournal={handleApproveJournalRombel}
+              onRejectJournal={handleRejectJournalRombel}
               onApproveRaport={handleApproveERaport}
               onUpdateStudentSppStatus={handleUpdateStudentSppStatus}
             />
@@ -1176,6 +1284,20 @@ export default function App() {
             <ArkasBudgetView
               arkasBudget={arkasBudget}
               onAddBudgetItem={handleAddArkasBudgetItem}
+            />
+          )}
+
+          {activeTab === 'arsip' && (
+            <FoundationArchiveView
+              archives={foundationArchives}
+              eRaports={eRaports}
+              students={students}
+              teachers={teachers}
+              currentRole={currentRole}
+              onAddArchive={handleAddArchive}
+              onUpdateArchive={handleUpdateArchive}
+              onDeleteArchive={handleDeleteArchive}
+              onRestoreArchives={handleRestoreArchives}
             />
           )}
 
@@ -1192,6 +1314,10 @@ export default function App() {
               foundationProfile={foundationProfile}
               teachers={teachers}
               ppdbConfig={ppdbConfig}
+              uniforms={uniforms}
+              uniformSchedules={uniformSchedules}
+              onUpdateUniforms={setUniforms}
+              onUpdateUniformSchedules={setUniformSchedules}
               onUpdatePpdbConfig={setPpdbConfig}
               onUpdateHeroBanners={setHeroBanners}
               onUpdateSpeeches={setSpeeches}

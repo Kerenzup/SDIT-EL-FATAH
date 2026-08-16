@@ -306,6 +306,33 @@ export interface StudentAchievement {
   photoUrl?: string;
 }
 
+// --- School Uniform Interfaces ---
+export interface SchoolUniformItem {
+  id: string;
+  name: string;
+  category: string;
+  scheduleDay: string;
+  scheduleTimeNote?: string;
+  description: string;
+  components: string[];
+  rules: string[];
+  imageUrl: string;
+  priceEstimate?: string;
+  availableSizes: string[];
+  badge?: string;
+  colorTheme: string;
+}
+
+export interface UniformScheduleDay {
+  day: string;
+  uniformName: string;
+  uniformType: string;
+  colorTheme: string;
+  badgeClass: string;
+  accessories: string[];
+  note: string;
+}
+
 // --- PPDB Configuration Interfaces ---
 export interface PPDBFeeItem {
   id: string;
@@ -393,5 +420,40 @@ export interface ParentTeacherConsultationMessage {
   status: 'TERKIRIM' | 'DIBACA' | 'DITANGGAPI';
   attachmentNote?: string;
   sppProofUrl?: string;
+}
+
+// --- Foundation & Student Lifetime Digital Archives (Arsip Kehidupan Yayasan & Siswa) ---
+export type ArchiveCategory =
+  | 'RAPORT_DAN_AKADEMIK'       // E-Raport Multi-Tahun, Leger Nilai DKN, Buku Induk Siswa, SKL / Ijazah, Transkrip
+  | 'LEGALITAS_DAN_SK'          // Akta Notaris, SK Kemenkumham, SK Pengangkatan Guru/Staf, SK Yayasan, Izin Operasional
+  | 'KEUANGAN_DAN_AUDIT'        // Laporan Keuangan Tahunan ISAK 35, LPJ BOS, Laporan ARKAS, Rekapitulasi SPP Tahunan, BAST SiPLah
+  | 'KELEMBAGAAN_DAN_KURIKULUM' // Dokumen KOSP / Kurikulum Tingkat Satuan Pendidikan, Modul Ajar & Silabus Guru, Akreditasi BAN-S/M
+  | 'SEJARAH_DAN_PRESTASI';     // Sejarah Pendirian Yayasan, Foto/Video Arsip Tahunan, Sertifikat Piagam Penghargaan
+
+export interface FoundationArchiveDocument {
+  id: string;
+  documentNumber: string; // e.g. "ARSIP/2026/RAP-01", "SK/DH/2025/004", "LPJ/BOS/2026/SEM-1"
+  title: string;
+  category: ArchiveCategory;
+  academicYear?: string; // e.g. "2026/2027", "2025/2026", "2024/2025", "2023/2024", "2022/2023"
+  calendarYear: number; // e.g. 2026, 2025, 2024, 2023
+  semester?: 'Ganjil' | 'Genap' | 'Tahunan' | 'Semua';
+  gradeClass?: string; // "Semua Rombel", "Kelas 1", ..., "Kelas 6"
+  studentId?: string;
+  studentName?: string;
+  nisn?: string;
+  issuerName: string; // e.g. "Yayasan Pendidikan Daarul Habibah", "SDIT EL-FATAH", "Kepala Sekolah", "Bendahara Yayasan"
+  issuedDate: string; // YYYY-MM-DD
+  fileType: 'PDF' | 'EXCEL' | 'IMAGE' | 'DIGITAL_RECORD' | 'DOC';
+  fileUrl?: string; // Base64 data URI, external URL, or generated printable view
+  fileName?: string;
+  fileSizeBytes?: number;
+  description: string;
+  tags: string[]; // e.g. ["Raport", "Kelas 1", "Arsip 2026", "Kurikulum Merdeka"]
+  verifiedBy?: string;
+  verificationStatus: 'TERVERIFIKASI_RESMI' | 'TERARSIP' | 'DRAF';
+  archivedAt: string;
+  confidentialityLevel?: 'PUBLIK' | 'INTERNAL_YAYASAN' | 'RAHASIA_SISWA';
+  metadata?: Record<string, any>;
 }
 
