@@ -99,97 +99,81 @@ export const Sidebar: React.FC<SidebarProps> = ({
       id: 'website' as TabType,
       label: 'Halaman Website Publik',
       icon: Globe,
-      badge: 'Public',
     },
     {
       id: 'dashboard' as TabType,
       label: 'Dashboard ERP Keuangan',
       icon: LayoutDashboard,
-      badge: 'Utama',
     },
     {
       id: 'siswa' as TabType,
-      label: 'Data Siswa',
+      label: 'Master Data Yayasan',
       icon: Users,
-      badge: 'Siswa',
     },
     {
       id: 'e_raport' as TabType,
       label: 'E-Raport Rombel & Nilai',
       icon: GraduationCap,
-      badge: 'Raport',
     },
     {
       id: 'arsip' as TabType,
       label: 'Arsip Kehidupan & Dokumen',
       icon: Archive,
-      badge: 'Arsip',
     },
     {
       id: 'jurnal' as TabType,
       label: 'Jurnal Mengajar Guru Rombel',
       icon: BookOpenCheck,
-      badge: 'Jurnal',
     },
     {
       id: 'payroll' as TabType,
       label: 'Payroll & SDM Yayasan',
       icon: DollarSign,
-      badge: 'Gaji/SDM',
     },
     {
       id: 'siplah' as TabType,
       label: 'Belanja Barang SiPLah',
       icon: ShoppingBag,
-      badge: 'SiPLah',
     },
     {
       id: 'arkas' as TabType,
       label: 'Anggaran 1 Tahun ARKAS',
       icon: ArkasIcon,
-      badge: 'ARKAS',
     },
     {
       id: 'reports' as TabType,
       label: 'Laporan Keuangan (ISAK 35)',
       icon: FileSpreadsheet,
-      badge: '5 Laporan',
     },
     {
       id: 'transactions' as TabType,
       label: 'Transaksi & POS SPP/BOS',
       icon: Receipt,
-      badge: 'Kuitansi',
     },
     {
       id: 'coa' as TabType,
       label: 'Buku Besar, COA & Aset',
       icon: BookOpenCheck,
-      badge: 'Buku Besar',
     },
     {
       id: 'hak_akses' as TabType,
       label: 'Pengelolaan Hak Akses & Password',
       icon: ShieldCheck,
-      badge: 'Akses',
     },
     {
       id: 'cms' as TabType,
       label: 'Superadmin CMS Website',
       icon: Sliders,
-      badge: 'Admin',
     },
     {
       id: 'pengaturan' as TabType,
       label: 'Pengaturan Yayasan',
       icon: Settings,
-      badge: 'Profil',
     },
     {
       id: 'ai' as TabType,
       label: 'Asisten AI ISAK 35',
       icon: Sparkles,
-      badge: 'AI',
     },
   ];
 
@@ -311,17 +295,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : 'text-slate-400'}`} />
                     {!isCollapsed && <span className="truncate text-left">{item.label}</span>}
                   </div>
-                  {!isCollapsed && item.badge && (
-                    <span
-                      className={`text-[9px] px-1.5 py-0.5 rounded-md font-bold uppercase shrink-0 ${
-                        isActive
-                          ? 'bg-blue-800 text-blue-100'
-                          : 'bg-slate-800 text-sky-400 border border-sky-500/30'
-                      }`}
-                    >
-                      {item.badge}
-                    </span>
-                  )}
                 </button>
 
                 {/* Sub-menu for Laporan Keuangan (When expanded) */}

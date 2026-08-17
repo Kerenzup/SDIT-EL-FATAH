@@ -355,7 +355,21 @@ export interface PPDBConfig {
   infoNote?: string;
 }
 
-// --- e-Raport, Rombel Journal, and ARKAS Budget ---
+// --- e-Raport, Rombel Journal, Master Mata Pelajaran, and ARKAS Budget ---
+export interface SubjectItem {
+  id: string;
+  nipy: string; // NIPY Guru Pengampu
+  teacherName: string; // Nama Guru
+  waliKelas: string; // Walikelas (e.g. "Kelas 1", "Kelas 2", "Kelas 3", "Kelas 4", "Kelas 5", "Kelas 6", or "-")
+  subjectName: string; // Mata Pelajaran (e.g. "Pendidikan Agama Islam", "Matematika", dll.)
+  gradeClass?: string; // Target Rombel / Tingkat Kelas (e.g. "Semua Rombel", "Kelas 1 - 6", "Kelas 4")
+  kkm?: number; // Kriteria Ketuntasan Minimal (e.g. 75, 80)
+  category?: 'UMUM' | 'AGAMA' | 'MUATAN_LOKAL' | 'KEISLAMAN';
+  semester?: string;
+  academicYear?: string;
+  notes?: string;
+}
+
 export interface SubjectGrade {
   subject: string;
   score: number;

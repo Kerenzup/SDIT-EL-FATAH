@@ -1,6 +1,8 @@
 import React, { useState, useRef } from 'react';
 import * as XLSX from 'xlsx';
-import { FoundationBoard, FoundationProfile, Student, Supplier, Teacher, UserRole } from '../../types';
+import { FoundationBoard, FoundationProfile, Student, SubjectItem, Supplier, Teacher, UserRole } from '../../types';
+import { INITIAL_SUBJECTS } from '../../data/initialData';
+import { MasterSubjectTab } from './MasterSubjectTab';
 import { formatRupiah } from '../../utils/formatters';
 import { printDocument } from '../../utils/printHelper';
 import { MediaUploader } from '../common/MediaUploader';
@@ -23,13 +25,15 @@ import {
   Image,
   Sparkles,
   DollarSign,
+  BookOpen,
 } from 'lucide-react';
 
 interface MasterDataViewProps {
-  initialTab?: 'siswa' | 'guru' | 'pengurus' | 'supplier';
+  initialTab?: 'siswa' | 'guru' | 'mapel' | 'pengurus' | 'supplier';
   currentRole?: UserRole;
   students: Student[];
   teachers: Teacher[];
+  subjects?: SubjectItem[];
   boardMembers: FoundationBoard[];
   suppliers: Supplier[];
   foundationProfile?: FoundationProfile;
@@ -46,6 +50,11 @@ interface MasterDataViewProps {
   onImportTeachers?: (teachers: Teacher[]) => void;
   onUpdateTeacher: (teacher: Teacher) => void;
   onDeleteTeacher: (id: string) => void;
+
+  onAddSubject?: (subject: SubjectItem) => void;
+  onImportSubjects?: (subjects: SubjectItem[]) => void;
+  onUpdateSubject?: (subject: SubjectItem) => void;
+  onDeleteSubject?: (id: string) => void;
 
   onAddBoardMember: (board: FoundationBoard) => void;
   onUpdateBoardMember: (board: FoundationBoard) => void;
@@ -124,6 +133,7 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
   currentRole,
   students,
   teachers,
+  subjects = INITIAL_SUBJECTS,
   boardMembers,
   suppliers,
   foundationProfile,
@@ -139,6 +149,10 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
   onImportTeachers,
   onUpdateTeacher,
   onDeleteTeacher,
+  onAddSubject,
+  onImportSubjects,
+  onUpdateSubject,
+  onDeleteSubject,
   onAddBoardMember,
   onUpdateBoardMember,
   onDeleteBoardMember,
@@ -148,10 +162,34 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
   onUpdateFoundationProfile,
 }) => {
   const isGuruRole = currentRole === 'GURU';
-  const [activeTab, setActiveTab] = useState<'siswa' | 'guru' | 'pengurus' | 'supplier'>(
+  const [activeTab, setActiveTab] = useState<'siswa' | 'guru' | 'mapel' | 'pengurus' | 'supplier'>(
     isGuruRole ? 'siswa' : initialTab || 'siswa'
   );
   const effectiveTab = isGuruRole ? 'siswa' : activeTab;
+
+  // Local subjects state if parent handlers not passed
+  const [localSubjects, setLocalSubjects] = useState<SubjectItem[]>(subjects || INITIAL_SUBJECTS);
+  const currentSubjects = subjects && subjects.length > 0 ? subjects : localSubjects;
+
+  const handleAddSub = (sub: SubjectItem) => {
+    if (onAddSubject) onAddSubject(sub);
+    setLocalSubjects((prev) => [sub, ...prev]);
+  };
+
+  const handleUpdateSub = (sub: SubjectItem) => {
+    if (onUpdateSubject) onUpdateSubject(sub);
+    setLocalSubjects((prev) => prev.map((s) => (s.id === sub.id ? sub : s)));
+  };
+
+  const handleDeleteSub = (id: string) => {
+    if (onDeleteSubject) onDeleteSubject(id);
+    setLocalSubjects((prev) => prev.filter((s) => s.id !== id));
+  };
+
+  const handleImportSubs = (subs: SubjectItem[]) => {
+    if (onImportSubjects) onImportSubjects(subs);
+    setLocalSubjects((prev) => [...subs, ...prev]);
+  };
   const [syncToast, setSyncToast] = useState(false);
   const [importSuccessMsg, setImportSuccessMsg] = useState<string>('');
   const [showLogoModal, setShowLogoModal] = useState<boolean>(false);
@@ -922,7 +960,7 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
         <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={() => setActiveTab('siswa')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
               effectiveTab === 'siswa' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-100'
             }`}
           >
@@ -930,11 +968,21 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
             <span>Master Siswa ({students.length})</span>
           </button>
 
+          <button
+            onClick={() => setActiveTab('mapel')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
+              effectiveTab === 'mapel' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-100'
+            }`}
+          >
+            <BookOpen className="w-4 h-4" />
+            <span>Mata Pelajaran ({currentSubjects.length})</span>
+          </button>
+
           {!isGuruRole && (
             <>
               <button
                 onClick={() => setActiveTab('guru')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
                   effectiveTab === 'guru' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-100'
                 }`}
               >
@@ -944,7 +992,7 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
 
               <button
                 onClick={() => setActiveTab('pengurus')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
                   effectiveTab === 'pengurus' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-100'
                 }`}
               >
@@ -954,7 +1002,7 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
 
               <button
                 onClick={() => setActiveTab('supplier')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
                   effectiveTab === 'supplier' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-100'
                 }`}
               >
@@ -1475,6 +1523,18 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
               </table>
             </div>
           </div>
+        )}
+
+        {/* MATA PELAJARAN TAB */}
+        {effectiveTab === 'mapel' && (
+          <MasterSubjectTab
+            subjects={currentSubjects}
+            teachers={teachers}
+            onAddSubject={handleAddSub}
+            onUpdateSubject={handleUpdateSub}
+            onDeleteSubject={handleDeleteSub}
+            onImportSubjects={handleImportSubs}
+          />
         )}
 
         {/* 3. PENGURUS TAB */}

@@ -75,8 +75,9 @@ export const FoundationSettingsView: React.FC<FoundationSettingsViewProps> = ({
     setTimeout(() => setShowToast(false), 3500);
   };
 
-  const handleCopyLink = () => {
-    navigator.clipboard.writeText(sharedAppUrl);
+  const handleCopyLink = (targetUrl?: string) => {
+    const urlToCopy = targetUrl || sharedAppUrl;
+    navigator.clipboard.writeText(urlToCopy);
     setCopiedLink(true);
     triggerToast('Link Aplikasi Resmi Berhasil Disalin ke Clipboard!');
     setTimeout(() => setCopiedLink(false), 3000);
@@ -214,38 +215,53 @@ export const FoundationSettingsView: React.FC<FoundationSettingsViewProps> = ({
             </div>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
             <button
               type="button"
-              onClick={handleCopyLink}
-              className="px-4 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs rounded-xl shadow-md flex items-center gap-2 transition cursor-pointer"
+              onClick={() => handleCopyLink(sharedAppUrl)}
+              className="px-3.5 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs rounded-xl shadow-md flex items-center gap-1.5 transition cursor-pointer"
             >
               <Copy className="w-4 h-4" />
-              <span>{copiedLink ? 'Link Berhasil Disalin!' : 'Salin Link Staf'}</span>
+              <span>{copiedLink ? 'Tersalin!' : 'Salin Link Website'}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleCopyLink(`${sharedAppUrl}?view=erp`)}
+              className="px-3.5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs rounded-xl shadow-md flex items-center gap-1.5 transition cursor-pointer"
+            >
+              <Copy className="w-4 h-4" />
+              <span>Salin Link ERP Staf</span>
             </button>
             <a
-              href={sharedAppUrl}
+              href={`${sharedAppUrl}?view=erp`}
               target="_blank"
               rel="noopener noreferrer"
-              className="px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-md flex items-center gap-2 transition cursor-pointer"
+              className="px-3.5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-md flex items-center gap-1.5 transition cursor-pointer"
             >
               <ExternalLink className="w-4 h-4" />
-              <span>Buka Tautan Staf</span>
+              <span>Buka Portal Staf</span>
             </a>
           </div>
         </div>
 
         {/* Display Link & Action Tools */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-          <div className="lg:col-span-7 bg-slate-950/80 p-4 rounded-2xl border border-blue-900/80 space-y-2">
+          <div className="lg:col-span-7 bg-slate-950/80 p-4 rounded-2xl border border-blue-900/80 space-y-2.5">
             <span className="text-[10px] font-bold text-blue-300 uppercase tracking-wider block">
-              Tautan Aplikasi Produksi (Shared App URL):
+              Tautan Resmi Aplikasi (Bisa dibuka di HP, Tablet, Laptop):
             </span>
-            <div className="flex items-center justify-between gap-2 bg-slate-900 px-3.5 py-2.5 rounded-xl border border-slate-800 font-mono text-xs text-amber-300 select-all overflow-x-auto">
-              <span>{sharedAppUrl}</span>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-2 bg-slate-900 px-3 py-2 rounded-xl border border-slate-800 font-mono text-xs text-amber-300 select-all overflow-x-auto">
+                <span className="shrink-0 text-slate-400 font-sans font-bold text-[10px] uppercase">Publik:</span>
+                <span className="truncate">{sharedAppUrl}</span>
+              </div>
+              <div className="flex items-center justify-between gap-2 bg-slate-900 px-3 py-2 rounded-xl border border-slate-800 font-mono text-xs text-emerald-300 select-all overflow-x-auto">
+                <span className="shrink-0 text-slate-400 font-sans font-bold text-[10px] uppercase">Staf & ERP:</span>
+                <span className="truncate">{sharedAppUrl}?view=erp</span>
+              </div>
             </div>
             <p className="text-[11px] text-slate-300 leading-relaxed pt-1">
-              💡 <strong>Petunjuk untuk Staf:</strong> Buka link di atas di browser mana saja. Staf dapat langsung masuk ke modul sesuai wewenang melalui tombol login role (Ketua, Bendahara, Kepsek, Guru Rombel, Wali Murid).
+              💡 <strong>Petunjuk untuk Staf:</strong> Buka tautan di atas di browser mana saja. Staf dapat langsung masuk ke modul sesuai wewenang melalui tombol login role (Ketua Yayasan, Bendahara, Kepsek, Guru Rombel, Wali Murid).
             </p>
           </div>
 

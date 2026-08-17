@@ -1,4 +1,4 @@
-import { Account, FixedAsset, FoundationBoard, FoundationProfile, JournalEntry, OrgStructureMember, PPDBConfig, SchoolUniformItem, Student, Supplier, Teacher, UniformScheduleDay, WebsiteLayoutConfig, FoundationArchiveDocument } from '../types';
+import { Account, FixedAsset, FoundationBoard, FoundationProfile, JournalEntry, OrgStructureMember, PPDBConfig, SchoolUniformItem, Student, Supplier, Teacher, UniformScheduleDay, WebsiteLayoutConfig, FoundationArchiveDocument, SubjectItem } from '../types';
 import { LOCAL_IMAGES } from '../utils/localImages';
 
 export const INITIAL_ORG_STRUCTURE: OrgStructureMember[] = [
@@ -1515,6 +1515,129 @@ export const INITIAL_WEBSITE_LAYOUT_CONFIG: WebsiteLayoutConfig = {
   ],
 };
 
+export const INITIAL_SUBJECTS: SubjectItem[] = [
+  {
+    id: 'mapel-1',
+    nipy: '1988110504',
+    teacherName: 'Ojah Nasiah Ulfah, S.Ag',
+    waliKelas: 'Kelas 3',
+    subjectName: 'Pendidikan Agama Islam & Budi Pekerti',
+    gradeClass: 'Kelas 1 - 6',
+    kkm: 75,
+    category: 'AGAMA',
+  },
+  {
+    id: 'mapel-2',
+    nipy: '1993071206',
+    teacherName: 'Setia Widi Mawaddah, S.Pd',
+    waliKelas: 'Kelas 2',
+    subjectName: 'Pendidikan Pancasila',
+    gradeClass: 'Kelas 1 - 6',
+    kkm: 75,
+    category: 'UMUM',
+  },
+  {
+    id: 'mapel-3',
+    nipy: '1991051005',
+    teacherName: 'Uyat Sukriyati, S.Pd',
+    waliKelas: 'Kelas 1',
+    subjectName: 'Bahasa Indonesia',
+    gradeClass: 'Kelas 1 - 6',
+    kkm: 75,
+    category: 'UMUM',
+  },
+  {
+    id: 'mapel-4',
+    nipy: '1990041502',
+    teacherName: 'Iis Rohmayanti, S.Pd',
+    waliKelas: 'Kelas 4',
+    subjectName: 'Matematika',
+    gradeClass: 'Kelas 1 - 6',
+    kkm: 75,
+    category: 'UMUM',
+  },
+  {
+    id: 'mapel-5',
+    nipy: '1992082003',
+    teacherName: 'Mega Andini Putri, S.Pd',
+    waliKelas: 'Kelas 6',
+    subjectName: 'Ilmu Pengetahuan Alam dan Sosial (IPAS)',
+    gradeClass: 'Kelas 3, 4, 5, 6',
+    kkm: 75,
+    category: 'UMUM',
+  },
+  {
+    id: 'mapel-6',
+    nipy: '1994011507',
+    teacherName: 'Nurbibiyatillah',
+    waliKelas: 'Kelas 5',
+    subjectName: 'Bahasa Inggris',
+    gradeClass: 'Kelas 1 - 6',
+    kkm: 75,
+    category: 'UMUM',
+  },
+  {
+    id: 'mapel-7',
+    nipy: '1986080811',
+    teacherName: 'Muhi, S.Pd',
+    waliKelas: '-',
+    subjectName: 'Pendidikan Jasmani, Olahraga & Kesehatan (PJOK)',
+    gradeClass: 'Kelas 1 - 6',
+    kkm: 75,
+    category: 'UMUM',
+  },
+  {
+    id: 'mapel-8',
+    nipy: '1993071206',
+    teacherName: 'Setia Widi Mawaddah, S.Pd',
+    waliKelas: 'Kelas 2',
+    subjectName: 'Seni Rupa & Prakarya',
+    gradeClass: 'Kelas 1 - 6',
+    kkm: 75,
+    category: 'UMUM',
+  },
+  {
+    id: 'mapel-9',
+    nipy: '1988110504',
+    teacherName: 'Ojah Nasiah Ulfah, S.Ag',
+    waliKelas: 'Kelas 3',
+    subjectName: 'Bahasa Arab & Hadits Tematik',
+    gradeClass: 'Kelas 1 - 6',
+    kkm: 75,
+    category: 'AGAMA',
+  },
+  {
+    id: 'mapel-10',
+    nipy: '1992090912',
+    teacherName: 'Subihat, S.Pd',
+    waliKelas: '-',
+    subjectName: 'Tahsin & Tahfidz Al-Qur\'an Juz 30',
+    gradeClass: 'Kelas 1 - 6',
+    kkm: 80,
+    category: 'KEISLAMAN',
+  },
+  {
+    id: 'mapel-11',
+    nipy: '1992090912',
+    teacherName: 'Subihat, S.Pd',
+    waliKelas: '-',
+    subjectName: 'Bina Pribadi Islam (BPI)',
+    gradeClass: 'Kelas 1 - 6',
+    kkm: 78,
+    category: 'KEISLAMAN',
+  },
+  {
+    id: 'mapel-12',
+    nipy: '1989022008',
+    teacherName: 'Alvi Maulidi, S.Pd',
+    waliKelas: '-',
+    subjectName: 'Teknologi Informasi & Komputer (TIK Dasar)',
+    gradeClass: 'Kelas 4, 5, 6',
+    kkm: 75,
+    category: 'MUATAN_LOKAL',
+  },
+];
+
 export const getSubjectsByClass = (gradeClass: string): string[] => {
   const normalized = gradeClass.toLowerCase();
   if (normalized.includes('1') || normalized.includes('kelas 1')) {
@@ -2173,11 +2296,13 @@ export const INITIAL_FOUNDATION_ARCHIVES: FoundationArchiveDocument[] = [
     tags: ['Piagam Prestasi', 'OSN', 'Matematika', 'Juara 1', 'Prestasi Siswa', 'Tahun 2026'],
     verifiedBy: 'Masykur Rohana, S.Sos (Kepala Sekolah)',
     verificationStatus: 'TERVERIFIKASI_RESMI',
-    archivedAt: '2026-05-12 11:30:00',
+    archivedAt: '2026-05-12 14:00:00',
     confidentialityLevel: 'PUBLIK',
-    metadata: { namaSiswa: 'Ahmad Rizky Pratama', nisn: '2026101', tingkat: 'Kabupaten' },
+    metadata: { capaian: 'Juara 1 Tingkat Kabupaten', bidang: 'Matematika & Sains' },
   },
 ];
+
+
 
 
 

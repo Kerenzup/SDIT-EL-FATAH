@@ -4,6 +4,7 @@ import {
   TeacherJournalRombel,
   Student,
   Teacher,
+  SubjectItem,
   UserRole,
   SubjectGrade,
   ParentTeacherConsultationMessage,
@@ -79,6 +80,7 @@ interface AcademicRombelViewProps {
   teacherJournals: TeacherJournalRombel[];
   students: Student[];
   teachers: Teacher[];
+  subjects?: SubjectItem[];
   currentRole: UserRole;
   forcedSubTab?: 'raport' | 'leger' | 'jurnal' | 'spp_bulanan' | 'konsultasi';
   onUpdateRaport: (raport: ERaport) => void;
@@ -95,6 +97,7 @@ export const AcademicRombelView: React.FC<AcademicRombelViewProps> = ({
   teacherJournals,
   students,
   teachers,
+  subjects = [],
   currentRole,
   forcedSubTab,
   onUpdateRaport,
@@ -116,6 +119,7 @@ export const AcademicRombelView: React.FC<AcademicRombelViewProps> = ({
   }, [forcedSubTab]);
 
   const [selectedRombel, setSelectedRombel] = useState<string>('SEMUA');
+  const [selectedPrintRombel, setSelectedPrintRombel] = useState<string>('Kelas 1');
   const [raportDisplayMode, setRaportDisplayMode] = useState<'table' | 'cards'>('table');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -326,21 +330,43 @@ export const AcademicRombelView: React.FC<AcademicRombelViewProps> = ({
     });
   };
 
-  const handlePrintLegerRombel = () => {
+  const handleOpenLegerModal = (targetGrade?: string) => {
+    const grade = targetGrade || (selectedRombel === 'SEMUA' ? 'Kelas 1' : normalizeToStandardGrade(selectedRombel));
+    setSelectedPrintRombel(grade);
     setShowLegerPreviewModal(true);
-    const targetRombel = selectedRombel === 'SEMUA' ? 'Kelas 1' : normalizeToStandardGrade(selectedRombel);
-    printDocument('leger-table-print', `Leger_Nilai_${targetRombel.replace(/\s+/g, '_')}`, {
+  };
+
+  const handleOpenBatchRaportModal = (targetGrade?: string) => {
+    const grade = targetGrade || (selectedRombel === 'SEMUA' ? 'SEMUA' : normalizeToStandardGrade(selectedRombel));
+    setSelectedPrintRombel(grade);
+    setShowBatchRaportPreviewModal(true);
+  };
+
+  const executePrintLeger = (customGrade?: string) => {
+    const targetGrade = customGrade || selectedPrintRombel;
+    const title =
+      targetGrade === 'SEMUA'
+        ? 'Buku_Leger_Nilai_Seluruh_Rombel'
+        : `Leger_Nilai_${normalizeToStandardGrade(targetGrade).replace(/\s+/g, '_')}`;
+    printDocument('leger-table-print', title, {
       orientation: 'landscape',
     });
   };
 
-  const handlePrintBatchRaports = () => {
-    setShowBatchRaportPreviewModal(true);
-    const targetRombel = selectedRombel === 'SEMUA' ? 'Kelas 1' : normalizeToStandardGrade(selectedRombel);
-    printDocument('rombel-all-raports-print', `Kumpulan_E-Raport_${targetRombel.replace(/\s+/g, '_')}`, {
+  const executePrintBatchRaports = (customGrade?: string) => {
+    const targetGrade = customGrade || selectedPrintRombel;
+    const title =
+      targetGrade === 'SEMUA'
+        ? 'Kumpulan_E-Raport_Semua_Siswa'
+        : `Kumpulan_E-Raport_${normalizeToStandardGrade(targetGrade).replace(/\s+/g, '_')}`;
+    printDocument('rombel-all-raports-print', title, {
       orientation: 'portrait',
     });
   };
+
+  // Backward-compatibility aliases
+  const handlePrintLegerRombel = (customGrade?: string) => handleOpenLegerModal(customGrade);
+  const handlePrintBatchRaports = (customGrade?: string) => handleOpenBatchRaportModal(customGrade);
 
   // Filter Raports using isClassMatching for robust multi-format matching
   const filteredRaports = integratedRaports.filter((r) => {
@@ -769,7 +795,29 @@ export const AcademicRombelView: React.FC<AcademicRombelViewProps> = ({
           </p>
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {isEraportMenu && currentRole !== 'ORANG_TUA' && (
+            <>
+              <button
+                onClick={() => handleOpenLegerModal()}
+                className="px-3.5 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl shadow border border-slate-600 flex items-center gap-1.5 cursor-pointer transition active:scale-95"
+                title="Cetak Buku Leger Nilai Rombel Landscape A4"
+              >
+                <Printer className="w-4 h-4 text-amber-400" />
+                <span>Cetak Leger Nilai Rombel Landscape A4</span>
+              </button>
+
+              <button
+                onClick={() => handleOpenBatchRaportModal()}
+                className="px-3.5 py-2.5 bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs rounded-xl shadow border border-emerald-600 flex items-center gap-1.5 cursor-pointer transition active:scale-95"
+                title="Cetak Kumpulan Lembar E-Raport Siswa"
+              >
+                <FileCheck2 className="w-4 h-4 text-emerald-200" />
+                <span>Cetak Kumpulan E-Raport Siswa</span>
+              </button>
+            </>
+          )}
+
           {forcedSubTab === 'jurnal' && currentRole !== 'ORANG_TUA' && (
             <button
               onClick={() => {
@@ -786,7 +834,7 @@ export const AcademicRombelView: React.FC<AcademicRombelViewProps> = ({
           {forcedSubTab !== 'jurnal' && currentRole !== 'ORANG_TUA' && (
             <button
               onClick={openNewRaportModal}
-              className="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs rounded-2xl shadow-lg flex items-center gap-2 cursor-pointer transition hover:scale-102"
+              className="px-4 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs rounded-xl shadow-lg flex items-center gap-2 cursor-pointer transition hover:scale-102"
             >
               <PlusCircle className="w-4.5 h-4.5" />
               <span>+ Input Data E-Raport Baru</span>
@@ -3316,175 +3364,718 @@ export const AcademicRombelView: React.FC<AcademicRombelViewProps> = ({
         </div>
       )}
 
-      {/* ================= PERSISTENT PRINTABLE CONTAINERS ================= */}
-      <div className="hidden" aria-hidden="true">
-        {/* 1. Official Leger Matriks Table Print (Landscape A4) */}
-        {(() => {
-          const targetRombel = selectedRombel === 'SEMUA' ? 'Kelas 1' : normalizeToStandardGrade(selectedRombel);
-          const targetWali = getWaliKelasDetailByGrade(targetRombel, teachers);
-          const standardSubjects = getSubjectsByClass(targetRombel);
-          const rombelRaports = allPrintableRaports
-            .filter((r) => isClassMatching(r.gradeClass, targetRombel))
-            .map((r) => {
-              const totalScore = r.grades.reduce((sum, g) => sum + (Number(g.score) || 0), 0);
-              const avgScore = r.grades.length > 0 ? (totalScore / r.grades.length).toFixed(1) : '0.0';
-              return {
-                ...r,
-                totalScore,
-                avgScore: parseFloat(avgScore),
-              };
-            })
-            .sort((a, b) => b.totalScore - a.totalScore);
-
-          const classAvgTotal =
-            rombelRaports.length > 0
-              ? (rombelRaports.reduce((sum, r) => sum + r.avgScore, 0) / rombelRaports.length).toFixed(1)
-              : '0.0';
-
-          return (
-            <div id="leger-table-print" className="p-6 space-y-5 bg-white text-slate-900 font-sans">
-              <div className="text-center border-b-2 border-slate-900 pb-3">
-                <h2 className="text-xl font-black tracking-wide">BUKU LEGER NILAI & DAFTAR KUMPULAN NILAI (DKN)</h2>
-                <p className="text-sm font-extrabold">SDIT EL-FATAH &bull; YAYASAN PENDIDIKAN DAARUL HABIBAH</p>
-                <p className="text-xs text-slate-600">
-                  Rombongan Belajar: {targetRombel} &bull; Tahun Ajaran 2026/2027 Semester Ganjil &bull; Kurikulum Merdeka
-                </p>
-              </div>
-
-              <div className="grid grid-cols-2 text-xs font-bold bg-slate-100 p-3 rounded">
-                <p>Rombongan Belajar: {targetRombel}</p>
-                <p>Wali Kelas: {targetWali.name} (NIPY: {targetWali.nipy})</p>
-                <p>Jumlah Peserta Didik: {rombelRaports.length} Siswa</p>
-                <p>Rerata Nilai Rombel: {classAvgTotal} &bull; Status Ketuntasan: 100% Tuntas</p>
-              </div>
-
-              <table className="w-full text-left text-xs border-collapse border border-slate-400">
-                <thead>
-                  <tr className="bg-slate-200 font-black">
-                    <th className="border border-slate-400 p-2 text-center w-8">Rank</th>
-                    <th className="border border-slate-400 p-2">NISN</th>
-                    <th className="border border-slate-400 p-2">Nama Peserta Didik</th>
-                    <th className="border border-slate-400 p-2 text-center">JK</th>
-                    {standardSubjects.map((sub, idx) => (
-                      <th key={idx} className="border border-slate-400 p-2 text-center whitespace-nowrap">
-                        {sub}
-                      </th>
-                    ))}
-                    <th className="border border-slate-400 p-2 text-center">Total</th>
-                    <th className="border border-slate-400 p-2 text-center">Rerata</th>
-                    <th className="border border-slate-400 p-2 text-center">Ketuntasan</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rombelRaports.map((r, rIdx) => {
-                    const studentObj = students.find((s) => s.id === r.studentId || s.nis === r.nisn);
-                    return (
-                      <tr key={`leger-row-${r.id}`}>
-                        <td className="border border-slate-400 p-2 text-center font-bold">{rIdx + 1}</td>
-                        <td className="border border-slate-400 p-2 font-mono">{r.nisn}</td>
-                        <td className="border border-slate-400 p-2 font-bold">{r.studentName}</td>
-                        <td className="border border-slate-400 p-2 text-center">{studentObj?.gender || 'L'}</td>
-                        {standardSubjects.map((sub, sIdx) => {
-                          const foundGrade = r.grades.find((g) => g.subject.toLowerCase() === sub.toLowerCase());
-                          return (
-                            <td key={sIdx} className="border border-slate-400 p-2 text-center font-mono">
-                              {foundGrade ? foundGrade.score : 85}
-                            </td>
-                          );
-                        })}
-                        <td className="border border-slate-400 p-2 text-center font-mono font-bold">{r.totalScore}</td>
-                        <td className="border border-slate-400 p-2 text-center font-mono font-bold">{r.avgScore}</td>
-                        <td className="border border-slate-400 p-2 text-center font-bold">TUNTAS</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-                <tfoot>
-                  <tr className="bg-slate-100 font-extrabold text-slate-900 border-t-2 border-slate-400">
-                    <td colSpan={4} className="border border-slate-400 p-2 text-right uppercase text-[11px]">
-                      Rata-Rata Rombel:
-                    </td>
-                    {standardSubjects.map((sub, sIdx) => {
-                      const totalSubScore = rombelRaports.reduce((acc, r) => {
-                        const g = r.grades.find((gr) => gr.subject.toLowerCase() === sub.toLowerCase());
-                        return acc + (g ? Number(g.score) : 85);
-                      }, 0);
-                      const avgSubScore =
-                        rombelRaports.length > 0 ? (totalSubScore / rombelRaports.length).toFixed(1) : '85.0';
-                      return (
-                        <td key={sIdx} className="border border-slate-400 p-2 text-center font-mono font-black">
-                          {avgSubScore}
-                        </td>
-                      );
-                    })}
-                    <td className="border border-slate-400 p-2 text-center font-mono font-black">
-                      {rombelRaports.length > 0
-                        ? (rombelRaports.reduce((sum, r) => sum + r.totalScore, 0) / rombelRaports.length).toFixed(0)
-                        : '0'}
-                    </td>
-                    <td className="border border-slate-400 p-2 text-center font-mono font-black">{classAvgTotal}</td>
-                    <td className="border border-slate-400 p-2 text-center font-bold text-[10px]">Sah & Resmi</td>
-                  </tr>
-                </tfoot>
-              </table>
-
-              <div className="grid grid-cols-2 gap-8 pt-8 text-center text-xs">
-                <div>
-                  <p>Mengetahui,</p>
-                  <p className="font-bold">Kepala Sekolah SDIT EL-FATAH</p>
-                  <div className="h-16"></div>
-                  <p className="font-bold underline">Masykur Rohana, S.Sos</p>
-                  <p className="text-[10px] font-mono">NIPY: 1985031201</p>
+      {/* ================= MODAL PRATINJAU LEGER NILAI ROMBEL (LANDSCAPE A4) ================= */}
+      {showLegerPreviewModal && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
+          <div className="bg-white w-full max-w-6xl rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[92vh] animate-in fade-in zoom-in-95 duration-150">
+            {/* Modal Header */}
+            <div className="px-6 py-4 bg-slate-900 text-white flex flex-wrap items-center justify-between gap-3 border-b border-slate-800">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                  <Table className="w-5 h-5" />
                 </div>
                 <div>
-                  <p>
-                    Kabupaten Tangerang,{' '}
-                    {new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                  <h3 className="text-base font-black tracking-tight">Pratinjau Buku Leger Nilai & DKN Rombel</h3>
+                  <p className="text-xs text-slate-400">
+                    Dokumen resmi Daftar Kumpulan Nilai Siswa Kurikulum Merdeka (Format Landscape A4)
                   </p>
-                  <p className="font-bold">Wali Kelas {targetRombel}</p>
-                  <div className="h-16"></div>
-                  <p className="font-bold underline">{targetWali.name}</p>
-                  <p className="text-[10px] font-mono">NIPY: {targetWali.nipy}</p>
                 </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => executePrintLeger(selectedPrintRombel)}
+                  className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs rounded-xl shadow flex items-center gap-2 cursor-pointer transition active:scale-95"
+                >
+                  <Printer className="w-4 h-4" />
+                  <span>Cetak / Simpan PDF (Landscape A4)</span>
+                </button>
+                <button
+                  onClick={() => setShowLegerPreviewModal(false)}
+                  className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-bold text-xs rounded-xl border border-slate-700 transition cursor-pointer"
+                >
+                  Tutup
+                </button>
               </div>
             </div>
-          );
-        })()}
 
-        {/* 2. All Rombel Raports Batch Print */}
-        <div id="rombel-all-raports-print">
-          {(() => {
-            const targetRombel = selectedRombel === 'SEMUA' ? 'Kelas 1' : normalizeToStandardGrade(selectedRombel);
-            const rombelRaports = allPrintableRaports.filter((r) => isClassMatching(r.gradeClass, targetRombel));
+            {/* Rombel Class Selector in Modal */}
+            <div className="px-6 py-3 bg-slate-100 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3 text-xs">
+              <div className="flex items-center gap-2">
+                <span className="font-extrabold text-slate-700">Pilih Rombel:</span>
+                <div className="flex flex-wrap gap-1.5">
+                  {['SEMUA', 'Kelas 1', 'Kelas 2', 'Kelas 3', 'Kelas 4', 'Kelas 5', 'Kelas 6'].map((grade) => (
+                    <button
+                      key={grade}
+                      onClick={() => setSelectedPrintRombel(grade)}
+                      className={`px-3 py-1.5 rounded-lg font-extrabold text-xs transition cursor-pointer ${
+                        selectedPrintRombel === grade
+                          ? 'bg-amber-600 text-white shadow-sm'
+                          : 'bg-white text-slate-700 hover:bg-slate-200 border border-slate-300'
+                      }`}
+                    >
+                      {grade === 'SEMUA' ? 'Semua Rombel (Buku Lengkap)' : grade}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <span className="text-[11px] font-medium text-slate-500">
+                SDIT El-Fatah &bull; Yayasan Daarul Habibah &bull; TA 2026/2027 Ganjil
+              </span>
+            </div>
 
-            return rombelRaports.map((rap, rapIdx) => (
-              <div
-                key={`batch-rap-${rap.id}`}
-                className="p-8 space-y-4"
-                style={{ pageBreakAfter: rapIdx === rombelRaports.length - 1 ? 'auto' : 'always' }}
-              >
+            {/* Preview Sheet Content */}
+            <div className="p-6 overflow-y-auto overflow-x-auto flex-1 bg-slate-50 space-y-8">
+              {(() => {
+                const classesToRender =
+                  selectedPrintRombel === 'SEMUA'
+                    ? ['Kelas 1', 'Kelas 2', 'Kelas 3', 'Kelas 4', 'Kelas 5', 'Kelas 6']
+                    : [normalizeToStandardGrade(selectedPrintRombel)];
+
+                return classesToRender.map((targetRombel) => {
+                  const targetWali = getWaliKelasDetailByGrade(targetRombel, teachers);
+                  const standardSubjects = getSubjectsByClass(targetRombel);
+                  const rombelRaports = allPrintableRaports
+                    .filter((r) => isClassMatching(r.gradeClass, targetRombel))
+                    .map((r) => {
+                      const totalScore = r.grades.reduce((sum, g) => sum + (Number(g.score) || 0), 0);
+                      const avgScore = r.grades.length > 0 ? (totalScore / r.grades.length).toFixed(1) : '0.0';
+                      return {
+                        ...r,
+                        totalScore,
+                        avgScore: parseFloat(avgScore),
+                      };
+                    })
+                    .sort((a, b) => b.totalScore - a.totalScore);
+
+                  const classAvgTotal =
+                    rombelRaports.length > 0
+                      ? (rombelRaports.reduce((sum, r) => sum + r.avgScore, 0) / rombelRaports.length).toFixed(1)
+                      : '0.0';
+
+                  return (
+                    <div
+                      key={`preview-leger-${targetRombel}`}
+                      className="bg-white p-8 rounded-2xl border border-slate-300 shadow-sm space-y-6 min-w-[900px]"
+                    >
+                      {/* Kop Dokumen */}
+                      <div className="text-center border-b-2 border-slate-900 pb-4">
+                        <h2 className="text-lg font-black text-slate-900 tracking-wide uppercase">
+                          BUKU LEGER NILAI & DAFTAR KUMPULAN NILAI (DKN)
+                        </h2>
+                        <p className="text-sm font-extrabold text-emerald-800">
+                          SDIT EL-FATAH &bull; YAYASAN PENDIDIKAN DAARUL HABIBAH
+                        </p>
+                        <p className="text-xs text-slate-600 font-medium">
+                          Rombongan Belajar: <span className="font-bold text-slate-900">{targetRombel}</span> &bull; Tahun
+                          Ajaran 2026/2027 Semester Ganjil &bull; Kurikulum Merdeka
+                        </p>
+                      </div>
+
+                      {/* Metadata Box */}
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-100 p-4 rounded-xl text-xs font-bold text-slate-800 border border-slate-200">
+                        <div>
+                          <span className="text-slate-500 block text-[10px] uppercase">Rombel:</span>
+                          <p className="text-sm font-extrabold text-slate-900">{targetRombel}</p>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 block text-[10px] uppercase">Wali Kelas:</span>
+                          <p className="text-sm font-extrabold text-slate-900">{targetWali.name}</p>
+                          <span className="text-[10px] text-slate-500 font-mono">NIPY: {targetWali.nipy}</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 block text-[10px] uppercase">Peserta Didik:</span>
+                          <p className="text-sm font-extrabold text-slate-900">{rombelRaports.length} Siswa</p>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 block text-[10px] uppercase">Rerata Rombel:</span>
+                          <p className="text-sm font-extrabold text-emerald-700">{classAvgTotal} / 100</p>
+                        </div>
+                      </div>
+
+                      {/* Leger Table */}
+                      <div className="overflow-x-auto border border-slate-300 rounded-xl">
+                        <table className="w-full text-left text-xs border-collapse">
+                          <thead>
+                            <tr className="bg-slate-200 text-slate-900 font-black">
+                              <th className="border border-slate-300 p-2.5 text-center w-10">Rank</th>
+                              <th className="border border-slate-300 p-2.5">NISN</th>
+                              <th className="border border-slate-300 p-2.5">Nama Peserta Didik</th>
+                              <th className="border border-slate-300 p-2.5 text-center">JK</th>
+                              {standardSubjects.map((sub, idx) => (
+                                <th
+                                  key={idx}
+                                  className="border border-slate-300 p-2.5 text-center whitespace-nowrap bg-slate-100"
+                                >
+                                  {sub}
+                                </th>
+                              ))}
+                              <th className="border border-slate-300 p-2.5 text-center bg-emerald-100 text-emerald-950 font-black">
+                                Total
+                              </th>
+                              <th className="border border-slate-300 p-2.5 text-center bg-indigo-100 text-indigo-950 font-black">
+                                Rerata
+                              </th>
+                              <th className="border border-slate-300 p-2.5 text-center">Ketuntasan</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {rombelRaports.map((r, rIdx) => {
+                              const studentObj = students.find((s) => s.id === r.studentId || s.nis === r.nisn);
+                              return (
+                                <tr key={`leger-preview-${r.id}`} className="hover:bg-slate-50 font-medium">
+                                  <td className="border border-slate-300 p-2 text-center font-bold text-slate-700">
+                                    {rIdx + 1}
+                                  </td>
+                                  <td className="border border-slate-300 p-2 font-mono text-[11px]">{r.nisn}</td>
+                                  <td className="border border-slate-300 p-2 font-bold text-slate-900">{r.studentName}</td>
+                                  <td className="border border-slate-300 p-2 text-center">{studentObj?.gender || 'L'}</td>
+                                  {standardSubjects.map((sub, sIdx) => {
+                                    const foundGrade = r.grades.find(
+                                      (g) => g.subject.toLowerCase() === sub.toLowerCase()
+                                    );
+                                    const scoreVal = foundGrade ? foundGrade.score : 85;
+                                    return (
+                                      <td
+                                        key={sIdx}
+                                        className="border border-slate-300 p-2 text-center font-mono text-xs font-semibold"
+                                      >
+                                        {scoreVal}
+                                      </td>
+                                    );
+                                  })}
+                                  <td className="border border-slate-300 p-2 text-center font-mono font-black text-emerald-800 bg-emerald-50/40">
+                                    {r.totalScore}
+                                  </td>
+                                  <td className="border border-slate-300 p-2 text-center font-mono font-black text-indigo-800 bg-indigo-50/40">
+                                    {r.avgScore}
+                                  </td>
+                                  <td className="border border-slate-300 p-2 text-center font-bold text-[11px] text-emerald-700">
+                                    TUNTAS
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                          <tfoot>
+                            <tr className="bg-slate-100 font-black text-slate-900 border-t-2 border-slate-400">
+                              <td colSpan={4} className="border border-slate-300 p-2.5 text-right uppercase text-[11px]">
+                                Rata-Rata Rombel:
+                              </td>
+                              {standardSubjects.map((sub, sIdx) => {
+                                const totalSubScore = rombelRaports.reduce((acc, r) => {
+                                  const g = r.grades.find((gr) => gr.subject.toLowerCase() === sub.toLowerCase());
+                                  return acc + (g ? Number(g.score) : 85);
+                                }, 0);
+                                const avgSubScore =
+                                  rombelRaports.length > 0
+                                    ? (totalSubScore / rombelRaports.length).toFixed(1)
+                                    : '85.0';
+                                return (
+                                  <td
+                                    key={sIdx}
+                                    className="border border-slate-300 p-2.5 text-center font-mono font-black text-slate-900"
+                                  >
+                                    {avgSubScore}
+                                  </td>
+                                );
+                              })}
+                              <td className="border border-slate-300 p-2.5 text-center font-mono font-black text-emerald-900 bg-emerald-100">
+                                {rombelRaports.length > 0
+                                  ? (
+                                      rombelRaports.reduce((sum, r) => sum + r.totalScore, 0) / rombelRaports.length
+                                    ).toFixed(0)
+                                  : '0'}
+                              </td>
+                              <td className="border border-slate-300 p-2.5 text-center font-mono font-black text-indigo-900 bg-indigo-100">
+                                {classAvgTotal}
+                              </td>
+                              <td className="border border-slate-300 p-2.5 text-center font-bold text-[10px] text-emerald-800">
+                                Sah & Resmi
+                              </td>
+                            </tr>
+                          </tfoot>
+                        </table>
+                      </div>
+
+                      {/* Official Signatures */}
+                      <div className="grid grid-cols-2 gap-8 pt-6 text-center text-xs">
+                        <div>
+                          <p className="text-slate-600">Mengetahui,</p>
+                          <p className="font-bold text-slate-900">Kepala Sekolah SDIT EL-FATAH</p>
+                          <div className="h-16 flex items-center justify-center">
+                            <span className="text-[10px] text-slate-400 italic">[Stempel & Tanda Tangan]</span>
+                          </div>
+                          <p className="font-black text-slate-900 underline">Masykur Rohana, S.Sos</p>
+                          <p className="text-[10px] font-mono text-slate-500">NIPY: 1985031201</p>
+                        </div>
+                        <div>
+                          <p className="text-slate-600">
+                            Kabupaten Tangerang,{' '}
+                            {new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                          </p>
+                          <p className="font-bold text-slate-900">Wali Kelas {targetRombel}</p>
+                          <div className="h-16 flex items-center justify-center">
+                            <span className="text-[10px] text-slate-400 italic">[Tanda Tangan Digital]</span>
+                          </div>
+                          <p className="font-black text-slate-900 underline">{targetWali.name}</p>
+                          <p className="text-[10px] font-mono text-slate-500">NIPY: {targetWali.nipy}</p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                });
+              })()}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================= MODAL PRATINJAU BATCH E-RAPORT ================= */}
+      {showBatchRaportPreviewModal && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
+          <div className="bg-white w-full max-w-5xl rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[92vh] animate-in fade-in zoom-in-95 duration-150">
+            <div className="px-6 py-4 bg-slate-900 text-white flex flex-wrap items-center justify-between gap-3 border-b border-slate-800">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+                  <FileSpreadsheet className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black">Pratinjau Kumpulan E-Raport Siswa</h3>
+                  <p className="text-xs text-slate-400">Cetak lembar raport digital untuk seluruh peserta didik (Format Portrait A4)</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => executePrintBatchRaports(selectedPrintRombel)}
+                  className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs rounded-xl shadow flex items-center gap-2 cursor-pointer transition active:scale-95"
+                >
+                  <Printer className="w-4 h-4" />
+                  <span>Cetak Kumpulan E-Raport (PDF)</span>
+                </button>
+                <button
+                  onClick={() => setShowBatchRaportPreviewModal(false)}
+                  className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl border border-slate-700 transition cursor-pointer"
+                >
+                  Tutup
+                </button>
+              </div>
+            </div>
+
+            {/* Rombel Class Selector in Batch Modal */}
+            <div className="px-6 py-3 bg-slate-100 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3 text-xs">
+              <div className="flex items-center gap-2">
+                <span className="font-extrabold text-slate-700">Pilih Rombel Siswa:</span>
+                <div className="flex flex-wrap gap-1.5">
+                  {['SEMUA', 'Kelas 1', 'Kelas 2', 'Kelas 3', 'Kelas 4', 'Kelas 5', 'Kelas 6'].map((grade) => (
+                    <button
+                      key={grade}
+                      onClick={() => setSelectedPrintRombel(grade)}
+                      className={`px-3 py-1.5 rounded-lg font-extrabold text-xs transition cursor-pointer ${
+                        selectedPrintRombel === grade
+                          ? 'bg-emerald-600 text-white shadow-sm'
+                          : 'bg-white text-slate-700 hover:bg-slate-200 border border-slate-300'
+                      }`}
+                    >
+                      {grade === 'SEMUA' ? 'Semua Siswa Terdaftar' : grade}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <span className="text-[11px] font-medium text-slate-500">
+                SDIT El-Fatah &bull; Kurikulum Merdeka &bull; TA 2026/2027 Ganjil
+              </span>
+            </div>
+
+            {/* Raport Cards Preview */}
+            <div className="p-6 overflow-y-auto space-y-6 bg-slate-50 flex-1">
+              {(() => {
+                const targetRaports = allPrintableRaports.filter((r) =>
+                  selectedPrintRombel === 'SEMUA' ? true : isClassMatching(r.gradeClass, selectedPrintRombel)
+                );
+
+                if (targetRaports.length === 0) {
+                  return (
+                    <div className="bg-white p-12 rounded-2xl border border-dashed border-slate-300 text-center space-y-2">
+                      <p className="text-sm font-bold text-slate-700">Belum ada siswa pada rombel {selectedPrintRombel}.</p>
+                      <p className="text-xs text-slate-500">Silakan input data peserta didik atau pilih rombel lain.</p>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div className="space-y-6">
+                    <div className="bg-emerald-50 border border-emerald-200 p-3 rounded-xl flex items-center justify-between text-xs text-emerald-900 font-bold">
+                      <span>Total {targetRaports.length} lembar E-Raport siap dicetak / diunduh sebagai dokumen PDF.</span>
+                      <button
+                        onClick={() => executePrintBatchRaports(selectedPrintRombel)}
+                        className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-black flex items-center gap-1 cursor-pointer"
+                      >
+                        <Printer className="w-3.5 h-3.5" />
+                        <span>Cetak Sekarang</span>
+                      </button>
+                    </div>
+
+                    {targetRaports.map((rap) => (
+                      <div
+                        key={`modal-batch-${rap.id}`}
+                        className="bg-white p-6 rounded-2xl border border-slate-300 shadow-sm space-y-4"
+                      >
+                        <div className="text-center border-b-2 border-slate-900 pb-3">
+                          <h2 className="text-base font-black text-slate-900">LEMBAR E-RAPORT DIGITAL PESERTA DIDIK</h2>
+                          <p className="text-xs font-bold text-emerald-800">
+                            SDIT EL-FATAH &bull; YAYASAN PENDIDIKAN DAARUL HABIBAH
+                          </p>
+                          <p className="text-[11px] text-slate-600">{rap.academicYear}</p>
+                        </div>
+
+                        <div className="grid grid-cols-2 text-xs font-bold gap-2 bg-slate-100 p-3 rounded-xl">
+                          <p>Nama: <span className="text-slate-900">{rap.studentName}</span></p>
+                          <p>NIS / NISN: <span className="font-mono text-slate-900">{rap.nisn}</span></p>
+                          <p>Rombel: <span className="text-slate-900">{rap.gradeClass}</span></p>
+                          <p>Wali Kelas: <span className="text-slate-900">{rap.teacherName}</span></p>
+                        </div>
+
+                        <table className="w-full text-left text-xs border-collapse border border-slate-300">
+                          <thead>
+                            <tr className="bg-slate-200 text-slate-900 font-black">
+                              <th className="border border-slate-300 p-2">Mata Pelajaran</th>
+                              <th className="border border-slate-300 p-2 text-center w-16">Nilai</th>
+                              <th className="border border-slate-300 p-2 text-center w-16">Predikat</th>
+                              <th className="border border-slate-300 p-2">Capaian Pembelajaran</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {rap.grades.map((g, idx) => (
+                              <tr key={idx}>
+                                <td className="border border-slate-300 p-2 font-bold">{g.subject}</td>
+                                <td className="border border-slate-300 p-2 text-center font-mono font-bold">{g.score}</td>
+                                <td className="border border-slate-300 p-2 text-center font-bold text-emerald-700">{g.letterGrade}</td>
+                                <td className="border border-slate-300 p-2 text-slate-700">{g.notes}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+
+                        <div className="grid grid-cols-2 gap-3 text-xs border border-slate-300 p-3 rounded-xl">
+                          <div>
+                            <p className="font-bold mb-1">Ketidakhadiran:</p>
+                            <p>Hadir: {rap.attendance?.present || 80} hari &bull; Sakit: {rap.attendance?.sick || 0} &bull; Izin: {rap.attendance?.permitted || 0} &bull; Alpa: {rap.attendance?.absent || 0}</p>
+                          </div>
+                          <div>
+                            <p className="font-bold mb-1">Catatan Wali Kelas:</p>
+                            <p className="italic text-slate-700">"{rap.teacherNotes}"</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================= MODAL PRATINJAU SINGLE E-RAPORT ================= */}
+      {previewRaport && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
+          <div className="bg-white w-full max-w-3xl rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[92vh] animate-in fade-in zoom-in-95 duration-150">
+            <div className="px-6 py-4 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+                  <GraduationCap className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black">E-Raport Digital: {previewRaport.studentName}</h3>
+                  <p className="text-xs text-slate-400">{previewRaport.gradeClass} &bull; {previewRaport.academicYear}</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    const elementId = `raport-card-${previewRaport.id}`;
+                    printDocument(elementId, `E-Raport_${previewRaport.studentName.replace(/\s+/g, '_')}`, {
+                      orientation: 'portrait',
+                    });
+                  }}
+                  className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs rounded-xl shadow flex items-center gap-2 cursor-pointer transition active:scale-95"
+                >
+                  <Printer className="w-4 h-4" />
+                  <span>Cetak E-Raport (PDF)</span>
+                </button>
+                <button
+                  onClick={() => setPreviewRaport(null)}
+                  className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl border border-slate-700 transition cursor-pointer"
+                >
+                  Tutup
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6 overflow-y-auto space-y-4 bg-slate-50 flex-1">
+              <div className="bg-white p-6 rounded-2xl border border-slate-300 shadow-sm space-y-4">
                 <div className="text-center border-b-2 border-slate-900 pb-3">
-                  <h2 className="text-xl font-black">LEMBAR E-RAPORT DIGITAL PESERTA DIDIK</h2>
-                  <p className="text-xs font-bold">SDIT EL-FATAH &bull; YAYASAN PENDIDIKAN DAARUL HABIBAH</p>
-                  <p className="text-xs text-slate-600">{rap.academicYear}</p>
+                  <h2 className="text-lg font-black text-slate-900">LEMBAR E-RAPORT DIGITAL PESERTA DIDIK</h2>
+                  <p className="text-xs font-bold text-emerald-800">SDIT EL-FATAH &bull; YAYASAN PENDIDIKAN DAARUL HABIBAH</p>
+                  <p className="text-xs text-slate-600">{previewRaport.academicYear}</p>
                 </div>
 
-                <div className="grid grid-cols-2 text-xs font-bold gap-2 bg-slate-100 p-3 rounded">
-                  <p>Nama Siswa: {rap.studentName}</p>
-                  <p>NIS / NISN: {rap.nisn}</p>
-                  <p>Rombel / Kelas: {rap.gradeClass}</p>
-                  <p>Wali Murid: {rap.parentName || 'Orang Tua / Wali'}</p>
-                  <p>Wali Kelas: {rap.teacherName}</p>
-                  <p>Tahun Ajaran: {rap.academicYear}</p>
+                <div className="grid grid-cols-2 text-xs font-bold gap-2 bg-slate-100 p-3 rounded-xl">
+                  <p>Nama Siswa: {previewRaport.studentName}</p>
+                  <p>NIS / NISN: {previewRaport.nisn}</p>
+                  <p>Rombel / Kelas: {previewRaport.gradeClass}</p>
+                  <p>Wali Murid: {previewRaport.parentName || 'Orang Tua / Wali'}</p>
+                  <p>Wali Kelas: {previewRaport.teacherName}</p>
+                  <p>Tahun Ajaran: {previewRaport.academicYear}</p>
                 </div>
 
                 <table className="w-full text-left text-xs border-collapse border border-slate-300">
                   <thead>
-                    <tr className="bg-slate-200">
+                    <tr className="bg-slate-200 text-slate-900 font-black">
                       <th className="border border-slate-300 p-2">Mata Pelajaran</th>
-                      <th className="border border-slate-300 p-2 text-center">Nilai (0-100)</th>
+                      <th className="border border-slate-300 p-2 text-center">Nilai</th>
                       <th className="border border-slate-300 p-2 text-center">Predikat</th>
-                      <th className="border border-slate-300 p-2">Capaian Kompetensi</th>
+                      <th className="border border-slate-300 p-2">Capaian Pembelajaran</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {previewRaport.grades.map((g, idx) => (
+                      <tr key={idx}>
+                        <td className="border border-slate-300 p-2 font-bold">{g.subject}</td>
+                        <td className="border border-slate-300 p-2 text-center font-mono font-bold">{g.score}</td>
+                        <td className="border border-slate-300 p-2 text-center font-bold text-emerald-700">{g.letterGrade}</td>
+                        <td className="border border-slate-300 p-2 text-slate-700">{g.notes}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+
+                <div className="grid grid-cols-2 gap-3 text-xs border border-slate-300 p-3 rounded-xl">
+                  <div>
+                    <p className="font-bold mb-1">Ketidakhadiran:</p>
+                    <p>Hadir: {previewRaport.attendance?.present || 80} hari</p>
+                    <p>Sakit: {previewRaport.attendance?.sick || 0} &bull; Izin: {previewRaport.attendance?.permitted || 0} &bull; Alpa: {previewRaport.attendance?.absent || 0}</p>
+                  </div>
+                  <div>
+                    <p className="font-bold mb-1">Catatan Wali Kelas:</p>
+                    <p className="italic text-slate-700">"{previewRaport.teacherNotes}"</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-4 pt-6 text-center text-xs">
+                  <div>
+                    <p className="text-slate-600">Orang Tua / Wali Murid</p>
+                    <div className="h-14"></div>
+                    <p className="font-bold underline">{previewRaport.parentName || '....................................'}</p>
+                  </div>
+                  <div>
+                    <p className="text-slate-600">Wali Kelas {previewRaport.gradeClass}</p>
+                    <div className="h-14"></div>
+                    <p className="font-bold underline">{previewRaport.teacherName}</p>
+                    <p className="text-[10px] text-slate-500 font-mono">NIPY Terdaftar</p>
+                  </div>
+                  <div>
+                    <p className="text-slate-600">Kepala Sekolah SDIT EL-FATAH</p>
+                    <div className="h-14"></div>
+                    <p className="font-bold underline">Masykur Rohana, S.Sos</p>
+                    <p className="text-[10px] text-slate-500 font-mono">NIPY: 1985031201</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================= PERSISTENT PRINTABLE CONTAINERS ================= */}
+      <div className="hidden" aria-hidden="true">
+        {/* 1. Official Leger Matriks Table Print (Landscape A4) */}
+        <div id="leger-table-print" className="p-6 space-y-6 bg-white text-slate-900 font-sans">
+          {(() => {
+            const classesToPrint =
+              selectedPrintRombel === 'SEMUA'
+                ? ['Kelas 1', 'Kelas 2', 'Kelas 3', 'Kelas 4', 'Kelas 5', 'Kelas 6']
+                : [normalizeToStandardGrade(selectedPrintRombel)];
+
+            return classesToPrint.map((targetRombel, gIdx) => {
+              const targetWali = getWaliKelasDetailByGrade(targetRombel, teachers);
+              const standardSubjects = getSubjectsByClass(targetRombel);
+              const rombelRaports = allPrintableRaports
+                .filter((r) => isClassMatching(r.gradeClass, targetRombel))
+                .map((r) => {
+                  const totalScore = r.grades.reduce((sum, g) => sum + (Number(g.score) || 0), 0);
+                  const avgScore = r.grades.length > 0 ? (totalScore / r.grades.length).toFixed(1) : '0.0';
+                  return {
+                    ...r,
+                    totalScore,
+                    avgScore: parseFloat(avgScore),
+                  };
+                })
+                .sort((a, b) => b.totalScore - a.totalScore);
+
+              const classAvgTotal =
+                rombelRaports.length > 0
+                  ? (rombelRaports.reduce((sum, r) => sum + r.avgScore, 0) / rombelRaports.length).toFixed(1)
+                  : '0.0';
+
+              return (
+                <div
+                  key={`print-leger-class-${targetRombel}`}
+                  className="space-y-4"
+                  style={{ pageBreakAfter: gIdx === classesToPrint.length - 1 ? 'auto' : 'always' }}
+                >
+                  <div className="text-center border-b-2 border-slate-900 pb-3">
+                    <h2 className="text-xl font-black tracking-wide">BUKU LEGER NILAI & DAFTAR KUMPULAN NILAI (DKN)</h2>
+                    <p className="text-sm font-extrabold">SDIT EL-FATAH &bull; YAYASAN PENDIDIKAN DAARUL HABIBAH</p>
+                    <p className="text-xs text-slate-600">
+                      Rombongan Belajar: {targetRombel} &bull; Tahun Ajaran 2026/2027 Semester Ganjil &bull; Kurikulum Merdeka
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-2 text-xs font-bold bg-slate-100 p-3 rounded border border-slate-300">
+                    <p>Rombongan Belajar: <span className="font-extrabold">{targetRombel}</span></p>
+                    <p>Wali Kelas: <span className="font-extrabold">{targetWali.name} (NIPY: {targetWali.nipy})</span></p>
+                    <p>Jumlah Peserta Didik: <span className="font-extrabold">{rombelRaports.length} Siswa</span></p>
+                    <p>Rerata Nilai Rombel: <span className="font-extrabold text-emerald-800">{classAvgTotal}</span> &bull; Status: <span className="font-extrabold text-emerald-800">100% Tuntas</span></p>
+                  </div>
+
+                  <table className="w-full text-left text-xs border-collapse border border-slate-400">
+                    <thead>
+                      <tr className="bg-slate-200 font-black">
+                        <th className="border border-slate-400 p-2 text-center w-8">Rank</th>
+                        <th className="border border-slate-400 p-2">NISN</th>
+                        <th className="border border-slate-400 p-2">Nama Peserta Didik</th>
+                        <th className="border border-slate-400 p-2 text-center">JK</th>
+                        {standardSubjects.map((sub, idx) => (
+                          <th key={idx} className="border border-slate-400 p-2 text-center whitespace-nowrap bg-slate-100">
+                            {sub}
+                          </th>
+                        ))}
+                        <th className="border border-slate-400 p-2 text-center bg-emerald-100 font-black">Total</th>
+                        <th className="border border-slate-400 p-2 text-center bg-indigo-100 font-black">Rerata</th>
+                        <th className="border border-slate-400 p-2 text-center">Ketuntasan</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {rombelRaports.map((r, rIdx) => {
+                        const studentObj = students.find((s) => s.id === r.studentId || s.nis === r.nisn);
+                        return (
+                          <tr key={`leger-row-${r.id}`}>
+                            <td className="border border-slate-400 p-2 text-center font-bold">{rIdx + 1}</td>
+                            <td className="border border-slate-400 p-2 font-mono">{r.nisn}</td>
+                            <td className="border border-slate-400 p-2 font-bold">{r.studentName}</td>
+                            <td className="border border-slate-400 p-2 text-center">{studentObj?.gender || 'L'}</td>
+                            {standardSubjects.map((sub, sIdx) => {
+                              const foundGrade = r.grades.find((g) => g.subject.toLowerCase() === sub.toLowerCase());
+                              return (
+                                <td key={sIdx} className="border border-slate-400 p-2 text-center font-mono">
+                                  {foundGrade ? foundGrade.score : 85}
+                                </td>
+                              );
+                            })}
+                            <td className="border border-slate-400 p-2 text-center font-mono font-bold bg-emerald-50/40">{r.totalScore}</td>
+                            <td className="border border-slate-400 p-2 text-center font-mono font-bold bg-indigo-50/40">{r.avgScore}</td>
+                            <td className="border border-slate-400 p-2 text-center font-bold text-emerald-800">TUNTAS</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                    <tfoot>
+                      <tr className="bg-slate-100 font-extrabold text-slate-900 border-t-2 border-slate-400">
+                        <td colSpan={4} className="border border-slate-400 p-2 text-right uppercase text-[11px]">
+                          Rata-Rata Rombel:
+                        </td>
+                        {standardSubjects.map((sub, sIdx) => {
+                          const totalSubScore = rombelRaports.reduce((acc, r) => {
+                            const g = r.grades.find((gr) => gr.subject.toLowerCase() === sub.toLowerCase());
+                            return acc + (g ? Number(g.score) : 85);
+                          }, 0);
+                          const avgSubScore =
+                            rombelRaports.length > 0 ? (totalSubScore / rombelRaports.length).toFixed(1) : '85.0';
+                          return (
+                            <td key={sIdx} className="border border-slate-400 p-2 text-center font-mono font-black">
+                              {avgSubScore}
+                            </td>
+                          );
+                        })}
+                        <td className="border border-slate-400 p-2 text-center font-mono font-black bg-emerald-100">
+                          {rombelRaports.length > 0
+                            ? (rombelRaports.reduce((sum, r) => sum + r.totalScore, 0) / rombelRaports.length).toFixed(0)
+                            : '0'}
+                        </td>
+                        <td className="border border-slate-400 p-2 text-center font-mono font-black bg-indigo-100">{classAvgTotal}</td>
+                        <td className="border border-slate-400 p-2 text-center font-bold text-[10px] text-emerald-800">Sah & Resmi</td>
+                      </tr>
+                    </tfoot>
+                  </table>
+
+                  <div className="grid grid-cols-2 gap-8 pt-6 text-center text-xs">
+                    <div>
+                      <p className="text-slate-600">Mengetahui,</p>
+                      <p className="font-bold text-slate-900">Kepala Sekolah SDIT EL-FATAH</p>
+                      <div className="h-14 flex items-center justify-center">
+                        <span className="text-[10px] text-slate-400 italic">[Stempel & Tanda Tangan]</span>
+                      </div>
+                      <p className="font-bold underline text-slate-900">Masykur Rohana, S.Sos</p>
+                      <p className="text-[10px] font-mono text-slate-600">NIPY: 1985031201</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-600">
+                        Kabupaten Tangerang,{' '}
+                        {new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                      </p>
+                      <p className="font-bold text-slate-900">Wali Kelas {targetRombel}</p>
+                      <div className="h-14 flex items-center justify-center">
+                        <span className="text-[10px] text-slate-400 italic">[Tanda Tangan Digital]</span>
+                      </div>
+                      <p className="font-bold underline text-slate-900">{targetWali.name}</p>
+                      <p className="text-[10px] font-mono text-slate-600">NIPY: {targetWali.nipy}</p>
+                    </div>
+                  </div>
+                </div>
+              );
+            });
+          })()}
+        </div>
+
+        {/* 2. All Rombel Raports Batch Print */}
+        <div id="rombel-all-raports-print">
+          {(() => {
+            const targetRaports = allPrintableRaports.filter((r) =>
+              selectedPrintRombel === 'SEMUA' ? true : isClassMatching(r.gradeClass, selectedPrintRombel)
+            );
+
+            return targetRaports.map((rap, rapIdx) => (
+              <div
+                key={`batch-rap-${rap.id}`}
+                className="p-8 space-y-4"
+                style={{ pageBreakAfter: rapIdx === targetRaports.length - 1 ? 'auto' : 'always' }}
+              >
+                <div className="text-center border-b-2 border-slate-900 pb-3">
+                  <h2 className="text-xl font-black text-slate-900">LEMBAR E-RAPORT DIGITAL PESERTA DIDIK</h2>
+                  <p className="text-xs font-bold text-emerald-800">SDIT EL-FATAH &bull; YAYASAN PENDIDIKAN DAARUL HABIBAH</p>
+                  <p className="text-xs text-slate-600">{rap.academicYear}</p>
+                </div>
+
+                <div className="grid grid-cols-2 text-xs font-bold gap-2 bg-slate-100 p-3 rounded border border-slate-300">
+                  <p>Nama Siswa: <span className="font-extrabold text-slate-900">{rap.studentName}</span></p>
+                  <p>NIS / NISN: <span className="font-mono text-slate-900">{rap.nisn}</span></p>
+                  <p>Rombel / Kelas: <span className="font-extrabold text-slate-900">{rap.gradeClass}</span></p>
+                  <p>Wali Murid: <span className="text-slate-900">{rap.parentName || 'Orang Tua / Wali'}</span></p>
+                  <p>Wali Kelas: <span className="text-slate-900">{rap.teacherName}</span></p>
+                  <p>Tahun Ajaran: <span className="text-slate-900">{rap.academicYear}</span></p>
+                </div>
+
+                <table className="w-full text-left text-xs border-collapse border border-slate-300">
+                  <thead>
+                    <tr className="bg-slate-200 text-slate-900 font-black">
+                      <th className="border border-slate-300 p-2">Mata Pelajaran</th>
+                      <th className="border border-slate-300 p-2 text-center w-16">Nilai</th>
+                      <th className="border border-slate-300 p-2 text-center w-16">Predikat</th>
+                      <th className="border border-slate-300 p-2">Capaian Kompetensi Kurikulum Merdeka</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -3492,8 +4083,8 @@ export const AcademicRombelView: React.FC<AcademicRombelViewProps> = ({
                       <tr key={idx}>
                         <td className="border border-slate-300 p-2 font-bold">{g.subject}</td>
                         <td className="border border-slate-300 p-2 text-center font-mono font-bold">{g.score}</td>
-                        <td className="border border-slate-300 p-2 text-center font-bold">{g.letterGrade}</td>
-                        <td className="border border-slate-300 p-2">{g.notes}</td>
+                        <td className="border border-slate-300 p-2 text-center font-bold text-emerald-800">{g.letterGrade}</td>
+                        <td className="border border-slate-300 p-2 text-slate-700">{g.notes}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -3510,26 +4101,26 @@ export const AcademicRombelView: React.FC<AcademicRombelViewProps> = ({
                   </div>
                   <div>
                     <p className="font-bold mb-1">Catatan Wali Kelas:</p>
-                    <p className="italic">"{rap.teacherNotes}"</p>
+                    <p className="italic text-slate-700">"{rap.teacherNotes}"</p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-3 gap-4 pt-6 text-center text-xs">
                   <div>
                     <p className="text-slate-600">Orang Tua / Wali Murid</p>
-                    <div className="h-16"></div>
-                    <p className="font-bold underline">{rap.parentName || '....................................'}</p>
+                    <div className="h-14"></div>
+                    <p className="font-bold underline text-slate-900">{rap.parentName || '....................................'}</p>
                   </div>
                   <div>
                     <p className="text-slate-600">Wali Kelas {rap.gradeClass}</p>
-                    <div className="h-16"></div>
-                    <p className="font-bold underline">{rap.teacherName}</p>
+                    <div className="h-14"></div>
+                    <p className="font-bold underline text-slate-900">{rap.teacherName}</p>
                     <p className="text-[10px] text-slate-500 font-mono">NIPY Terdaftar</p>
                   </div>
                   <div>
                     <p className="text-slate-600">Kepala Sekolah SDIT EL-FATAH</p>
-                    <div className="h-16"></div>
-                    <p className="font-bold underline">Masykur Rohana, S.Sos</p>
+                    <div className="h-14"></div>
+                    <p className="font-bold underline text-slate-900">Masykur Rohana, S.Sos</p>
                     <p className="text-[10px] text-slate-500 font-mono">NIPY: 1985031201</p>
                   </div>
                 </div>
@@ -3540,29 +4131,29 @@ export const AcademicRombelView: React.FC<AcademicRombelViewProps> = ({
 
         {/* 3. Individual Raport Cards for all students & eRaports in system */}
         {allPrintableRaports.map((rap) => (
-          <div key={`single-print-${rap.id}`} id={`raport-card-${rap.id}`} className="p-8 space-y-4">
+          <div key={`single-print-${rap.id}`} id={`raport-card-${rap.id}`} className="p-8 space-y-4 bg-white text-slate-900">
             <div className="text-center border-b-2 border-slate-900 pb-3">
               <h2 className="text-xl font-black">LEMBAR E-RAPORT DIGITAL PESERTA DIDIK</h2>
-              <p className="text-xs font-bold">SDIT EL-FATAH &bull; YAYASAN PENDIDIKAN DAARUL HABIBAH</p>
+              <p className="text-xs font-bold text-emerald-800">SDIT EL-FATAH &bull; YAYASAN PENDIDIKAN DAARUL HABIBAH</p>
               <p className="text-xs text-slate-600">{rap.academicYear}</p>
             </div>
 
-            <div className="grid grid-cols-2 text-xs font-bold gap-2 bg-slate-100 p-3 rounded">
-              <p>Nama Siswa: {rap.studentName}</p>
-              <p>NIS / NISN: {rap.nisn}</p>
-              <p>Rombel / Kelas: {rap.gradeClass}</p>
-              <p>Wali Murid: {rap.parentName || 'Orang Tua / Wali'}</p>
-              <p>Wali Kelas: {rap.teacherName}</p>
-              <p>Tahun Ajaran: {rap.academicYear}</p>
+            <div className="grid grid-cols-2 text-xs font-bold gap-2 bg-slate-100 p-3 rounded border border-slate-300">
+              <p>Nama Siswa: <span className="font-extrabold text-slate-900">{rap.studentName}</span></p>
+              <p>NIS / NISN: <span className="font-mono text-slate-900">{rap.nisn}</span></p>
+              <p>Rombel / Kelas: <span className="font-extrabold text-slate-900">{rap.gradeClass}</span></p>
+              <p>Wali Murid: <span className="text-slate-900">{rap.parentName || 'Orang Tua / Wali'}</span></p>
+              <p>Wali Kelas: <span className="text-slate-900">{rap.teacherName}</span></p>
+              <p>Tahun Ajaran: <span className="text-slate-900">{rap.academicYear}</span></p>
             </div>
 
             <table className="w-full text-left text-xs border-collapse border border-slate-300">
               <thead>
-                <tr className="bg-slate-200">
+                <tr className="bg-slate-200 font-black text-slate-900">
                   <th className="border border-slate-300 p-2">Mata Pelajaran</th>
-                  <th className="border border-slate-300 p-2 text-center">Nilai (0-100)</th>
-                  <th className="border border-slate-300 p-2 text-center">Predikat</th>
-                  <th className="border border-slate-300 p-2">Capaian Kompetensi</th>
+                  <th className="border border-slate-300 p-2 text-center w-16">Nilai</th>
+                  <th className="border border-slate-300 p-2 text-center w-16">Predikat</th>
+                  <th className="border border-slate-300 p-2">Capaian Kompetensi Kurikulum Merdeka</th>
                 </tr>
               </thead>
               <tbody>
@@ -3570,8 +4161,8 @@ export const AcademicRombelView: React.FC<AcademicRombelViewProps> = ({
                   <tr key={idx}>
                     <td className="border border-slate-300 p-2 font-bold">{g.subject}</td>
                     <td className="border border-slate-300 p-2 text-center font-mono font-bold">{g.score}</td>
-                    <td className="border border-slate-300 p-2 text-center font-bold">{g.letterGrade}</td>
-                    <td className="border border-slate-300 p-2">{g.notes}</td>
+                    <td className="border border-slate-300 p-2 text-center font-bold text-emerald-800">{g.letterGrade}</td>
+                    <td className="border border-slate-300 p-2 text-slate-700">{g.notes}</td>
                   </tr>
                 ))}
               </tbody>
@@ -3588,26 +4179,26 @@ export const AcademicRombelView: React.FC<AcademicRombelViewProps> = ({
               </div>
               <div>
                 <p className="font-bold mb-1">Catatan Wali Kelas:</p>
-                <p className="italic">"{rap.teacherNotes}"</p>
+                <p className="italic text-slate-700">"{rap.teacherNotes}"</p>
               </div>
             </div>
 
             <div className="grid grid-cols-3 gap-4 pt-6 text-center text-xs">
               <div>
                 <p className="text-slate-600">Orang Tua / Wali Murid</p>
-                <div className="h-16"></div>
-                <p className="font-bold underline">{rap.parentName || '....................................'}</p>
+                <div className="h-14"></div>
+                <p className="font-bold underline text-slate-900">{rap.parentName || '....................................'}</p>
               </div>
               <div>
                 <p className="text-slate-600">Wali Kelas {rap.gradeClass}</p>
-                <div className="h-16"></div>
-                <p className="font-bold underline">{rap.teacherName}</p>
+                <div className="h-14"></div>
+                <p className="font-bold underline text-slate-900">{rap.teacherName}</p>
                 <p className="text-[10px] text-slate-500 font-mono">NIPY Terdaftar</p>
               </div>
               <div>
                 <p className="text-slate-600">Kepala Sekolah SDIT EL-FATAH</p>
-                <div className="h-16"></div>
-                <p className="font-bold underline">Masykur Rohana, S.Sos</p>
+                <div className="h-14"></div>
+                <p className="font-bold underline text-slate-900">Masykur Rohana, S.Sos</p>
                 <p className="text-[10px] text-slate-500 font-mono">NIPY: 1985031201</p>
               </div>
             </div>

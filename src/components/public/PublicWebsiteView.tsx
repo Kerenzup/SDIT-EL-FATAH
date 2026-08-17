@@ -649,35 +649,12 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
                     )}
 
                     {/* Banner Content (Compact height with elegant spacing) */}
-                    <div className="relative z-10 w-full max-w-[1536px] mx-auto px-6 sm:px-10 lg:px-14 py-5 sm:py-6 md:py-7 grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
-                      <div className="md:col-span-8 space-y-3.5">
+                    <div className="relative z-10 w-full max-w-[1536px] mx-auto px-6 sm:px-10 lg:px-14 py-5 sm:py-6 md:py-7 grid grid-cols-1 gap-6 items-center">
+                      <div className="max-w-4xl space-y-3.5">
                         <div className="flex flex-wrap items-center gap-2">
                           <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-300 text-slate-950 text-[11px] font-black rounded-full backdrop-blur-md uppercase tracking-wider shadow-sm">
                             <Sparkles className="w-3.5 h-3.5 text-slate-950" /> AKREDITASI A UNGGUL • STANDAR GLOBAL
                           </div>
-
-                          {/* Auto-Slide Status Toggle Badge */}
-                          {heroBanners.length > 1 && (
-                            <button
-                              type="button"
-                              onClick={() => setIsAutoSlide(!isAutoSlide)}
-                              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-900/70 text-emerald-200 border border-emerald-400/40 hover:bg-emerald-800/80 backdrop-blur-md transition cursor-pointer"
-                              title={isAutoSlide ? 'Klik untuk jeda slide' : 'Klik untuk putar slide otomatis'}
-                            >
-                              {isAutoSlide ? (
-                                <>
-                                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                                  <Pause className="w-3 h-3 text-emerald-300" />
-                                  <span>Slide Run Aktif</span>
-                                </>
-                              ) : (
-                                <>
-                                  <Play className="w-3 h-3 text-amber-300" />
-                                  <span>Slide Dijeda</span>
-                                </>
-                              )}
-                            </button>
-                          )}
                         </div>
 
                         <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-white leading-tight drop-shadow-md">
@@ -715,36 +692,6 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
                             <span>Cek E-Raport / Status SPP</span>
                           </button>
                         </div>
-                      </div>
-
-                      {/* Banner Indicator Dots and Slide Run Counter */}
-                      <div className="md:col-span-4 flex flex-col md:items-end gap-2">
-                        {heroBanners.length > 1 && (
-                          <div className="flex items-center gap-2 bg-black/40 px-3 py-1.5 rounded-full border border-emerald-400/30 backdrop-blur-md">
-                            <span className="text-[11px] font-mono font-bold text-emerald-300">
-                              0{activeBannerIdx + 1} / 0{heroBanners.length}
-                            </span>
-                            <div className="h-3 w-[1px] bg-white/20" />
-                            <div className="flex items-center gap-1.5">
-                              {heroBanners.map((_, idx) => (
-                                <button
-                                  key={idx}
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setActiveBannerIdx(idx);
-                                  }}
-                                  aria-label={`Slide ${idx + 1}`}
-                                  className={`h-2.5 rounded-full transition-all duration-300 cursor-pointer ${
-                                    activeBannerIdx === idx
-                                      ? 'w-7 bg-amber-400 shadow-md ring-1 ring-amber-300/50'
-                                      : 'w-2.5 bg-white/40 hover:bg-white/70'
-                                  }`}
-                                />
-                              ))}
-                            </div>
-                          </div>
-                        )}
                       </div>
                     </div>
                   </div>

@@ -1,12 +1,14 @@
 export function printDocument(
   elementId?: string,
   documentTitle?: string,
-  optionsOrOrientation?: { orientation?: 'portrait' | 'landscape' } | 'portrait' | 'landscape'
+  optionsOrOrientation?: { orientation?: 'portrait' | 'landscape'; onAfterPrint?: () => void } | 'portrait' | 'landscape'
 ) {
   const orientation =
     typeof optionsOrOrientation === 'string'
       ? optionsOrOrientation
-      : optionsOrOrientation?.orientation || 'portrait';
+    : optionsOrOrientation?.orientation || 'portrait';
+
+  const onAfterPrintCallback = typeof optionsOrOrientation === 'object' ? optionsOrOrientation.onAfterPrint : undefined;
 
   const originalTitle = document.title;
   const targetTitle = documentTitle || 'Dokumen Resmi SDIT EL-FATAH';
@@ -19,30 +21,31 @@ export function printDocument(
       if (element) {
         contentToPrint = element.innerHTML;
       } else {
-        console.warn(`Element with ID '${elementId}' not found. Falling back to direct window.print()`);
+        console.warn(`Element with ID '${elementId}' not found in DOM.`);
       }
     }
 
-    if (contentToPrint) {
-      // 1. Remove previous print portal or injected print styles if any
-      const existingPortal = document.getElementById('global-app-print-portal');
-      if (existingPortal) existingPortal.remove();
-      const existingStyle = document.getElementById('global-app-print-style');
-      if (existingStyle) existingStyle.remove();
+    // Remove any previous print portal or style
+    const existingPortal = document.getElementById('global-app-print-portal');
+    if (existingPortal) existingPortal.remove();
+    const existingStyle = document.getElementById('global-app-print-style');
+    if (existingStyle) existingStyle.remove();
 
-      // 2. Inject print CSS into document head
+    if (contentToPrint) {
+      // 1. Inject print CSS into document head
       const styleEl = document.createElement('style');
       styleEl.id = 'global-app-print-style';
       styleEl.textContent = `
         @media screen {
           #global-app-print-portal {
             display: none !important;
+            visibility: hidden !important;
           }
         }
         @media print {
           @page {
             size: A4 ${orientation};
-            margin: 8mm;
+            margin: 10mm 8mm;
           }
           html, body {
             background-color: #ffffff !important;
@@ -52,8 +55,9 @@ export function printDocument(
             width: 100% !important;
             height: auto !important;
             overflow: visible !important;
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
           }
-          /* Hide all application UI except the print portal */
+          /* Hide everything except the print portal */
           body > *:not(#global-app-print-portal) {
             display: none !important;
             visibility: hidden !important;
@@ -71,6 +75,7 @@ export function printDocument(
             background-color: #ffffff !important;
             color: #0f172a !important;
             box-shadow: none !important;
+            z-index: 9999999 !important;
           }
           #global-app-print-portal * {
             visibility: visible !important;
@@ -82,22 +87,37 @@ export function printDocument(
           .no-print, .print\\:hidden, button, header, aside, footer {
             display: none !important;
           }
+          .page-break-after-always {
+            page-break-after: always !important;
+            break-after: page !important;
+          }
+          .page-break-inside-avoid {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+          }
           table {
             width: 100% !important;
             border-collapse: collapse !important;
             page-break-inside: auto;
           }
+          thead {
+            display: table-header-group;
+          }
+          tfoot {
+            display: table-footer-group;
+          }
           tr {
-            page-break-inside: avoid;
-            page-break-after: auto;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
           }
           th, td {
-            border: 1px solid #94a3b8 !important;
-            padding: 5px 8px !important;
-            font-size: ${orientation === 'landscape' ? '8pt' : '9pt'} !important;
+            border: 1px solid #64748b !important;
+            padding: 5px 7px !important;
+            font-size: ${orientation === 'landscape' ? '8pt' : '8.5pt'} !important;
+            line-height: 1.3 !important;
           }
           th {
-            background-color: #f1f5f9 !important;
+            background-color: #e2e8f0 !important;
             color: #0f172a !important;
             font-weight: 800 !important;
           }
@@ -105,14 +125,17 @@ export function printDocument(
       `;
       document.head.appendChild(styleEl);
 
-      // 3. Create Print Portal and attach content
+      // 2. Create Print Portal and attach content
       const portal = document.createElement('div');
       portal.id = 'global-app-print-portal';
       portal.innerHTML = contentToPrint;
       document.body.appendChild(portal);
 
-      // 4. Trigger print
+      // 3. Cleanup handler triggered only AFTER the user closes the print dialog
+      let cleanedUp = false;
       const cleanup = () => {
+        if (cleanedUp) return;
+        cleanedUp = true;
         try {
           if (document.title !== originalTitle) {
             document.title = originalTitle;
@@ -121,32 +144,36 @@ export function printDocument(
           if (p) p.remove();
           const s = document.getElementById('global-app-print-style');
           if (s) s.remove();
+          if (onAfterPrintCallback) onAfterPrintCallback();
         } catch (err) {
-          console.warn('Print cleanup error', err);
+          console.warn('Print cleanup notice:', err);
         }
       };
 
-      // Delay slightly so layout recalculates before triggering browser print dialog
+      window.addEventListener('afterprint', cleanup, { once: true });
+      // Safe fallback timeout (15s) in case afterprint does not fire in some iframe wrappers
+      setTimeout(cleanup, 15000);
+
+      // Delay briefly to allow browser to calculate layout
       setTimeout(() => {
         try {
           window.print();
         } catch (e) {
-          console.error('window.print error:', e);
-        } finally {
-          setTimeout(cleanup, 1200);
+          console.error('window.print invocation failed:', e);
+          cleanup();
         }
-      }, 80);
+      }, 120);
       return;
     }
 
-    // Direct window print fallback if no elementId content was found
+    // Direct fallback if no content
     window.print();
   } catch (error) {
-    console.error('Error triggering print:', error);
+    console.error('Error in printDocument helper:', error);
     try {
       window.print();
     } catch (e) {
-      alert('Gagal membuka dialog cetak. Silakan gunakan tombol cetak atau pintasan Ctrl+P.');
+      console.error('Fallback print failed:', e);
     }
   } finally {
     setTimeout(() => {
@@ -156,4 +183,5 @@ export function printDocument(
     }, 1500);
   }
 }
+
 

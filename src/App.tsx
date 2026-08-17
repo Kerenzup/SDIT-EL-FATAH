@@ -21,6 +21,7 @@ import {
   ERaport,
   TeacherJournalRombel,
   ArkasBudgetItem,
+  SubjectItem,
   UserRole,
   WebsiteLayoutConfig,
   PPDBConfig,
@@ -48,6 +49,7 @@ import {
   INITIAL_E_RAPORTS,
   INITIAL_TEACHER_JOURNALS,
   INITIAL_ARKAS_BUDGET,
+  INITIAL_SUBJECTS,
   INITIAL_WEBSITE_LAYOUT_CONFIG,
   INITIAL_PPDB_CONFIG,
   INITIAL_UNIFORMS,
@@ -206,6 +208,15 @@ export default function App() {
     safeGetLocalStorage('yayasan_arkas_budget', INITIAL_ARKAS_BUDGET)
   );
 
+  const [subjects, setSubjects] = useState<SubjectItem[]>(() => {
+    const saved = safeGetLocalStorage<SubjectItem[]>('yayasan_subjects', INITIAL_SUBJECTS);
+    return Array.isArray(saved) && saved.length > 0 ? saved : INITIAL_SUBJECTS;
+  });
+
+  useEffect(() => {
+    safeSetLocalStorage('yayasan_subjects', subjects);
+  }, [subjects]);
+
   const [ppdbConfig, setPpdbConfig] = useState<PPDBConfig>(() =>
     safeGetLocalStorage('yayasan_ppdb_config', INITIAL_PPDB_CONFIG)
   );
@@ -328,6 +339,32 @@ export default function App() {
       console.warn('IndexedDB initial hydration warning:', err);
       isHydratedRef.current = true;
     });
+  }, []);
+
+  // Check URL parameters on mount for direct routing (e.g., ?view=erp, ?tab=e_raport, ?role=GURU_ROMBEL)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const searchParams = new URLSearchParams(window.location.search);
+      const viewParam = searchParams.get('view');
+      const tabParam = searchParams.get('tab');
+      const roleParam = searchParams.get('role');
+
+      if (viewParam === 'erp' || tabParam || roleParam) {
+        setIsPublicView(false);
+        if (tabParam) {
+          setActiveTab(tabParam as TabType);
+        }
+        if (roleParam) {
+          const roleUpper = roleParam.toUpperCase() as UserRole;
+          if (roleUpper && ['SUPERADMIN', 'KETUA_YAYASAN', 'BENDAHARA', 'KEPALA_SEKOLAH', 'GURU_ROMBEL', 'OPERATOR_SIPLAH', 'WALI_MURID', 'AUDITOR'].includes(roleUpper)) {
+            setCurrentRole(roleUpper);
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('URL search params routing notice:', e);
+    }
   }, []);
 
   // Active view states
@@ -901,6 +938,34 @@ export default function App() {
     });
   };
 
+  const handleAddSubject = (sub: SubjectItem) => setSubjects((prev) => [...prev, sub]);
+  const handleUpdateSubject = (sub: SubjectItem) => setSubjects((prev) => prev.map((s) => (s.id === sub.id ? sub : s)));
+  const handleDeleteSubject = (id: string) => setSubjects((prev) => prev.filter((s) => s.id !== id));
+  const handleImportSubjects = (newSubs: SubjectItem[]) => {
+    setSubjects((prev) => {
+      const map = new Map<string, SubjectItem>();
+      prev.forEach((s) => map.set(s.id || s.subjectName.toLowerCase(), s));
+      newSubs.forEach((s) => map.set(s.id || s.subjectName.toLowerCase(), s));
+      return Array.from(map.values());
+    });
+  };
+
+  const handleUpdateArkasBudgetItem = (item: ArkasBudgetItem) => {
+    setArkasBudget((prev) => {
+      const next = prev.map((a) => (a.id === item.id ? item : a));
+      safeSetLocalStorage('yayasan_arkas_budget', next);
+      return next;
+    });
+  };
+
+  const handleDeleteArkasBudgetItem = (id: string) => {
+    setArkasBudget((prev) => {
+      const next = prev.filter((a) => a.id !== id);
+      safeSetLocalStorage('yayasan_arkas_budget', next);
+      return next;
+    });
+  };
+
   const handleAddBoardMember = (brd: FoundationBoard) => setBoardMembers((prev) => [...prev, brd]);
   const handleUpdateBoardMember = (brd: FoundationBoard) => setBoardMembers((prev) => prev.map((b) => (b.id === brd.id ? brd : b)));
   const handleDeleteBoardMember = (id: string) => setBoardMembers((prev) => prev.filter((b) => b.id !== id));
@@ -1250,6 +1315,7 @@ export default function App() {
               teacherJournals={teacherJournals}
               students={students}
               teachers={teachers}
+              subjects={subjects}
               currentRole={currentRole}
               forcedSubTab="raport"
               onUpdateRaport={handleUpdateERaport}
@@ -1268,6 +1334,7 @@ export default function App() {
               teacherJournals={teacherJournals}
               students={students}
               teachers={teachers}
+              subjects={subjects}
               currentRole={currentRole}
               forcedSubTab="jurnal"
               onUpdateRaport={handleUpdateERaport}
@@ -1284,6 +1351,8 @@ export default function App() {
             <ArkasBudgetView
               arkasBudget={arkasBudget}
               onAddBudgetItem={handleAddArkasBudgetItem}
+              onUpdateBudgetItem={handleUpdateArkasBudgetItem}
+              onDeleteBudgetItem={handleDeleteArkasBudgetItem}
             />
           )}
 
@@ -1391,6 +1460,7 @@ export default function App() {
             <MasterDataView
               students={students}
               teachers={teachers}
+              subjects={subjects}
               boardMembers={boardMembers}
               suppliers={suppliers}
               foundationProfile={foundationProfile}
@@ -1405,6 +1475,10 @@ export default function App() {
               onImportTeachers={handleImportTeachers}
               onUpdateTeacher={handleUpdateTeacher}
               onDeleteTeacher={handleDeleteTeacher}
+              onAddSubject={handleAddSubject}
+              onImportSubjects={handleImportSubjects}
+              onUpdateSubject={handleUpdateSubject}
+              onDeleteSubject={handleDeleteSubject}
               onAddBoardMember={handleAddBoardMember}
               onUpdateBoardMember={handleUpdateBoardMember}
               onDeleteBoardMember={handleDeleteBoardMember}

@@ -1,14 +1,28 @@
 @import "tailwindcss";
 
 :root {
-  font-size: 17.5px; /* Increases font size by 1 level globally across all pages and views */
+  font-size: 18px; /* Increases font & typography size by 1 full level globally across all ERP pages */
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  letter-spacing: -0.01em;
+}
+
+html {
+  font-size: 18px;
+  scroll-behavior: smooth;
 }
 
 body {
   font-size: 1rem;
   line-height: 1.55;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Ensure form controls and buttons retain the upscaled font legibility */
+input, select, textarea, button {
+  font-family: inherit;
+  font-size: inherit;
 }
 
 @media print {
