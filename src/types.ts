@@ -59,6 +59,8 @@ export interface Teacher {
   nip: string;
   nipy?: string;
   niy?: string;
+  nipOrNipy?: string;
+  photoUrl?: string;
   name: string;
   address?: string;
   phone?: string;
@@ -92,6 +94,8 @@ export interface FoundationBoard {
   id: string;
   nipy?: string;
   niy?: string;
+  nipOrNipy?: string;
+  photoUrl?: string;
   name: string;
   address?: string;
   phone: string;
@@ -238,6 +242,8 @@ export interface SiPLahProcurement {
   debitAccountName: string;
   notes?: string;
   isRegisteredToAssets?: boolean;
+  journalVoucherNo?: string;
+  isJournalPosted?: boolean;
 }
 
 // --- CMS Public Website Interfaces ---

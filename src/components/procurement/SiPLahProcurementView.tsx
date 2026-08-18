@@ -343,23 +343,30 @@ export const SiPLahProcurementView: React.FC<SiPLahProcurementViewProps> = ({
                         onApproveByTreasurer(proc.id, 'Hj. Nurul Aini, S.E., M.Ak (Bendahara Yayasan)')
                       }
                       className="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-bold shadow flex items-center gap-1.5 cursor-pointer transition"
+                      title="Menyetujui usulan dan secara otomatis mencatat pengeluaran di Laporan Keuangan ISAK 35"
                     >
                       <UserCheck className="w-4 h-4" />
-                      <span>Setujui Sebagai Bendahara Yayasan</span>
+                      <span>Setujui & Catat Otomatis ke Laporan Keuangan</span>
                     </button>
                   )}
 
                   {/* Ketua Yayasan Action */}
                   {proc.status === 'DISETUJUI_BENDAHARA' && (
-                    <button
-                      onClick={() =>
-                        onAcknowledgeByChairman(proc.id, 'Drs. H. M. Syukri, M.M (Ketua Yayasan)')
-                      }
-                      className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-bold shadow flex items-center gap-1.5 cursor-pointer transition"
-                    >
-                      <ShieldCheck className="w-4 h-4" />
-                      <span>Ketahui Sebagai Ketua Yayasan</span>
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5 px-3 py-1 bg-amber-50 text-amber-900 border border-amber-200 rounded-xl text-xs font-bold">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-amber-600" />
+                        <span>Tercatat Otomatis di Jurnal & Lap. Keuangan</span>
+                      </div>
+                      <button
+                        onClick={() =>
+                          onAcknowledgeByChairman(proc.id, 'Drs. H. M. Syukri, M.M (Ketua Yayasan)')
+                        }
+                        className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-bold shadow flex items-center gap-1.5 cursor-pointer transition"
+                      >
+                        <ShieldCheck className="w-4 h-4" />
+                        <span>Ketahui Sebagai Ketua Yayasan</span>
+                      </button>
+                    </div>
                   )}
 
                   {/* Disburse Action (Bendahara Sekolah / Kepsek) */}
@@ -369,14 +376,14 @@ export const SiPLahProcurementView: React.FC<SiPLahProcurementViewProps> = ({
                       className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow flex items-center gap-1.5 cursor-pointer"
                     >
                       <PackageCheck className="w-4 h-4" />
-                      <span>Cairkan Keuangan & Sinkronkan Ke Laporan Neraca</span>
+                      <span>Tandai Selesai / Pencairan Fisik</span>
                     </button>
                   )}
 
                   {proc.status === 'DICAIRKAN' && (
                     <div className="flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-xl text-xs font-bold">
                       <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                      <span>Terbuku di Jurnal & Register Aset Tetap</span>
+                      <span>Terbuku di Jurnal, Laporan Keuangan & Register Aset</span>
                     </div>
                   )}
                 </div>

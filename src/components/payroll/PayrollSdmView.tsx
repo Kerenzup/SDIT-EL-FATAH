@@ -940,7 +940,17 @@ export const PayrollSdmView: React.FC<PayrollSdmViewProps> = ({
                         </td>
 
                         <td className="py-3.5 px-4 text-right font-mono text-rose-600">
-                          -{formatRupiah(ded)}
+                          {ded > 0 ? (
+                            <div>
+                              <span>-{formatRupiah(ded)}</span>
+                              <div className="text-[10px] text-slate-400 font-sans">
+                                {t.pph21 ? `PPh: ${formatRupiah(t.pph21)} ` : ''}
+                                {t.bpjs ? `BPJS: ${formatRupiah(t.bpjs)}` : ''}
+                              </div>
+                            </div>
+                          ) : (
+                            <span className="text-slate-400 font-bold">Rp 0</span>
+                          )}
                         </td>
 
                         <td className="py-3.5 px-4 text-right font-mono font-black text-emerald-700 text-sm">
@@ -1353,7 +1363,7 @@ export const PayrollSdmView: React.FC<PayrollSdmViewProps> = ({
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block font-bold text-slate-700 mb-1">Jabatan / Role</label>
                   <select
@@ -1376,20 +1386,88 @@ export const PayrollSdmView: React.FC<PayrollSdmViewProps> = ({
                     type="text"
                     value={teacherFormData.assignedRombel || ''}
                     onChange={(e) => setTeacherFormData({ ...teacherFormData, assignedRombel: e.target.value })}
-                    className="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                    className="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none font-bold"
                     placeholder="misal: Kelas 1"
                   />
                 </div>
+              </div>
 
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Mata Pelajaran</label>
-                  <input
-                    type="text"
-                    value={teacherFormData.subjectTaught || ''}
-                    onChange={(e) => setTeacherFormData({ ...teacherFormData, subjectTaught: e.target.value })}
-                    className="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                    placeholder="misal: Tematik SD"
-                  />
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block font-bold text-slate-700">
+                    Mata Pelajaran (1 Guru Wali Kelas bisa mengajar beberapa mapel)
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setTeacherFormData({
+                        ...teacherFormData,
+                        subjectTaught:
+                          'Tematik SD (Pendidikan Pancasila, Bahasa Indonesia, Matematika, IPAS, Seni Budaya), Pendidikan Agama Islam, PJOK',
+                      });
+                    }}
+                    className="text-[10px] text-indigo-700 font-bold bg-indigo-50 hover:bg-indigo-100 px-2 py-0.5 rounded-lg border border-indigo-200 cursor-pointer transition flex items-center gap-1"
+                  >
+                    <Sparkles className="w-3 h-3 text-indigo-600" />
+                    <span>Paket Guru Kelas SD (Kurikulum Merdeka)</span>
+                  </button>
+                </div>
+                <input
+                  type="text"
+                  value={teacherFormData.subjectTaught || ''}
+                  onChange={(e) => setTeacherFormData({ ...teacherFormData, subjectTaught: e.target.value })}
+                  className="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none font-medium"
+                  placeholder="misal: Tematik SD, Pendidikan Agama Islam, Matematika, Bahasa Indonesia, PJOK"
+                />
+                {/* Quick Subject Chips */}
+                <div className="mt-1.5 flex flex-wrap gap-1.5 items-center">
+                  <span className="text-[10px] text-slate-400 font-semibold">Klik tambah/hapus mapel:</span>
+                  {[
+                    'Pendidikan Agama Islam',
+                    'Pendidikan Pancasila',
+                    'Bahasa Indonesia',
+                    'Matematika',
+                    'IPAS',
+                    'Seni Budaya',
+                    'PJOK',
+                    'Bahasa Inggris',
+                    'Tahfidz Al-Qur\'an',
+                    'Bahasa Arab',
+                  ].map((preset) => {
+                    const currentVal = teacherFormData.subjectTaught || '';
+                    const isSelected = currentVal.toLowerCase().includes(preset.toLowerCase());
+                    return (
+                      <button
+                        key={preset}
+                        type="button"
+                        onClick={() => {
+                          let nextVal = '';
+                          if (isSelected) {
+                            nextVal = currentVal
+                              .split(',')
+                              .map((p) => p.trim())
+                              .filter((p) => p.toLowerCase() !== preset.toLowerCase() && p.length > 0)
+                              .join(', ');
+                          } else {
+                            const parts = currentVal
+                              .split(',')
+                              .map((p) => p.trim())
+                              .filter((p) => p.length > 0);
+                            parts.push(preset);
+                            nextVal = parts.join(', ');
+                          }
+                          setTeacherFormData({ ...teacherFormData, subjectTaught: nextVal });
+                        }}
+                        className={`text-[10px] px-2 py-0.5 rounded-md font-bold transition cursor-pointer border ${
+                          isSelected
+                            ? 'bg-indigo-600 text-white border-indigo-700 shadow-xs'
+                            : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200'
+                        }`}
+                      >
+                        {isSelected ? `✓ ${preset}` : `+ ${preset}`}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -1439,6 +1517,38 @@ export const PayrollSdmView: React.FC<PayrollSdmViewProps> = ({
                       className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-xl font-mono text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                     />
                   </div>
+
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">Potongan PPh 21 (Rp)</label>
+                    <input
+                      type="number"
+                      value={teacherFormData.pph21 || 0}
+                      onChange={(e) => setTeacherFormData({ ...teacherFormData, pph21: Number(e.target.value) })}
+                      className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-xl font-mono text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                {/* Live Take Home Pay Preview */}
+                <div className="mt-3 p-3 bg-indigo-50/80 border border-indigo-100 rounded-xl flex items-center justify-between">
+                  <div className="text-xs text-indigo-900">
+                    <span className="font-bold">Estimasi Gaji Bersih (THP):</span>
+                    <p className="text-[11px] text-indigo-700 font-mono">
+                      (Gaji Pokok + Tunjangan + Honor) - (BPJS + PPh21)
+                    </p>
+                  </div>
+                  <span className="text-base font-black text-indigo-900 font-mono">
+                    {formatRupiah(
+                      Math.max(
+                        0,
+                        (Number(teacherFormData.baseSalary) || 0) +
+                          (Number(teacherFormData.allowance) || 0) +
+                          (Number(teacherFormData.committeeHonor) || 0) -
+                          (Number(teacherFormData.bpjs) || 0) -
+                          (Number(teacherFormData.pph21) || 0)
+                      )
+                    )}
+                  </span>
                 </div>
               </div>
 

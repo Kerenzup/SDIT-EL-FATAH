@@ -107,7 +107,7 @@ export const UniformSectionView: React.FC<UniformSectionViewProps> = ({
             <div className="inline-flex items-center gap-2 px-3.5 py-1 bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 text-slate-950 text-xs font-black rounded-full shadow-md uppercase tracking-wider">
               <Shirt className="w-4 h-4 text-slate-950" /> ATRIBUT & SERAGAM RESMI SEKOLAH
             </div>
-            <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight leading-tight">
+            <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight leading-snug">
               Katalog & Jadwal Penggunaan Seragam Sekolah
             </h1>
             <p className="text-xs sm:text-sm text-emerald-100/90 leading-relaxed max-w-2xl">

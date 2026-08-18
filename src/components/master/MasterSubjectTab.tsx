@@ -53,6 +53,7 @@ export const MasterSubjectTab: React.FC<MasterSubjectTabProps> = ({
   const [formTeacherName, setFormTeacherName] = useState('');
   const [formWaliKelas, setFormWaliKelas] = useState('-');
   const [formSubjectName, setFormSubjectName] = useState('');
+  const [selectedMultiSubjects, setSelectedMultiSubjects] = useState<string[]>([]);
   const [formGradeClass, setFormGradeClass] = useState('Kelas 1 - 6');
   const [formKkm, setFormKkm] = useState<number>(75);
   const [formSemester, setFormSemester] = useState('Semester 1 (Ganjil)');
@@ -110,11 +111,13 @@ export const MasterSubjectTab: React.FC<MasterSubjectTabProps> = ({
   // Modal Open Handlers
   const handleOpenAddModal = () => {
     setModalSubject(null);
-    setFormNipy(teachers[0]?.nipy || '1988110504');
-    setFormTeacherName(teachers[0]?.name || 'Ojah Nasiah Ulfah, S.Ag');
-    setFormWaliKelas(teachers[0]?.assignedRombel || '-');
+    const defaultTch = teachers[0] || { nipy: '1988110504', name: 'Ojah Nasiah Ulfah, S.Ag', assignedRombel: '-' };
+    setFormNipy(defaultTch.nipy || '1988110504');
+    setFormTeacherName(defaultTch.name || 'Ojah Nasiah Ulfah, S.Ag');
+    setFormWaliKelas(defaultTch.assignedRombel || '-');
     setFormSubjectName('');
-    setFormGradeClass('Kelas 1 - 6');
+    setSelectedMultiSubjects([]);
+    setFormGradeClass(defaultTch.assignedRombel && defaultTch.assignedRombel !== '-' ? defaultTch.assignedRombel : 'Kelas 1 - 6');
     setFormKkm(75);
     setFormSemester('Semester 1 (Ganjil)');
     setFormAcademicYear('2026/2027');
@@ -128,6 +131,7 @@ export const MasterSubjectTab: React.FC<MasterSubjectTabProps> = ({
     setFormTeacherName(sub.teacherName);
     setFormWaliKelas(sub.waliKelas || '-');
     setFormSubjectName(sub.subjectName);
+    setSelectedMultiSubjects([sub.subjectName]);
     setFormGradeClass(sub.gradeClass || 'Kelas 1 - 6');
     setFormKkm(sub.kkm || 75);
     setFormSemester(sub.semester || 'Semester 1 (Ganjil)');
@@ -142,18 +146,58 @@ export const MasterSubjectTab: React.FC<MasterSubjectTabProps> = ({
     const teacherObj = teachers.find((t) => t.name === selectedName);
     if (teacherObj) {
       if (teacherObj.nipy) setFormNipy(teacherObj.nipy);
-      if (teacherObj.assignedRombel) setFormWaliKelas(teacherObj.assignedRombel);
+      if (teacherObj.assignedRombel) {
+        setFormWaliKelas(teacherObj.assignedRombel);
+        if (teacherObj.assignedRombel !== '-') {
+          setFormGradeClass(teacherObj.assignedRombel);
+        }
+      }
+    }
+  };
+
+  const standardSubjectsList = [
+    'Pendidikan Agama Islam & Budi Pekerti',
+    'Pendidikan Pancasila',
+    'Bahasa Indonesia',
+    'Matematika',
+    'Ilmu Pengetahuan Alam dan Sosial (IPAS)',
+    'Seni Rupa & Prakarya',
+    'Pendidikan Jasmani, Olahraga & Kesehatan (PJOK)',
+    'Bahasa Inggris',
+    'Tahsin & Tahfidz Al-Qur\'an Juz 30',
+    'Bahasa Arab Dasar',
+    'Bina Pribadi Islam (BPI)',
+    'Teknologi Informasi & Komputer (TIK Dasar)',
+  ];
+
+  // Quick Preset for Standard Kurikulum Merdeka SD
+  const handleApplySdPackage = (targetWaliKelas?: string) => {
+    const rombel = targetWaliKelas || formWaliKelas || 'Kelas 1';
+    const corePaket = [
+      'Pendidikan Agama Islam & Budi Pekerti',
+      'Pendidikan Pancasila',
+      'Bahasa Indonesia',
+      'Matematika',
+      'Ilmu Pengetahuan Alam dan Sosial (IPAS)',
+      'Seni Rupa & Prakarya',
+      'Pendidikan Jasmani, Olahraga & Kesehatan (PJOK)',
+      'Tahsin & Tahfidz Al-Qur\'an Juz 30',
+    ];
+    setSelectedMultiSubjects(corePaket);
+    setFormSubjectName(corePaket.join(', '));
+    if (rombel !== '-') {
+      setFormGradeClass(rombel);
     }
   };
 
   const handleModalSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formSubjectName.trim() || !formTeacherName.trim()) {
-      alert('Mohon isi nama mata pelajaran dan nama guru dengan benar.');
-      return;
-    }
 
     if (modalSubject) {
+      if (!formSubjectName.trim() || !formTeacherName.trim()) {
+        alert('Mohon isi nama mata pelajaran dan nama guru dengan benar.');
+        return;
+      }
       const updated: SubjectItem = {
         ...modalSubject,
         nipy: formNipy.trim(),
@@ -169,31 +213,56 @@ export const MasterSubjectTab: React.FC<MasterSubjectTabProps> = ({
       onUpdateSubject(updated);
       setSuccessToast(`Mata Pelajaran "${updated.subjectName}" berhasil diperbarui!`);
     } else {
-      const newSubject: SubjectItem = {
-        id: `sub-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+      let finalSubjectNames: string[] = [];
+      if (selectedMultiSubjects.length > 0) {
+        finalSubjectNames = [...selectedMultiSubjects];
+      } else if (formSubjectName.includes(',')) {
+        finalSubjectNames = formSubjectName.split(',').map((s) => s.trim()).filter((s) => s.length > 0);
+      } else if (formSubjectName.trim()) {
+        finalSubjectNames = [formSubjectName.trim()];
+      }
+
+      if (finalSubjectNames.length === 0 || !formTeacherName.trim()) {
+        alert('Mohon pilih atau tuliskan minimal satu nama mata pelajaran dan nama guru.');
+        return;
+      }
+
+      const createdItems: SubjectItem[] = finalSubjectNames.map((name, idx) => ({
+        id: `sub-${Date.now()}-${idx}-${Math.random().toString(36).substr(2, 4)}`,
         nipy: formNipy.trim() || `199${Math.floor(1000000 + Math.random() * 9000000)}`,
         teacherName: formTeacherName.trim(),
         waliKelas: formWaliKelas.trim() || '-',
-        subjectName: formSubjectName.trim(),
+        subjectName: name,
         gradeClass: formGradeClass.trim() || 'Kelas 1 - 6',
         kkm: Number(formKkm) || 75,
         semester: formSemester,
         academicYear: formAcademicYear,
         notes: formNotes.trim(),
-      };
-      onAddSubject(newSubject);
-      setSuccessToast(`Mata Pelajaran "${newSubject.subjectName}" berhasil ditambahkan ke Master Data!`);
+      }));
+
+      if (onImportSubjects && createdItems.length > 1) {
+        onImportSubjects(createdItems);
+      } else {
+        createdItems.forEach((item) => onAddSubject(item));
+      }
+
+      setSuccessToast(
+        createdItems.length > 1
+          ? `Berhasil mendaftarkan ${createdItems.length} Mata Pelajaran untuk ${formTeacherName}!`
+          : `Mata Pelajaran "${createdItems[0].subjectName}" berhasil ditambahkan!`
+      );
     }
 
     setShowModal(false);
     setModalSubject(null);
+    setSelectedMultiSubjects([]);
     setTimeout(() => setSuccessToast(''), 4000);
   };
 
   const handleConfirmDelete = () => {
     if (deleteConfirmSubject) {
       onDeleteSubject(deleteConfirmSubject.id);
-      setSuccessToast(`Mata Pelajaran "${deleteConfirmSubject.subjectName}" berhasil dihapus.`);
+      setSuccessToast(`Mata Pelajaran "${deleteConfirmSubject.subjectName}" berhasil dihapus dari sistem.`);
       setDeleteConfirmSubject(null);
       setTimeout(() => setSuccessToast(''), 4000);
     }
@@ -406,14 +475,14 @@ export const MasterSubjectTab: React.FC<MasterSubjectTabProps> = ({
                 Kurikulum Merdeka & Keislaman
               </span>
               <span className="text-[11px] text-emerald-300 font-bold flex items-center gap-1">
-                <Sparkles className="w-3.5 h-3.5" /> Single Source of Truth
+                <Sparkles className="w-3.5 h-3.5" /> Multi-Mapel Guru Kelas
               </span>
             </div>
             <h3 className="font-extrabold text-white text-sm mt-0.5">
               Master Mata Pelajaran, NIPY Guru & Penugasan Wali Kelas
             </h3>
             <p className="text-xs text-emerald-100/90 leading-relaxed">
-              Tabel ini digunakan sebagai data acuan utama pembuatan <strong>Jurnal Mengajar Guru Rombel</strong> dan pengisian nilai pada <strong>E-Raport Siswa</strong>.
+              Di tingkat SD/MI, 1 Guru Wali Kelas dapat mengampu beberapa mata pelajaran sekaligus. Data ini terintegrasi langsung dengan <strong>Jurnal Mengajar Guru Rombel</strong> dan <strong>E-Raport Siswa</strong>.
             </p>
           </div>
         </div>
@@ -426,6 +495,18 @@ export const MasterSubjectTab: React.FC<MasterSubjectTabProps> = ({
           >
             <Printer className="w-4 h-4 text-emerald-400" />
             <span>Cetak PDF</span>
+          </button>
+
+          <button
+            onClick={() => {
+              handleOpenAddModal();
+              handleApplySdPackage('Kelas 1');
+            }}
+            className="px-3.5 py-2 bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs rounded-xl shadow flex items-center gap-1.5 cursor-pointer transition"
+            title="Daftarkan sekaligus seluruh paket mata pelajaran Kurikulum Merdeka untuk Guru Kelas SD"
+          >
+            <Sparkles className="w-4 h-4 text-slate-900" />
+            <span>+ Paket Mapel Guru SD</span>
           </button>
 
           <button
@@ -726,10 +807,11 @@ export const MasterSubjectTab: React.FC<MasterSubjectTabProps> = ({
                             {/* Tombol Hapus */}
                             <button
                               onClick={() => setDeleteConfirmSubject(sub)}
-                              className="p-1 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-lg transition cursor-pointer"
+                              className="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold rounded-lg text-[11px] transition cursor-pointer flex items-center gap-1 border border-rose-200"
                               title="Hapus Mata Pelajaran"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
+                              <span>Hapus</span>
                             </button>
                           </div>
                         )}
@@ -765,20 +847,77 @@ export const MasterSubjectTab: React.FC<MasterSubjectTabProps> = ({
               </button>
             </div>
 
-            <form onSubmit={handleModalSubmit} className="space-y-3">
-              {/* Mata Pelajaran Name */}
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Nama Mata Pelajaran <span className="text-rose-500">*</span>
-                </label>
+            <form onSubmit={handleModalSubmit} className="space-y-4">
+              {/* Multi-subject selector chips / input */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-bold text-slate-800">
+                    Nama Mata Pelajaran <span className="text-rose-500">*</span>
+                  </label>
+                  {!modalSubject && (
+                    <button
+                      type="button"
+                      onClick={() => handleApplySdPackage()}
+                      className="text-[11px] font-black text-amber-700 hover:text-amber-800 bg-amber-100 hover:bg-amber-200 px-2 py-0.5 rounded-md transition cursor-pointer flex items-center gap-1"
+                    >
+                      <Sparkles className="w-3 h-3" />
+                      <span>+ Pilih Paket Lengkap Guru Kelas SD</span>
+                    </button>
+                  )}
+                </div>
+
                 <input
                   type="text"
                   value={formSubjectName}
-                  onChange={(e) => setFormSubjectName(e.target.value)}
-                  placeholder="Contoh: Pendidikan Agama Islam & Budi Pekerti"
+                  onChange={(e) => {
+                    setFormSubjectName(e.target.value);
+                    if (e.target.value.includes(',')) {
+                      setSelectedMultiSubjects(
+                        e.target.value.split(',').map((s) => s.trim()).filter((s) => s.length > 0)
+                      );
+                    }
+                  }}
+                  placeholder="Contoh: Bahasa Indonesia, Matematika, IPAS, PJOK (bisa dipisah koma)"
                   className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-black text-slate-900 focus:outline-none focus:border-emerald-500"
-                  required
+                  required={selectedMultiSubjects.length === 0}
                 />
+
+                {!modalSubject && (
+                  <div className="space-y-1.5 pt-1">
+                    <p className="text-[11px] font-bold text-slate-500">
+                      Klik cepat untuk menambah/mengurangi mata pelajaran yang diampu guru ini:
+                    </p>
+                    <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto p-1 bg-slate-50 border border-slate-200 rounded-xl">
+                      {standardSubjectsList.map((subj) => {
+                        const isSelected = selectedMultiSubjects.includes(subj);
+                        return (
+                          <button
+                            key={subj}
+                            type="button"
+                            onClick={() => {
+                              let next: string[];
+                              if (isSelected) {
+                                next = selectedMultiSubjects.filter((s) => s !== subj);
+                              } else {
+                                next = [...selectedMultiSubjects, subj];
+                              }
+                              setSelectedMultiSubjects(next);
+                              setFormSubjectName(next.join(', '));
+                            }}
+                            className={`px-2 py-1 rounded-lg text-[11px] font-bold transition cursor-pointer flex items-center gap-1 border ${
+                              isSelected
+                                ? 'bg-emerald-600 text-white border-emerald-700 shadow-2xs'
+                                : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
+                            }`}
+                          >
+                            <span>{subj}</span>
+                            {isSelected && <Check className="w-3 h-3" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Guru & NIPY Selection */}

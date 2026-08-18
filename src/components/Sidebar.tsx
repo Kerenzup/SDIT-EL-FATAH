@@ -282,7 +282,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       setActiveTab(item.id as TabType);
                     }
                   }}
-                  title={isCollapsed ? `${item.label} (${item.badge || ''})` : undefined}
+                  title={isCollapsed ? item.label : undefined}
                   className={`w-full flex items-center justify-between rounded-xl transition cursor-pointer ${
                     isCollapsed ? 'p-2.5 justify-center' : 'px-3 py-2 text-xs font-semibold'
                   } ${

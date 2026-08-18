@@ -1730,7 +1730,7 @@ export const getAvailableSubjectsForClass = (gradeClass: string, teachersList?: 
   // 1. Core / standard subjects for this class level
   getSubjectsByClass(gradeClass).forEach(add);
 
-  // 2. Add subjects from teachers in Master Guru
+  // 2. Add subjects from teachers in Master Guru (support comma separated multi-subjects)
   if (teachersList && teachersList.length > 0) {
     teachersList.forEach((t) => {
       if (t.subjectTaught) {
@@ -1743,13 +1743,14 @@ export const getAvailableSubjectsForClass = (gradeClass: string, teachersList?: 
           t.assignedRombel.toLowerCase().includes('bpi');
 
         if (matchesThisClass) {
-          const clean = raw.replace(/\s*&\s*Wali\s*Kelas\s*\d+/gi, '').trim();
-          if (clean && !clean.toLowerCase().includes('tata usaha') && !clean.toLowerCase().includes('humas') && !clean.toLowerCase().includes('sarana')) {
-            add(clean);
-          }
-          if (raw && !raw.toLowerCase().includes('tata usaha') && !raw.toLowerCase().includes('humas') && !raw.toLowerCase().includes('sarana')) {
-            add(raw);
-          }
+          // Split by comma if teacher teaches multiple subjects
+          const parts = raw.split(',').map((p) => p.trim()).filter((p) => p.length > 0);
+          parts.forEach((part) => {
+            const clean = part.replace(/\s*&\s*Wali\s*Kelas\s*\d+/gi, '').trim();
+            if (clean && !clean.toLowerCase().includes('tata usaha') && !clean.toLowerCase().includes('humas') && !clean.toLowerCase().includes('sarana')) {
+              add(clean);
+            }
+          });
         }
       }
     });

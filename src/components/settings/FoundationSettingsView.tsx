@@ -101,18 +101,73 @@ export const FoundationSettingsView: React.FC<FoundationSettingsViewProps> = ({
     reader.readAsText(file);
   };
 
+  const buildSyncedProfile = (): FoundationProfile => {
+    const currentOrg = formData.orgStructure && formData.orgStructure.length > 0 ? formData.orgStructure : (profile.orgStructure || []);
+    const updatedOrg = currentOrg.map((m) => {
+      const pos = (m.position || '').toLowerCase();
+      if (pos.includes('kepala sekolah') || pos.includes('kepsek')) {
+        return {
+          ...m,
+          name: formData.headmasterName || m.name,
+          nipOrNipy: formData.headmasterNip || m.nipOrNipy,
+          photoUrl: formData.headmasterPhotoUrl || m.photoUrl,
+        };
+      }
+      if (pos.includes('pembina')) {
+        return {
+          ...m,
+          name: formData.pembinaName || m.name,
+          nipOrNipy: formData.pembinaNip || m.nipOrNipy,
+          photoUrl: formData.pembinaPhotoUrl || m.photoUrl,
+        };
+      }
+      if (pos.includes('ketua') || pos.includes('pimpinan')) {
+        return {
+          ...m,
+          name: formData.leaderName || m.name,
+          nipOrNipy: formData.leaderNip || m.nipOrNipy,
+          photoUrl: formData.leaderPhotoUrl || m.photoUrl,
+        };
+      }
+      if (pos.includes('sekretaris')) {
+        return {
+          ...m,
+          name: formData.secretaryName || m.name,
+          nipOrNipy: formData.secretaryNip || m.nipOrNipy,
+          photoUrl: formData.secretaryPhotoUrl || m.photoUrl,
+        };
+      }
+      if (pos.includes('bendahara')) {
+        return {
+          ...m,
+          name: formData.treasurerName || m.name,
+          nipOrNipy: formData.treasurerNip || m.nipOrNipy,
+          photoUrl: formData.treasurerPhotoUrl || m.photoUrl,
+        };
+      }
+      return m;
+    });
+
+    return {
+      ...formData,
+      orgStructure: updatedOrg,
+    };
+  };
+
   const handleSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
+    const finalProfile = buildSyncedProfile();
+    setFormData(finalProfile);
     if (onSaveProfile) {
-      onSaveProfile(formData);
+      onSaveProfile(finalProfile);
     }
-    safeSetLocalStorage('yayasan_profile', formData);
+    safeSetLocalStorage('yayasan_profile', finalProfile);
     setProfileApprovalStatus('DISETUJUI');
     setApprovalLog((prev) => [
-      `User (${new Date().toLocaleTimeString()}): Perubahan identitas & foto pengurus yayasan telah disimpan ke database.`,
+      `User (${new Date().toLocaleTimeString()}): Perubahan identitas & foto profil kepala sekolah/pengurus telah disimpan secara permanen.`,
       ...prev,
     ]);
-    triggerToast('Pengaturan Profil & Foto Pengurus Yayasan Berhasil Disimpan!');
+    triggerToast('Pengaturan Profil & Foto Kepala Sekolah / Pengurus Yayasan Berhasil Disimpan!');
   };
 
   const handleRequestApproval = () => {
@@ -125,9 +180,12 @@ export const FoundationSettingsView: React.FC<FoundationSettingsViewProps> = ({
   };
 
   const handleApproveChanges = () => {
+    const finalProfile = buildSyncedProfile();
+    setFormData(finalProfile);
     if (onSaveProfile) {
-      onSaveProfile(formData);
+      onSaveProfile(finalProfile);
     }
+    safeSetLocalStorage('yayasan_profile', finalProfile);
     setProfileApprovalStatus('DISETUJUI');
     setApprovalLog((prev) => [
       `Ketua Yayasan (${new Date().toLocaleTimeString()}): Perubahan identitas yayasan disetujui resmi.`,

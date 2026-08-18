@@ -235,11 +235,12 @@ export const LOCAL_IMAGES = {
 };
 
 /**
- * Returns a guaranteed local image URL or Data URI based on title/position or provided url
+ * Returns a guaranteed valid photo URL (web link, Base64 Data URL, blob, or asset path)
+ * or falls back to an elegant local vector illustration based on title/position/name.
  */
 export function getLocalPhotoUrl(url?: string, positionOrName: string = ''): string {
-  if (url && (url.startsWith('data:') || url.startsWith('blob:') || url.startsWith('/images/'))) {
-    return url;
+  if (url && typeof url === 'string' && url.trim().length > 0) {
+    return url.trim();
   }
   
   const pos = positionOrName.toLowerCase();
@@ -247,8 +248,34 @@ export function getLocalPhotoUrl(url?: string, positionOrName: string = ''): str
   if (pos.includes('ketua') || pos.includes('pimpinan')) return LOCAL_IMAGES.ketua;
   if (pos.includes('sekretaris')) return LOCAL_IMAGES.sekretaris;
   if (pos.includes('bendahara')) return LOCAL_IMAGES.bendahara;
-  if (pos.includes('kepala sekolah') || pos.includes('kepsek')) return LOCAL_IMAGES.kepalaSekolah;
-  if (pos.includes('fatimah') || pos.includes('rina') || pos.includes('ibu') || pos.includes('hj')) return LOCAL_IMAGES.guruWanita;
+  if (pos.includes('kepala sekolah') || pos.includes('kepsek') || pos.includes('headmaster')) return LOCAL_IMAGES.kepalaSekolah;
+  if (
+    pos.includes('fatimah') ||
+    pos.includes('rina') ||
+    pos.includes('ibu') ||
+    pos.includes('hj') ||
+    pos.includes('wanita') ||
+    pos.includes('perempuan') ||
+    pos.includes('iis') ||
+    pos.includes('rohmayanti') ||
+    pos.includes('mega') ||
+    pos.includes('andini') ||
+    pos.includes('ojah') ||
+    pos.includes('nasiah') ||
+    pos.includes('uyat') ||
+    pos.includes('sukriyati') ||
+    pos.includes('setia widi') ||
+    pos.includes('nurbibiyatillah') ||
+    pos.includes('velayati') ||
+    pos.includes('mas\'ah') ||
+    pos.includes('nur\'aeni') ||
+    pos.includes('syifa') ||
+    pos.includes('zahra') ||
+    pos.includes('aisyah') ||
+    pos.includes('khadijah')
+  ) {
+    return LOCAL_IMAGES.guruWanita;
+  }
   
   return LOCAL_IMAGES.guruPria;
 }

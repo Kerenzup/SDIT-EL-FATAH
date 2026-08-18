@@ -305,7 +305,10 @@ export default function App() {
       getIDBItem<ERaport[]>('yayasan_e_raports', []),
       getIDBItem<TeacherJournalRombel[]>('yayasan_teacher_journals', []),
       getIDBItem<FoundationArchiveDocument[]>('yayasan_foundation_archives', []),
-    ]).then(([items, prof, cfg, news, banners, achs, raports, journals, archives]) => {
+      getIDBItem<Teacher[]>('yayasan_teachers', []),
+      getIDBItem<SpeechesCMS>('yayasan_speeches', speeches),
+      getIDBItem<FoundationBoard[]>('yayasan_board_members', []),
+    ]).then(([items, prof, cfg, news, banners, achs, raports, journals, archives, savedTeachers, savedSpeeches, savedBoard]) => {
       if (items && Array.isArray(items) && items.length > 0) {
         setGalleryItems(items);
       }
@@ -332,6 +335,15 @@ export default function App() {
       }
       if (archives && Array.isArray(archives) && archives.length > 0) {
         setFoundationArchives(archives);
+      }
+      if (savedTeachers && Array.isArray(savedTeachers) && savedTeachers.length > 0) {
+        setTeachers(savedTeachers);
+      }
+      if (savedSpeeches && (savedSpeeches.headmasterSpeech || savedSpeeches.headmasterName)) {
+        setSpeeches(savedSpeeches);
+      }
+      if (savedBoard && Array.isArray(savedBoard) && savedBoard.length > 0) {
+        setBoardMembers(savedBoard);
       }
       // Set hydration flag so subsequent user changes are saved reliably
       isHydratedRef.current = true;
@@ -656,6 +668,12 @@ export default function App() {
   };
 
   const handleApproveTreasurer = (id: string, treasurerName: string) => {
+    const proc = siplahProcurements.find((p) => p.id === id);
+    if (!proc) return;
+
+    const voucherNumber = `JV/SIPLAH/${Date.now().toString().slice(-4)}`;
+
+    // 1. Update status to DISETUJUI_BENDAHARA & set journal tracking flags
     setSiplahProcurements((prev) =>
       prev.map((p) =>
         p.id === id
@@ -664,10 +682,61 @@ export default function App() {
               status: 'DISETUJUI_BENDAHARA',
               approvedByTreasurer: treasurerName,
               approvedTreasurerDate: new Date().toISOString().split('T')[0],
+              journalVoucherNo: voucherNumber,
+              isJournalPosted: true,
+              isRegisteredToAssets: p.category === 'ASET_TETAP' ? true : p.isRegisteredToAssets,
             }
           : p
       )
     );
+
+    // 2. Automatically record expenditure transaction in Journal / Financial Reports
+    if (!proc.isJournalPosted) {
+      const creditCode = proc.fundingSource === 'DANA_BOS' ? '1103' : '1102';
+      const creditName = proc.fundingSource === 'DANA_BOS' ? 'Bank BNI Operasional BOS' : 'Bank Syariah Yayasan';
+
+      const journal: Omit<JournalEntry, 'id'> = {
+        date: new Date().toISOString().split('T')[0],
+        voucherNo: voucherNumber,
+        description: `Belanja SiPLah: ${proc.title} (${proc.merchantName})`,
+        categoryTag: proc.fundingSource === 'DANA_BOS' ? 'BOS' : proc.category === 'ASET_TETAP' ? 'ASSET' : 'OPERASIONAL',
+        debitAccountCode: proc.debitAccountCode,
+        debitAccountName: proc.debitAccountName,
+        creditAccountCode: creditCode,
+        creditAccountName: creditName,
+        amount: proc.amount,
+        referenceNo: proc.code,
+        notes: `Pengeluaran otomatis tercatat di Laporan Keuangan setelah disetujui Bendahara Yayasan (${treasurerName}).`,
+      };
+      handleAddJournalEntry(journal);
+
+      // 3. If Fixed Asset, automatically register to Fixed Asset Register & Balance Sheet
+      if (proc.category === 'ASET_TETAP' && !proc.isRegisteredToAssets) {
+        const newAsset: FixedAsset = {
+          id: `ast-sip-${Date.now()}`,
+          code: `AST-SIPLAH-${Date.now().toString().slice(-4)}`,
+          name: proc.title,
+          category: 'Peralatan & Komputer',
+          purchaseDate: new Date().toISOString().split('T')[0],
+          acquisitionCost: proc.amount,
+          usefulLifeYears: 5,
+          accumulatedDepreciation: 0,
+          bookValue: proc.amount,
+          annualDepreciation: Math.round(proc.amount / 5),
+          condition: 'Baik',
+        };
+        setFixedAssets((prev) => [newAsset, ...prev]);
+      }
+
+      // 4. Update realization in ARKAS budget matching source
+      setArkasBudget((prev) =>
+        prev.map((b) =>
+          b.fundingSource === proc.fundingSource
+            ? { ...b, realizedAmount: b.realizedAmount + proc.amount }
+            : b
+        )
+      );
+    }
   };
 
   const handleAcknowledgeChairman = (id: string, chairmanName: string) => {
@@ -685,58 +754,61 @@ export default function App() {
     );
   };
 
-  // Disburse Procurement Handler: Posts Journal & Registers Asset to synchronize Balance Sheet
+  // Disburse Procurement Handler: Ensures status is marked DICAIRKAN
   const handleDisburseProcurement = (id: string) => {
     const proc = siplahProcurements.find((p) => p.id === id);
     if (!proc) return;
 
     // 1. Update status to DICAIRKAN
     setSiplahProcurements((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, status: 'DICAIRKAN', isRegisteredToAssets: true } : p))
+      prev.map((p) => (p.id === id ? { ...p, status: 'DICAIRKAN', isRegisteredToAssets: true, isJournalPosted: true } : p))
     );
 
-    // 2. Post Journal Entry (Debits DebitAccount, Credits Bank Syariah Yayasan 1102)
-    const journal: Omit<JournalEntry, 'id'> = {
-      date: new Date().toISOString().split('T')[0],
-      voucherNo: `JV/SIPLAH/${Date.now().toString().slice(-4)}`,
-      description: `Pencairan SiPLah: ${proc.title} (${proc.merchantName})`,
-      categoryTag: proc.fundingSource === 'DANA_BOS' ? 'BOS' : proc.category === 'ASET_TETAP' ? 'ASSET' : 'OPERASIONAL',
-      debitAccountCode: proc.debitAccountCode,
-      debitAccountName: proc.debitAccountName,
-      creditAccountCode: '1102',
-      creditAccountName: 'Bank Syariah Yayasan',
-      amount: proc.amount,
-      referenceNo: proc.code,
-      notes: `Pengeluaran disetujui berjenjang oleh Kepsek, Bendahara Yayasan & Ketua Yayasan.`,
-    };
-    handleAddJournalEntry(journal);
+    // 2. If not already posted, post now
+    if (!proc.isJournalPosted) {
+      const creditCode = proc.fundingSource === 'DANA_BOS' ? '1103' : '1102';
+      const creditName = proc.fundingSource === 'DANA_BOS' ? 'Bank BNI Operasional BOS' : 'Bank Syariah Yayasan';
 
-    // 3. If Fixed Asset category, register to FixedAsset list to synchronize with Balance Sheet!
-    if (proc.category === 'ASET_TETAP') {
-      const newAsset: FixedAsset = {
-        id: `ast-sip-${Date.now()}`,
-        code: `AST-SIPLAH-${Date.now().toString().slice(-4)}`,
-        name: proc.title,
-        category: 'Peralatan & Komputer',
-        purchaseDate: new Date().toISOString().split('T')[0],
-        acquisitionCost: proc.amount,
-        usefulLifeYears: 5,
-        accumulatedDepreciation: 0,
-        bookValue: proc.amount,
-        annualDepreciation: Math.round(proc.amount / 5),
-        condition: 'Baik',
+      const journal: Omit<JournalEntry, 'id'> = {
+        date: new Date().toISOString().split('T')[0],
+        voucherNo: proc.journalVoucherNo || `JV/SIPLAH/${Date.now().toString().slice(-4)}`,
+        description: `Pencairan Belanja SiPLah: ${proc.title} (${proc.merchantName})`,
+        categoryTag: proc.fundingSource === 'DANA_BOS' ? 'BOS' : proc.category === 'ASET_TETAP' ? 'ASSET' : 'OPERASIONAL',
+        debitAccountCode: proc.debitAccountCode,
+        debitAccountName: proc.debitAccountName,
+        creditAccountCode: creditCode,
+        creditAccountName: creditName,
+        amount: proc.amount,
+        referenceNo: proc.code,
+        notes: `Pengeluaran dicairkan dan tercatat di Laporan Keuangan yayasan.`,
       };
-      setFixedAssets((prev) => [newAsset, ...prev]);
-    }
+      handleAddJournalEntry(journal);
 
-    // 4. Update realization in ARKAS budget matching source
-    setArkasBudget((prev) =>
-      prev.map((b) =>
-        b.fundingSource === proc.fundingSource
-          ? { ...b, realizedAmount: b.realizedAmount + proc.amount }
-          : b
-      )
-    );
+      if (proc.category === 'ASET_TETAP' && !proc.isRegisteredToAssets) {
+        const newAsset: FixedAsset = {
+          id: `ast-sip-${Date.now()}`,
+          code: `AST-SIPLAH-${Date.now().toString().slice(-4)}`,
+          name: proc.title,
+          category: 'Peralatan & Komputer',
+          purchaseDate: new Date().toISOString().split('T')[0],
+          acquisitionCost: proc.amount,
+          usefulLifeYears: 5,
+          accumulatedDepreciation: 0,
+          bookValue: proc.amount,
+          annualDepreciation: Math.round(proc.amount / 5),
+          condition: 'Baik',
+        };
+        setFixedAssets((prev) => [newAsset, ...prev]);
+      }
+
+      setArkasBudget((prev) =>
+        prev.map((b) =>
+          b.fundingSource === proc.fundingSource
+            ? { ...b, realizedAmount: b.realizedAmount + proc.amount }
+            : b
+        )
+      );
+    }
   };
 
   // --- ACADEMIC & RAPORT HANDLERS ---
@@ -890,34 +962,132 @@ export default function App() {
     });
   };
 
-  // Payroll Sync Handler
-  const handleSyncPayrollToLiabilities = (currentTeachers: Teacher[] = teachers) => {
+  // Payroll & SDM Expense/Liabilities Sync Handler
+  const handleSyncPayrollToLiabilities = (
+    currentTeachers: Teacher[] = teachers,
+    currentBoard: FoundationBoard[] = boardMembers
+  ) => {
     const totalGuruNet = currentTeachers
       .filter((t) => t.role !== 'Kepala Sekolah')
-      .reduce((sum, t) => sum + (t.netSalary || 0), 0);
+      .reduce((sum, t) => sum + (t.netSalary || ((t.baseSalary || 0) + (t.allowance || 0) + (t.committeeHonor || 0) - (t.pph21 || 0) - (t.bpjs || 0))), 0);
 
     const totalKepsekNet = currentTeachers
       .filter((t) => t.role === 'Kepala Sekolah')
-      .reduce((sum, t) => sum + (t.netSalary || 0), 0);
+      .reduce((sum, t) => sum + (t.netSalary || ((t.baseSalary || 0) + (t.allowance || 0) + (t.committeeHonor || 0) - (t.pph21 || 0) - (t.bpjs || 0))), 0);
+
+    const totalGuruGross = currentTeachers
+      .filter((t) => t.role !== 'Kepala Sekolah')
+      .reduce((sum, t) => sum + (t.baseSalary || 0) + (t.allowance || 0) + (t.committeeHonor || 0), 0);
+
+    const totalKepsekGross = currentTeachers
+      .filter((t) => t.role === 'Kepala Sekolah')
+      .reduce((sum, t) => sum + (t.baseSalary || 0) + (t.allowance || 0) + (t.committeeHonor || 0), 0);
+
+    const totalBoardGross = currentBoard.reduce(
+      (sum, b) => sum + (b.baseSalary || 0) + (b.allowance || 0) + (b.committeeHonor || 0),
+      0
+    );
 
     const totalPph = currentTeachers.reduce((sum, t) => sum + (t.pph21 || 0), 0);
     const totalBpjs = currentTeachers.reduce((sum, t) => sum + (t.bpjs || 0), 0);
 
-    setAccounts((prevAccounts) =>
-      prevAccounts.map((acc) => {
+    setAccounts((prevAccounts) => {
+      const updated = prevAccounts.map((acc) => {
         if (acc.code === '2101') return { ...acc, balance: totalGuruNet };
         if (acc.code === '2102') return { ...acc, balance: totalKepsekNet };
         if (acc.code === '2103') return { ...acc, balance: totalPph };
         if (acc.code === '2104') return { ...acc, balance: totalBpjs };
+        if (acc.code === '5101' && totalGuruGross > 0) return { ...acc, balance: totalGuruGross * 12 };
+        if (acc.code === '5102' && totalKepsekGross > 0) return { ...acc, balance: totalKepsekGross * 12 };
+        if (acc.code === '5103' && totalBoardGross > 0) return { ...acc, balance: totalBoardGross * 12 };
+        if (acc.code === '5117' && totalBpjs > 0) return { ...acc, balance: totalBpjs * 12 };
         return acc;
-      })
-    );
+      });
+      safeSetLocalStorage('yayasan_accounts', updated);
+      return updated;
+    });
+  };
+
+  const handleSaveFoundationProfile = (newProfile: FoundationProfile) => {
+    setFoundationProfile(newProfile);
+    safeSetLocalStorage('yayasan_profile', newProfile);
+
+    // Sync teachers state if headmaster name, nip, or photo was changed
+    if (newProfile.headmasterName || newProfile.headmasterPhotoUrl || newProfile.headmasterNip) {
+      setTeachers((prevTeachers) => {
+        const updated = prevTeachers.map((t) => {
+          if (t.role?.toLowerCase().includes('kepala sekolah')) {
+            return {
+              ...t,
+              name: newProfile.headmasterName || t.name,
+              nip: newProfile.headmasterNip || t.nip,
+              nipOrNipy: newProfile.headmasterNip || t.nipOrNipy,
+              photoUrl: newProfile.headmasterPhotoUrl || t.photoUrl,
+            };
+          }
+          return t;
+        });
+        safeSetLocalStorage('yayasan_teachers', updated);
+        return updated;
+      });
+    }
+
+    // Sync speeches state if headmaster name or photo was changed
+    if (newProfile.headmasterName || newProfile.headmasterPhotoUrl) {
+      setSpeeches((prevSpeeches) => {
+        const updated = {
+          ...prevSpeeches,
+          headmasterName: newProfile.headmasterName || prevSpeeches.headmasterName,
+          headmasterPhotoUrl: newProfile.headmasterPhotoUrl || prevSpeeches.headmasterPhotoUrl,
+        };
+        safeSetLocalStorage('yayasan_speeches', updated);
+        return updated;
+      });
+    }
+  };
+
+  const handleUpdateSpeeches = (newSpeeches: SpeechesCMS) => {
+    setSpeeches(newSpeeches);
+    safeSetLocalStorage('yayasan_speeches', newSpeeches);
+    if (newSpeeches.headmasterPhotoUrl || newSpeeches.headmasterName) {
+      setFoundationProfile((prev) => {
+        const currentOrg = prev.orgStructure || [];
+        const updatedOrg = currentOrg.map((m) =>
+          (m.position || '').toLowerCase().includes('kepala')
+            ? {
+                ...m,
+                name: newSpeeches.headmasterName || m.name,
+                photoUrl: newSpeeches.headmasterPhotoUrl || m.photoUrl,
+              }
+            : m
+        );
+        const updated = {
+          ...prev,
+          headmasterName: newSpeeches.headmasterName || prev.headmasterName,
+          headmasterPhotoUrl: newSpeeches.headmasterPhotoUrl || prev.headmasterPhotoUrl,
+          orgStructure: updatedOrg,
+        };
+        safeSetLocalStorage('yayasan_profile', updated);
+        return updated;
+      });
+
+      setTeachers((prev) => {
+        const updated = prev.map((t) =>
+          t.role?.toLowerCase().includes('kepala sekolah')
+            ? { ...t, name: newSpeeches.headmasterName || t.name, photoUrl: newSpeeches.headmasterPhotoUrl || t.photoUrl }
+            : t
+        );
+        safeSetLocalStorage('yayasan_teachers', updated);
+        return updated;
+      });
+    }
   };
 
   const handleAddTeacher = (tch: Teacher) => {
     setTeachers((prev) => {
       const next = [...prev, tch];
-      handleSyncPayrollToLiabilities(next);
+      safeSetLocalStorage('yayasan_teachers', next);
+      handleSyncPayrollToLiabilities(next, boardMembers);
       return next;
     });
   };
@@ -925,28 +1095,88 @@ export default function App() {
   const handleUpdateTeacher = (tch: Teacher) => {
     setTeachers((prev) => {
       const next = prev.map((t) => (t.id === tch.id ? tch : t));
-      handleSyncPayrollToLiabilities(next);
+      safeSetLocalStorage('yayasan_teachers', next);
+      handleSyncPayrollToLiabilities(next, boardMembers);
       return next;
     });
+
+    if (tch.role?.toLowerCase().includes('kepala sekolah')) {
+      setFoundationProfile((prev) => {
+        const currentOrg = prev.orgStructure || [];
+        const updatedOrg = currentOrg.map((m) =>
+          (m.position || '').toLowerCase().includes('kepala')
+            ? {
+                ...m,
+                name: tch.name || m.name,
+                nipOrNipy: tch.nipOrNipy || tch.nip || m.nipOrNipy,
+                photoUrl: tch.photoUrl || m.photoUrl,
+              }
+            : m
+        );
+        const updated = {
+          ...prev,
+          headmasterName: tch.name || prev.headmasterName,
+          headmasterNip: tch.nipOrNipy || tch.nip || prev.headmasterNip,
+          headmasterPhotoUrl: tch.photoUrl || prev.headmasterPhotoUrl,
+          orgStructure: updatedOrg,
+        };
+        safeSetLocalStorage('yayasan_profile', updated);
+        return updated;
+      });
+
+      setSpeeches((prev) => {
+        const updated = {
+          ...prev,
+          headmasterName: tch.name || prev.headmasterName,
+          headmasterPhotoUrl: tch.photoUrl || prev.headmasterPhotoUrl,
+        };
+        safeSetLocalStorage('yayasan_speeches', updated);
+        return updated;
+      });
+    }
   };
 
   const handleDeleteTeacher = (id: string) => {
     setTeachers((prev) => {
       const next = prev.filter((t) => t.id !== id);
-      handleSyncPayrollToLiabilities(next);
+      safeSetLocalStorage('yayasan_teachers', next);
+      handleSyncPayrollToLiabilities(next, boardMembers);
       return next;
     });
   };
 
-  const handleAddSubject = (sub: SubjectItem) => setSubjects((prev) => [...prev, sub]);
-  const handleUpdateSubject = (sub: SubjectItem) => setSubjects((prev) => prev.map((s) => (s.id === sub.id ? sub : s)));
-  const handleDeleteSubject = (id: string) => setSubjects((prev) => prev.filter((s) => s.id !== id));
+  const handleAddSubject = (sub: SubjectItem) => {
+    setSubjects((prev) => {
+      const next = [...prev, sub];
+      safeSetLocalStorage('yayasan_subjects', next);
+      return next;
+    });
+  };
+
+  const handleUpdateSubject = (sub: SubjectItem) => {
+    setSubjects((prev) => {
+      const next = prev.map((s) => (s.id === sub.id ? sub : s));
+      safeSetLocalStorage('yayasan_subjects', next);
+      return next;
+    });
+  };
+
+  const handleDeleteSubject = (id: string) => {
+    setSubjects((prev) => {
+      const next = prev.filter((s) => s.id !== id);
+      safeSetLocalStorage('yayasan_subjects', next);
+      return next;
+    });
+  };
+
   const handleImportSubjects = (newSubs: SubjectItem[]) => {
     setSubjects((prev) => {
       const map = new Map<string, SubjectItem>();
       prev.forEach((s) => map.set(s.id || s.subjectName.toLowerCase(), s));
       newSubs.forEach((s) => map.set(s.id || s.subjectName.toLowerCase(), s));
-      return Array.from(map.values());
+      const next = Array.from(map.values());
+      safeSetLocalStorage('yayasan_subjects', next);
+      return next;
     });
   };
 
@@ -966,9 +1196,32 @@ export default function App() {
     });
   };
 
-  const handleAddBoardMember = (brd: FoundationBoard) => setBoardMembers((prev) => [...prev, brd]);
-  const handleUpdateBoardMember = (brd: FoundationBoard) => setBoardMembers((prev) => prev.map((b) => (b.id === brd.id ? brd : b)));
-  const handleDeleteBoardMember = (id: string) => setBoardMembers((prev) => prev.filter((b) => b.id !== id));
+  const handleAddBoardMember = (brd: FoundationBoard) => {
+    setBoardMembers((prev) => {
+      const next = [...prev, brd];
+      safeSetLocalStorage('yayasan_board_members', next);
+      handleSyncPayrollToLiabilities(teachers, next);
+      return next;
+    });
+  };
+
+  const handleUpdateBoardMember = (brd: FoundationBoard) => {
+    setBoardMembers((prev) => {
+      const next = prev.map((b) => (b.id === brd.id ? brd : b));
+      safeSetLocalStorage('yayasan_board_members', next);
+      handleSyncPayrollToLiabilities(teachers, next);
+      return next;
+    });
+  };
+
+  const handleDeleteBoardMember = (id: string) => {
+    setBoardMembers((prev) => {
+      const next = prev.filter((b) => b.id !== id);
+      safeSetLocalStorage('yayasan_board_members', next);
+      handleSyncPayrollToLiabilities(teachers, next);
+      return next;
+    });
+  };
 
   const handleAddSupplier = (sup: Supplier) => setSuppliers((prev) => [...prev, sup]);
   const handleUpdateSupplier = (sup: Supplier) => setSuppliers((prev) => prev.map((s) => (s.id === sup.id ? sup : s)));
@@ -1232,12 +1485,13 @@ export default function App() {
         {/* Content View */}
         <main className="flex-1 p-3 sm:p-5 lg:p-6 overflow-y-auto min-w-0">
           
-          {activeTab === 'siswa' && (
+          {(activeTab === 'siswa' || activeTab === 'mapel') && (
             <MasterDataView
-              initialTab="siswa"
+              initialTab={activeTab === 'mapel' ? 'mapel' : 'siswa'}
               currentRole={currentRole}
               students={students}
               teachers={teachers}
+              subjects={subjects}
               boardMembers={boardMembers}
               suppliers={suppliers}
               foundationProfile={foundationProfile}
@@ -1253,6 +1507,10 @@ export default function App() {
               onImportTeachers={handleImportTeachers}
               onUpdateTeacher={handleUpdateTeacher}
               onDeleteTeacher={handleDeleteTeacher}
+              onAddSubject={handleAddSubject}
+              onImportSubjects={handleImportSubjects}
+              onUpdateSubject={handleUpdateSubject}
+              onDeleteSubject={handleDeleteSubject}
               onAddBoardMember={handleAddBoardMember}
               onUpdateBoardMember={handleUpdateBoardMember}
               onDeleteBoardMember={handleDeleteBoardMember}
@@ -1389,13 +1647,13 @@ export default function App() {
               onUpdateUniformSchedules={setUniformSchedules}
               onUpdatePpdbConfig={setPpdbConfig}
               onUpdateHeroBanners={setHeroBanners}
-              onUpdateSpeeches={setSpeeches}
+              onUpdateSpeeches={handleUpdateSpeeches}
               onUpdateVisionMission={setVisionMission}
               onUpdateNewsArticles={setNewsArticles}
               onUpdateGalleryItems={setGalleryItems}
               onUpdateAchievements={setAchievements}
               onUpdateLayoutConfig={setLayoutConfig}
-              onSaveProfile={setFoundationProfile}
+              onSaveProfile={handleSaveFoundationProfile}
               onUpdateTeacher={handleUpdateTeacher}
               onDeleteTeacher={handleDeleteTeacher}
               onAddTeacher={handleAddTeacher}
@@ -1485,15 +1743,15 @@ export default function App() {
               onAddSupplier={handleAddSupplier}
               onUpdateSupplier={handleUpdateSupplier}
               onDeleteSupplier={handleDeleteSupplier}
-              onUpdateFoundationProfile={setFoundationProfile}
+              onUpdateFoundationProfile={handleSaveFoundationProfile}
             />
           )}
 
           {activeTab === 'pengaturan' && (
             <FoundationSettingsView
               profile={foundationProfile}
-              onSaveProfile={setFoundationProfile}
-              onResetDefaults={() => setFoundationProfile(INITIAL_FOUNDATION_PROFILE)}
+              onSaveProfile={handleSaveFoundationProfile}
+              onResetDefaults={() => handleSaveFoundationProfile(INITIAL_FOUNDATION_PROFILE)}
               onRestoreMasterData={handleResetData}
               onExportBackup={handleExportFullBackup}
               onImportBackup={handleImportFullBackup}

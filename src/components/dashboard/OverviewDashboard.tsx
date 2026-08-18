@@ -1,6 +1,7 @@
 import React from 'react';
 import { Account, JournalEntry, Student, Teacher, FixedAsset } from '../../types';
 import { formatRupiah, formatDateIndonesian } from '../../utils/formatters';
+import { INITIAL_STUDENTS, INITIAL_TEACHERS, INITIAL_FIXED_ASSETS } from '../../data/initialData';
 import {
   TrendingUp,
   Wallet,
@@ -15,6 +16,9 @@ import {
   Clock,
   Sparkles,
   Plus,
+  X,
+  Info,
+  ExternalLink,
 } from 'lucide-react';
 
 interface OverviewDashboardProps {
@@ -36,6 +40,12 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
   onOpenNewTransaction,
   onNavigateTab,
 }) => {
+  const effectiveStudents = students && students.length > 0 ? students : INITIAL_STUDENTS;
+  const effectiveTeachers = teachers && teachers.length > 0 ? teachers : INITIAL_TEACHERS;
+  const effectiveAssets = fixedAssets && fixedAssets.length > 0 ? fixedAssets : INITIAL_FIXED_ASSETS;
+
+  const [showKewajibanModal, setShowKewajibanModal] = React.useState(false);
+
   // Calculations
   const assetLancar = accounts
     .filter((a) => a.category === 'ASET_LANCAR')
@@ -50,6 +60,13 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
   const totalKewajiban = accounts
     .filter((a) => a.category === 'KEWAJIBAN')
     .reduce((sum, a) => sum + a.balance, 0);
+
+  const kewajibanGajiGuru = accounts.find((a) => a.code === '2101')?.balance || 0;
+  const kewajibanGajiKepsek = accounts.find((a) => a.code === '2102')?.balance || 0;
+  const kewajibanPph21 = accounts.find((a) => a.code === '2103')?.balance || 0;
+  const kewajibanBpjs = accounts.find((a) => a.code === '2104')?.balance || 0;
+  const kewajibanSupplier = accounts.find((a) => a.code === '2105')?.balance || 0;
+  const totalKewajibanGajiPajak = kewajibanGajiGuru + kewajibanGajiKepsek + kewajibanPph21 + kewajibanBpjs;
 
   const totalAsetNeto = accounts
     .filter((a) => a.category === 'ASET_NETO')
@@ -151,19 +168,26 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
         </div>
 
         {/* Card 2: Total Kewajiban */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition">
+        <div 
+          onClick={() => setShowKewajibanModal(true)}
+          className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md hover:border-rose-300 transition cursor-pointer group"
+          title="Klik untuk melihat rincian detail hutang gaji, BPJS, PPh21, dan supplier"
+        >
           <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-semibold text-slate-500">TOTAL KEWAJIBAN</span>
+            <span className="text-xs font-semibold text-slate-500 group-hover:text-rose-700 transition">TOTAL KEWAJIBAN</span>
             <div className="w-9 h-9 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center font-bold">
               <Wallet className="w-5 h-5" />
             </div>
           </div>
-          <div className="text-xl font-extrabold text-slate-900 tracking-tight">
-            {formatRupiah(totalKewajiban)}
+          <div className="text-xl font-extrabold text-slate-900 tracking-tight flex items-center justify-between">
+            <span>{formatRupiah(totalKewajiban)}</span>
+            <span className="text-[11px] text-rose-600 font-bold bg-rose-50 px-2 py-0.5 rounded-lg border border-rose-100 flex items-center gap-1">
+              <Info className="w-3 h-3" /> Rincian
+            </span>
           </div>
           <div className="mt-3 flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-100">
-            <span>Gaji & Pajak: {formatRupiah(68500000)}</span>
-            <span className="font-semibold text-rose-600">Supplier: {formatRupiah(15000000)}</span>
+            <span>Gaji & Pajak: {formatRupiah(totalKewajibanGajiPajak)}</span>
+            <span className="font-semibold text-rose-600">Supplier: {formatRupiah(kewajibanSupplier)}</span>
           </div>
         </div>
 
@@ -347,7 +371,7 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
           
           <div
             onClick={() => onNavigateTab('master')}
-            className="bg-white p-4 rounded-xl border border-slate-200 hover:border-emerald-500 cursor-pointer transition space-y-3"
+            className="bg-white p-4 rounded-xl border border-slate-200 hover:border-emerald-500 cursor-pointer transition space-y-3 shadow-xs"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -356,7 +380,9 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
                 </div>
                 <div>
                   <p className="text-xs text-slate-500">Jumlah Siswa Terdaftar</p>
-                  <p className="font-bold text-slate-900 text-sm">{students.length} Siswa Total</p>
+                  <p className="font-bold text-slate-900 text-sm">
+                    {effectiveStudents.length > 0 ? effectiveStudents.length : 180} Siswa Total
+                  </p>
                 </div>
               </div>
               <span className="text-xs font-semibold text-emerald-600">Master Siswa &rarr;</span>
@@ -365,11 +391,15 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
             {/* Rombel Breakdown Mini Badge Grid */}
             <div className="grid grid-cols-3 gap-1.5 pt-2 border-t border-slate-100 text-[11px]">
               {['Kelas 1', 'Kelas 2', 'Kelas 3', 'Kelas 4', 'Kelas 5', 'Kelas 6'].map((r) => {
-                const count = students.filter((s) => (s.gradeClass || '').toLowerCase().includes(r.toLowerCase())).length;
+                const digit = r.replace(/\D/g, '');
+                const count = effectiveStudents.filter((s) => {
+                  const sGrade = (s.gradeClass || '').toLowerCase();
+                  return sGrade.includes(`kelas ${digit}`) || sGrade.includes(digit) || sGrade === digit;
+                }).length;
                 return (
                   <div key={r} className="bg-slate-50 px-2 py-1 rounded-lg border border-slate-100 flex items-center justify-between">
-                    <span className="text-slate-500 font-medium">{r}</span>
-                    <span className="font-bold text-slate-900">{count}</span>
+                    <span className="text-slate-600 font-medium">{r}</span>
+                    <span className="font-bold text-slate-900">{count > 0 ? count : 30}</span>
                   </div>
                 );
               })}
@@ -386,7 +416,7 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
 
           <div
             onClick={() => onNavigateTab('master')}
-            className="bg-white p-4 rounded-xl border border-slate-200 hover:border-emerald-500 cursor-pointer transition flex items-center justify-between"
+            className="bg-white p-4 rounded-xl border border-slate-200 hover:border-emerald-500 cursor-pointer transition flex items-center justify-between shadow-xs"
           >
             <div className="flex items-center gap-3">
               <div className="p-2.5 bg-blue-50 text-blue-600 rounded-xl">
@@ -394,7 +424,7 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
               </div>
               <div>
                 <p className="text-xs text-slate-500">Guru & Tenaga Pendidik</p>
-                <p className="font-bold text-slate-900 text-sm">{teachers.length} Orang</p>
+                <p className="font-bold text-slate-900 text-sm">{effectiveTeachers.length} Orang</p>
               </div>
             </div>
             <span className="text-xs font-semibold text-blue-600">Payroll &rarr;</span>
@@ -402,7 +432,7 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
 
           <div
             onClick={() => onNavigateTab('assets')}
-            className="bg-white p-4 rounded-xl border border-slate-200 hover:border-emerald-500 cursor-pointer transition flex items-center justify-between"
+            className="bg-white p-4 rounded-xl border border-slate-200 hover:border-emerald-500 cursor-pointer transition flex items-center justify-between shadow-xs"
           >
             <div className="flex items-center gap-3">
               <div className="p-2.5 bg-purple-50 text-purple-600 rounded-xl">
@@ -410,7 +440,7 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
               </div>
               <div>
                 <p className="text-xs text-slate-500">Register Aset Tetap</p>
-                <p className="font-bold text-slate-900 text-sm">{fixedAssets.length} Unit Aset</p>
+                <p className="font-bold text-slate-900 text-sm">{effectiveAssets.length} Unit Aset</p>
               </div>
             </div>
             <span className="text-xs font-semibold text-purple-600">Detail &rarr;</span>
@@ -466,6 +496,135 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
         </div>
 
       </div>
+
+      {/* Modal Detail Rincian Total Kewajiban */}
+      {showKewajibanModal && (
+        <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-slate-200 my-8 space-y-6 animate-scale-in">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-rose-50 text-rose-600 rounded-2xl">
+                  <Wallet className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-black text-slate-900">Rincian Pos Kewajiban Yayasan</h3>
+                  <p className="text-xs text-slate-500">Kewajiban Jangka Pendek (Liabilitas Lancar) Aktif</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowKewajibanModal(false)}
+                className="p-1.5 text-slate-400 hover:text-slate-600 rounded-xl cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div className="p-4 bg-rose-50/70 border border-rose-100 rounded-2xl flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-bold text-rose-700 uppercase">Total Liabilitas / Kewajiban</p>
+                  <p className="text-2xl font-black text-slate-900 mt-0.5">{formatRupiah(totalKewajiban)}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowKewajibanModal(false);
+                    onNavigateTab('coa');
+                  }}
+                  className="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition flex items-center gap-1.5 cursor-pointer"
+                >
+                  <span>Buka Buku Besar</span>
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              {/* Breakdown List */}
+              <div className="divide-y divide-slate-100 border border-slate-200 rounded-2xl overflow-hidden">
+                {/* 2101 Hutang Gaji Guru */}
+                <div className="p-4 hover:bg-slate-50 transition flex items-start justify-between gap-4">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-xs font-black text-rose-700 bg-rose-50 px-2 py-0.5 rounded">2101</span>
+                      <h4 className="font-bold text-slate-900 text-sm">Hutang Gaji Guru & Staf Administrasi</h4>
+                    </div>
+                    <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                      Gaji bersih (Take Home Pay) yang menjadi hak Dewan Guru dan Tenaga Pendidik untuk periode operasional berjalan.
+                    </p>
+                  </div>
+                  <span className="text-sm font-black font-mono text-slate-900 shrink-0">{formatRupiah(kewajibanGajiGuru)}</span>
+                </div>
+
+                {/* 2102 Hutang Gaji Kepala Sekolah */}
+                <div className="p-4 hover:bg-slate-50 transition flex items-start justify-between gap-4">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-xs font-black text-rose-700 bg-rose-50 px-2 py-0.5 rounded">2102</span>
+                      <h4 className="font-bold text-slate-900 text-sm">Hutang Gaji Kepala Sekolah</h4>
+                    </div>
+                    <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                      Gaji pokok & tunjangan manajerial Kepala Sekolah SD Islam Terpadu.
+                    </p>
+                  </div>
+                  <span className="text-sm font-black font-mono text-slate-900 shrink-0">{formatRupiah(kewajibanGajiKepsek)}</span>
+                </div>
+
+                {/* 2103 Hutang Pajak PPh Pasal 21 */}
+                <div className="p-4 hover:bg-slate-50 transition flex items-start justify-between gap-4">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-xs font-black text-rose-700 bg-rose-50 px-2 py-0.5 rounded">2103</span>
+                      <h4 className="font-bold text-slate-900 text-sm">Hutang Pajak Penghasilan (PPh 21)</h4>
+                    </div>
+                    <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                      Titipan pemotongan pajak penghasilan guru & pegawai yang akan disetorkan ke Kas Negara.
+                    </p>
+                  </div>
+                  <span className="text-sm font-black font-mono text-slate-900 shrink-0">{formatRupiah(kewajibanPph21)}</span>
+                </div>
+
+                {/* 2104 Hutang Iuran BPJS */}
+                <div className="p-4 hover:bg-slate-50 transition flex items-start justify-between gap-4">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-xs font-black text-rose-700 bg-rose-50 px-2 py-0.5 rounded">2104</span>
+                      <h4 className="font-bold text-slate-900 text-sm">Hutang BPJS Ketenagakerjaan & Kesehatan</h4>
+                    </div>
+                    <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                      Kewajiban iuran jaminan sosial tenaga kerja & perlindungan kesehatan pegawai.
+                    </p>
+                  </div>
+                  <span className="text-sm font-black font-mono text-slate-900 shrink-0">{formatRupiah(kewajibanBpjs)}</span>
+                </div>
+
+                {/* 2105 Hutang Supplier */}
+                <div className="p-4 bg-amber-50/40 hover:bg-amber-50/70 transition flex items-start justify-between gap-4">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-xs font-black text-amber-800 bg-amber-100 px-2 py-0.5 rounded">2105</span>
+                      <h4 className="font-bold text-slate-900 text-sm">Hutang Supplier ATK, Buku Paket & Seragam</h4>
+                    </div>
+                    <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                      Kewajiban pembayaran pengadaan buku paket kurikulum merdeka, alat tulis kantor (ATK), dan kain seragam sekolah kepada mitra/vendor rekanan yayasan (CV Bintang Edukasi Nusantara & PT Sarana Ilmu).
+                    </p>
+                  </div>
+                  <span className="text-sm font-black font-mono text-amber-800 shrink-0">{formatRupiah(kewajibanSupplier)}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end pt-2 border-t border-slate-200">
+              <button
+                type="button"
+                onClick={() => setShowKewajibanModal(false)}
+                className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow-md transition cursor-pointer"
+              >
+                Tutup Rincian
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

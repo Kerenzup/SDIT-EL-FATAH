@@ -767,25 +767,25 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
                       </p>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6">
                       {/* 1. Pembina Yayasan */}
-                      <div className="bg-[#87CEFA] p-5 rounded-3xl border-2 border-sky-300 shadow-lg flex flex-col justify-between items-center text-center space-y-3 relative overflow-hidden group hover:border-slate-800 transition text-slate-950">
-                        <div className="p-1 bg-white/80 rounded-2xl shadow-md w-36 sm:w-44 lg:w-48 aspect-[4/5] mx-auto overflow-hidden shrink-0 ring-2 ring-slate-800/20 relative">
+                      <div className="bg-[#87CEFA] p-4 sm:p-5 rounded-3xl border-2 border-sky-300 shadow-lg flex flex-col justify-between items-center text-center space-y-3 relative overflow-hidden group hover:border-slate-800 transition text-slate-950">
+                        <div className="p-1 bg-white/80 rounded-2xl shadow-md w-32 sm:w-36 lg:w-40 aspect-[4/5] mx-auto overflow-hidden shrink-0 ring-2 ring-slate-800/20 relative">
                           <img
                             src={getLocalPhotoUrl(foundationProfile.pembinaPhotoUrl || foundationProfile.orgStructure?.find(m => m.position.includes('Pembina'))?.photoUrl, 'Pembina Yayasan')}
                             alt="Pembina Yayasan"
                             className="w-full h-full object-cover object-top bg-sky-100 rounded-xl"
                           />
-                          <span className="absolute bottom-1.5 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-slate-900/85 text-white text-[9px] font-extrabold rounded-full border border-white/40 whitespace-nowrap shadow-xs">
+                          <span className="absolute bottom-1.5 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-slate-900/85 text-white text-[8px] sm:text-[9px] font-extrabold rounded-full border border-white/40 whitespace-nowrap shadow-xs">
                             Pasfoto Resmi 4x5 cm
                           </span>
                         </div>
                         <div className="space-y-1 w-full">
-                          <span className="inline-block px-3 py-0.5 bg-slate-900 text-white text-[10px] font-black rounded-full uppercase shadow-xs">
+                          <span className="inline-block px-3 py-0.5 bg-slate-900 text-white text-[9px] sm:text-[10px] font-black rounded-full uppercase shadow-xs">
                             Pembina Yayasan
                           </span>
-                          <h4 className="font-extrabold text-slate-950 text-base mt-1">{foundationProfile.pembinaName || 'Abdul Muhyi S.Pd'}</h4>
-                          <p className="text-[11px] text-sky-900 font-bold">{foundationProfile.pembinaTitle || 'Pembina Yayasan'}</p>
+                          <h4 className="font-extrabold text-slate-950 text-sm sm:text-base mt-1 line-clamp-2">{foundationProfile.pembinaName || 'Abdul Muhyi S.Pd'}</h4>
+                          <p className="text-[10px] sm:text-[11px] text-sky-900 font-bold">{foundationProfile.pembinaTitle || 'Pembina Yayasan'}</p>
                         </div>
                         <p className="text-xs text-slate-900 italic font-serif leading-relaxed bg-white/80 p-3 rounded-2xl border border-sky-300 w-full mt-auto shadow-xs">
                           "{speeches.chairmanSpeech || 'Mengarahkan seluruh unit sekolah agar senantiasa berpedoman pada standar keunggulan global dan akhlak karimah.'}"
@@ -793,23 +793,23 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
                       </div>
 
                       {/* 2. Ketua Yayasan */}
-                      <div className="bg-[#87CEFA] p-5 rounded-3xl border-2 border-sky-300 shadow-lg flex flex-col justify-between items-center text-center space-y-3 relative overflow-hidden group hover:border-slate-800 transition text-slate-950">
-                        <div className="p-1 bg-white/80 rounded-2xl shadow-md w-36 sm:w-44 lg:w-48 aspect-[4/5] mx-auto overflow-hidden shrink-0 ring-2 ring-slate-800/20 relative">
+                      <div className="bg-[#87CEFA] p-4 sm:p-5 rounded-3xl border-2 border-sky-300 shadow-lg flex flex-col justify-between items-center text-center space-y-3 relative overflow-hidden group hover:border-slate-800 transition text-slate-950">
+                        <div className="p-1 bg-white/80 rounded-2xl shadow-md w-32 sm:w-36 lg:w-40 aspect-[4/5] mx-auto overflow-hidden shrink-0 ring-2 ring-slate-800/20 relative">
                           <img
                             src={getLocalPhotoUrl(foundationProfile.leaderPhotoUrl || foundationProfile.orgStructure?.find(m => m.position.includes('Ketua'))?.photoUrl, 'Ketua Yayasan')}
                             alt="Ketua Yayasan"
                             className="w-full h-full object-cover object-top bg-sky-100 rounded-xl"
                           />
-                          <span className="absolute bottom-1.5 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-slate-900/85 text-white text-[9px] font-extrabold rounded-full border border-white/40 whitespace-nowrap shadow-xs">
+                          <span className="absolute bottom-1.5 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-slate-900/85 text-white text-[8px] sm:text-[9px] font-extrabold rounded-full border border-white/40 whitespace-nowrap shadow-xs">
                             Pasfoto Resmi 4x5 cm
                           </span>
                         </div>
                         <div className="space-y-1 w-full">
-                          <span className="inline-block px-3 py-0.5 bg-slate-900 text-white text-[10px] font-black rounded-full uppercase shadow-xs">
+                          <span className="inline-block px-3 py-0.5 bg-slate-900 text-white text-[9px] sm:text-[10px] font-black rounded-full uppercase shadow-xs">
                             Ketua Yayasan
                           </span>
-                          <h4 className="font-extrabold text-slate-950 text-base mt-1">{foundationProfile.leaderName || 'H. Ahmad Dahlan, M.Ag'}</h4>
-                          <p className="text-[11px] text-sky-900 font-bold">{foundationProfile.leaderTitle || 'Ketua Yayasan'}</p>
+                          <h4 className="font-extrabold text-slate-950 text-sm sm:text-base mt-1 line-clamp-2">{foundationProfile.leaderName || 'H. Ahmad Dahlan, M.Ag'}</h4>
+                          <p className="text-[10px] sm:text-[11px] text-sky-900 font-bold">{foundationProfile.leaderTitle || 'Ketua Yayasan'}</p>
                         </div>
                         <p className="text-xs text-slate-900 italic font-serif leading-relaxed bg-white/80 p-3 rounded-2xl border border-sky-300 w-full mt-auto shadow-xs">
                           "{foundationProfile.welcomeMessage || 'Selamat datang di Portal Resmi Yayasan. Kami berkomitmen menyajikan pendidikan unggul berkarakter islami dan transparan.'}"
@@ -817,23 +817,23 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
                       </div>
 
                       {/* 3. Sekretaris Yayasan */}
-                      <div className="bg-[#87CEFA] p-5 rounded-3xl border-2 border-sky-300 shadow-lg flex flex-col justify-between items-center text-center space-y-3 relative overflow-hidden group hover:border-slate-800 transition text-slate-950">
-                        <div className="p-1 bg-white/80 rounded-2xl shadow-md w-36 sm:w-44 lg:w-48 aspect-[4/5] mx-auto overflow-hidden shrink-0 ring-2 ring-slate-800/20 relative">
+                      <div className="bg-[#87CEFA] p-4 sm:p-5 rounded-3xl border-2 border-sky-300 shadow-lg flex flex-col justify-between items-center text-center space-y-3 relative overflow-hidden group hover:border-slate-800 transition text-slate-950">
+                        <div className="p-1 bg-white/80 rounded-2xl shadow-md w-32 sm:w-36 lg:w-40 aspect-[4/5] mx-auto overflow-hidden shrink-0 ring-2 ring-slate-800/20 relative">
                           <img
                             src={getLocalPhotoUrl(foundationProfile.secretaryPhotoUrl || speeches.secretaryPhotoUrl || foundationProfile.orgStructure?.find(m => m.position.includes('Sekretaris'))?.photoUrl, 'Sekretaris Yayasan')}
                             alt="Sekretaris Yayasan"
                             className="w-full h-full object-cover object-top bg-sky-100 rounded-xl"
                           />
-                          <span className="absolute bottom-1.5 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-slate-900/85 text-white text-[9px] font-extrabold rounded-full border border-white/40 whitespace-nowrap shadow-xs">
+                          <span className="absolute bottom-1.5 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-slate-900/85 text-white text-[8px] sm:text-[9px] font-extrabold rounded-full border border-white/40 whitespace-nowrap shadow-xs">
                             Pasfoto Resmi 4x5 cm
                           </span>
                         </div>
                         <div className="space-y-1 w-full">
-                          <span className="inline-block px-3 py-0.5 bg-slate-900 text-white text-[10px] font-black rounded-full uppercase shadow-xs">
+                          <span className="inline-block px-3 py-0.5 bg-slate-900 text-white text-[9px] sm:text-[10px] font-black rounded-full uppercase shadow-xs">
                             Sekretaris Yayasan
                           </span>
-                          <h4 className="font-extrabold text-slate-950 text-base mt-1">{foundationProfile.secretaryName || speeches.secretaryName || 'H. Ahmad Subagja, S.H'}</h4>
-                          <p className="text-[11px] text-sky-900 font-bold">{foundationProfile.secretaryTitle || speeches.secretaryTitle || 'Sekretaris Yayasan'}</p>
+                          <h4 className="font-extrabold text-slate-950 text-sm sm:text-base mt-1 line-clamp-2">{foundationProfile.secretaryName || speeches.secretaryName || 'H. Ahmad Subagja, S.H'}</h4>
+                          <p className="text-[10px] sm:text-[11px] text-sky-900 font-bold">{foundationProfile.secretaryTitle || speeches.secretaryTitle || 'Sekretaris Yayasan'}</p>
                         </div>
                         <p className="text-xs text-slate-900 italic font-serif leading-relaxed bg-white/80 p-3 rounded-2xl border border-sky-300 w-full mt-auto shadow-xs">
                           "{foundationProfile.secretarySpeech || speeches.secretarySpeech || 'Menjamin ketertiban administrasi, legalitas Kemenkumham, serta pelayanan publik dan orang tua murid yang responsif.'}"
@@ -841,26 +841,53 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
                       </div>
 
                       {/* 4. Bendahara Yayasan */}
-                      <div className="bg-[#87CEFA] p-5 rounded-3xl border-2 border-sky-300 shadow-lg flex flex-col justify-between items-center text-center space-y-3 relative overflow-hidden group hover:border-slate-800 transition text-slate-950">
-                        <div className="p-1 bg-white/80 rounded-2xl shadow-md w-36 sm:w-44 lg:w-48 aspect-[4/5] mx-auto overflow-hidden shrink-0 ring-2 ring-slate-800/20 relative">
+                      <div className="bg-[#87CEFA] p-4 sm:p-5 rounded-3xl border-2 border-sky-300 shadow-lg flex flex-col justify-between items-center text-center space-y-3 relative overflow-hidden group hover:border-slate-800 transition text-slate-950">
+                        <div className="p-1 bg-white/80 rounded-2xl shadow-md w-32 sm:w-36 lg:w-40 aspect-[4/5] mx-auto overflow-hidden shrink-0 ring-2 ring-slate-800/20 relative">
                           <img
                             src={getLocalPhotoUrl(foundationProfile.treasurerPhotoUrl || speeches.treasurerPhotoUrl || foundationProfile.orgStructure?.find(m => m.position.includes('Bendahara'))?.photoUrl, 'Bendahara Yayasan')}
                             alt="Bendahara Yayasan"
                             className="w-full h-full object-cover object-top bg-sky-100 rounded-xl"
                           />
-                          <span className="absolute bottom-1.5 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-slate-900/85 text-white text-[9px] font-extrabold rounded-full border border-white/40 whitespace-nowrap shadow-xs">
+                          <span className="absolute bottom-1.5 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-slate-900/85 text-white text-[8px] sm:text-[9px] font-extrabold rounded-full border border-white/40 whitespace-nowrap shadow-xs">
                             Pasfoto Resmi 4x5 cm
                           </span>
                         </div>
                         <div className="space-y-1 w-full">
-                          <span className="inline-block px-3 py-0.5 bg-slate-900 text-white text-[10px] font-black rounded-full uppercase shadow-xs">
+                          <span className="inline-block px-3 py-0.5 bg-slate-900 text-white text-[9px] sm:text-[10px] font-black rounded-full uppercase shadow-xs">
                             Bendahara Yayasan
                           </span>
-                          <h4 className="font-extrabold text-slate-950 text-base mt-1">{foundationProfile.treasurerName || speeches.treasurerName || 'Hj. Nurul Aini, S.E., M.Ak'}</h4>
-                          <p className="text-[11px] text-sky-900 font-bold">{foundationProfile.treasurerTitle || speeches.treasurerTitle || 'Bendahara Yayasan'}</p>
+                          <h4 className="font-extrabold text-slate-950 text-sm sm:text-base mt-1 line-clamp-2">{foundationProfile.treasurerName || speeches.treasurerName || 'Hj. Nurul Aini, S.E., M.Ak'}</h4>
+                          <p className="text-[10px] sm:text-[11px] text-sky-900 font-bold">{foundationProfile.treasurerTitle || speeches.treasurerTitle || 'Bendahara Yayasan'}</p>
                         </div>
                         <p className="text-xs text-slate-900 italic font-serif leading-relaxed bg-white/80 p-3 rounded-2xl border border-sky-300 w-full mt-auto shadow-xs">
                           "{foundationProfile.treasurerSpeech || speeches.treasurerSpeech || 'Mengelola akuntabilitas keuangan berbasis ISAK 35, sistem kuitansi digital SPP, dan audit anggaran dana BOS.'}"
+                        </p>
+                      </div>
+
+                      {/* 5. Kepala Sekolah */}
+                      <div className="bg-[#87CEFA] p-4 sm:p-5 rounded-3xl border-2 border-slate-900 shadow-lg flex flex-col justify-between items-center text-center space-y-3 relative overflow-hidden group hover:border-sky-400 transition text-slate-950">
+                        <div className="p-1 bg-white/80 rounded-2xl shadow-md w-32 sm:w-36 lg:w-40 aspect-[4/5] mx-auto overflow-hidden shrink-0 ring-2 ring-slate-800/20 relative">
+                          <img
+                            src={getLocalPhotoUrl(foundationProfile.headmasterPhotoUrl || speeches.headmasterPhotoUrl || teachers.find(t => (t.role || '').toLowerCase().includes('kepala'))?.photoUrl || foundationProfile.orgStructure?.find(m => m.position.includes('Kepala'))?.photoUrl, 'Kepala Sekolah')}
+                            alt="Kepala Sekolah"
+                            className="w-full h-full object-cover object-top bg-sky-100 rounded-xl"
+                          />
+                          <span className="absolute bottom-1.5 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-slate-900/85 text-white text-[8px] sm:text-[9px] font-extrabold rounded-full border border-white/40 whitespace-nowrap shadow-xs">
+                            Pasfoto Resmi 4x5 cm
+                          </span>
+                        </div>
+                        <div className="space-y-1 w-full">
+                          <span className="inline-block px-3 py-0.5 bg-slate-900 text-white text-[9px] sm:text-[10px] font-black rounded-full uppercase shadow-xs">
+                            Kepala Sekolah SDIT
+                          </span>
+                          <h4 className="font-extrabold text-slate-950 text-sm sm:text-base mt-1 line-clamp-2">{foundationProfile.headmasterName || speeches.headmasterName || 'Masykur Rohana, S.Sos'}</h4>
+                          <p className="text-[10px] sm:text-[11px] text-sky-900 font-bold">{foundationProfile.headmasterTitle || speeches.headmasterTitle || 'Kepala Sekolah'}</p>
+                          {foundationProfile.headmasterNip && (
+                            <p className="text-[9px] text-slate-700 font-mono">{foundationProfile.headmasterNip}</p>
+                          )}
+                        </div>
+                        <p className="text-xs text-slate-900 italic font-serif leading-relaxed bg-white/80 p-3 rounded-2xl border border-sky-300 w-full mt-auto shadow-xs">
+                          "{speeches.headmasterSpeech || 'Fokus utama kami adalah mutu pembelajaran di setiap Rombongan Belajar demi mencetak generasi Rabbani berprestasi.'}"
                         </p>
                       </div>
                     </div>
@@ -1032,7 +1059,7 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
                                 </span>
                                 <div className="p-1 bg-white/80 rounded-xl w-36 sm:w-44 aspect-[4/5] mx-auto shadow-sm overflow-hidden mt-1 relative">
                                   <img
-                                    src={getLocalPhotoUrl(headmaster.photoUrl, headmaster.role || headmaster.name)}
+                                    src={getLocalPhotoUrl(headmaster.photoUrl || foundationProfile.headmasterPhotoUrl || speeches.headmasterPhotoUrl, headmaster.role || headmaster.name)}
                                     alt={headmaster.name}
                                     className="w-full h-full object-cover object-top rounded-lg bg-sky-100 shadow-inner"
                                   />
@@ -1196,7 +1223,12 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
                               <div className="space-y-3 text-center">
                                 <div className="p-0.5 bg-white/60 rounded-2xl w-32 aspect-[4/5] mx-auto shadow-xs overflow-hidden">
                                   <img
-                                    src={getLocalPhotoUrl(t.photoUrl, t.role || t.name)}
+                                    src={getLocalPhotoUrl(
+                                      (t.role || '').toLowerCase().includes('kepala')
+                                        ? (t.photoUrl || foundationProfile.headmasterPhotoUrl || speeches.headmasterPhotoUrl)
+                                        : t.photoUrl,
+                                      t.role || t.name
+                                    )}
                                     alt={t.name}
                                     className="w-full h-full object-cover object-top rounded-xl bg-sky-100 shadow-inner"
                                   />
@@ -1882,7 +1914,20 @@ export const PublicWebsiteView: React.FC<PublicWebsiteViewProps> = ({
                     >
                       <div className="p-1 bg-white/80 rounded-2xl shadow-md w-36 sm:w-44 md:w-48 aspect-[4/5] overflow-hidden ring-2 ring-slate-800/20 relative">
                         <img
-                          src={getLocalPhotoUrl(member.photoUrl, member.position || member.name)}
+                          src={getLocalPhotoUrl(
+                            (member.position || '').toLowerCase().includes('kepala')
+                              ? (member.photoUrl || foundationProfile.headmasterPhotoUrl || speeches.headmasterPhotoUrl)
+                              : (member.position || '').toLowerCase().includes('pembina')
+                              ? (member.photoUrl || foundationProfile.pembinaPhotoUrl)
+                              : (member.position || '').toLowerCase().includes('ketua')
+                              ? (member.photoUrl || foundationProfile.leaderPhotoUrl)
+                              : (member.position || '').toLowerCase().includes('sekretaris')
+                              ? (member.photoUrl || foundationProfile.secretaryPhotoUrl || speeches.secretaryPhotoUrl)
+                              : (member.position || '').toLowerCase().includes('bendahara')
+                              ? (member.photoUrl || foundationProfile.treasurerPhotoUrl || speeches.treasurerPhotoUrl)
+                              : member.photoUrl,
+                            member.position || member.name
+                          )}
                           alt={member.name}
                           className={`w-full h-full object-cover object-top ${getPhotoClasses()} rounded-xl bg-sky-100 shadow-inner`}
                         />
